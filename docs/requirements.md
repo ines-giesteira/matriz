@@ -1,0 +1,233 @@
+# Matriz — Requisitos
+
+Versão 1.0 · 25 de outubro de 2026 · consolida o "Âmbito funcional e MVP" v0.1, o "Backlog inicial do MVP" v0.1 e as decisões da dona do produto.
+
+> **Origem da informação.** O cliente é fictício. A única informação confirmada é a frase original do cliente:
+>
+> *"Precisamos de uma aplicação onde as nossas equipas possam organizar projetos, gerir tarefas e acompanhar o progresso do trabalho."*
+>
+> Tudo o resto neste documento são **pressupostos da dona do produto**, não requisitos confirmados pelo cliente. Cada regra indica a sua origem (R-xx, G-xx, D-xx, A-xx), definida em [constraints.md](constraints.md#2-pressupostos-assumidos). As User Stories e os critérios de aceitação estão em [user-stories.md](user-stories.md).
+
+## 1. Visão e objetivos
+
+**Visão:** a Matriz é uma aplicação interna onde as equipas de uma empresa organizam projetos, gerem tarefas e acompanham o progresso do trabalho.
+
+**Problema (R-01):** as equipas gerem o trabalho em Excel e email, e ninguém sabe ao certo o estado de cada projeto.
+
+**Objetivos (R-02):**
+- Todas as tarefas ativas da equipa piloto estão registadas na Matriz.
+- Os gestores deixam de pedir pontos de situação por email.
+
+## 2. Tipos de utilizadores
+
+| Perfil | Descrição | Origem |
+|---|---|---|
+| Administrador | Gere contas e perfis de utilizador e transfere projetos entre Gestores. Não acede ao conteúdo de projetos em que não participa. | R-08, D-05, D-22, A-02 |
+| Gestor | Perfil global. Cria projetos e gere os projetos de que é Gestor (criados por si ou transferidos para si). É membro dos seus projetos e pode ser responsável por tarefas. | R-08, D-03 (alterada por A-03), A-01 |
+| Membro | Trabalha nos projetos de que faz parte. Atualiza o estado e a descrição das tarefas de que é responsável. | R-08, D-14 |
+
+**Regras gerais:**
+- Uma pessoa pode acumular perfis; as permissões somam-se (D-04).
+- No MVP, uma conta tem apenas nome e email (A-21, Q-08).
+- **Papéis num projeto:** *Gestor do projeto*; *membro do projeto* (inclui o Gestor do projeto, A-01); *responsável* de uma tarefa (um membro do projeto).
+
+## 3. Matriz de permissões
+
+Serve de referência para verificar o critério CA-01.1 de [user-stories.md](user-stories.md#us-01-entrar-na-matriz).
+
+**Leitura:**
+- ✅ permitido · ❌ não permitido.
+- A coluna **Gestor** aplica-se aos projetos de que o utilizador é Gestor. A coluna **Membro** aplica-se aos projetos de que o utilizador é membro.
+- A coluna **Administrador** refere-se ao perfil Administrador sozinho. Quem acumula perfis tem também as permissões desses perfis (D-04).
+- Num projeto arquivado só são permitidas a consulta, o desarquivamento e a transferência (D-09, A-04, A-05).
+
+### Contas e perfis
+
+| Ação | Administrador | Gestor | Membro | Requisito |
+|---|---|---|---|---|
+| Entrar na Matriz com conta ativa | ✅ | ✅ | ✅ | RF-01 |
+| Criar contas de utilizador | ✅ | ❌ | ❌ | RF-02 |
+| Atribuir ou alterar perfis | ✅ | ❌ | ❌ | RF-02 |
+| Desativar contas | ✅ | ❌ | ❌ | RF-03 |
+
+### Projetos
+
+| Ação | Administrador | Gestor | Membro | Requisito |
+|---|---|---|---|---|
+| Ver nome e Gestor de todos os projetos, para transferir | ✅ | ❌ | ❌ | RF-30 |
+| Transferir um projeto para outro Gestor | ✅ | ❌ | ❌ | RF-30 |
+| Criar projeto | ❌ | ✅ | ❌ | RF-04 |
+| Editar os dados do projeto | ❌ | ✅ | ❌ | RF-05 |
+| Ver utilizadores ativos (nome e email) para adicionar membros | ❌ | ✅ | ❌ | RF-06 |
+| Adicionar e remover membros | ❌ | ✅ | ❌ | RF-06 |
+| Arquivar e desarquivar | ❌ | ✅ | ❌ | RF-07 |
+| Ver a lista dos projetos a que pertence | Só se for membro de algum projeto (Q-06) | ✅ | ✅ | RF-08 |
+
+### Tarefas e progresso
+
+| Ação | Administrador | Gestor | Membro | Requisito |
+|---|---|---|---|---|
+| Ver a lista de tarefas e o progresso do projeto | ❌ | ✅ | ✅ | RF-15 a RF-18 |
+| Criar tarefa | ❌ | ✅ | ❌ | RF-09 |
+| Atribuir, reatribuir ou retirar o responsável | ❌ | ✅ | ❌ | RF-10 |
+| Editar título, prioridade e data limite | ❌ | ✅ | ❌ | RF-13, RF-14 |
+| Editar a descrição | ❌ | ✅ | Só nas tarefas de que é responsável | RF-13, RF-14 |
+| Mudar o estado | ❌ | ✅ (qualquer tarefa do projeto) | Só nas tarefas de que é responsável | RF-11, RF-13 |
+| Eliminar tarefa | ❌ | ✅ | ❌ | RF-22 |
+
+## 4. Requisitos funcionais do MVP
+
+Todos os requisitos desta secção são **Must**.
+
+### Acesso e utilizadores
+
+**RF-01 — Conta individual.** Cada pessoa entra com uma conta individual; só utilizadores registados acedem à aplicação.
+- Não há acesso anónimo (D-01).
+- Uma conta desativada não tem acesso (RF-03).
+
+**RF-02 — Criar contas e gerir perfis.** O Administrador cria contas e atribui ou altera o perfil de cada utilizador (R-08).
+- Um utilizador pode ter vários perfis (D-04).
+- Só se pode retirar o perfil Gestor a quem já não é Gestor de nenhum projeto, ativo ou arquivado. Os projetos têm de ser transferidos antes (A-17, Q-07).
+- Tem de existir sempre pelo menos 1 Administrador ativo (A-18).
+
+**RF-03 — Desativar contas.** O Administrador desativa contas; uma conta desativada deixa de ter acesso.
+- As contas são desativadas, nunca apagadas (D-02).
+- O nome do utilizador mantém-se no histórico de tarefas (D-02).
+- As tarefas atribuídas mantêm a atribuição com o aviso "conta desativada" (A-15).
+- Um utilizador desativado não pode ser escolhido como responsável (A-15).
+- Para desativar um Gestor, o Administrador tem de transferir primeiro todos os projetos desse Gestor, ativos e arquivados (A-16, Q-07).
+- Tem de existir sempre pelo menos 1 Administrador ativo (A-18).
+
+### Projetos
+
+**RF-04 — Criar projeto.** O Gestor cria um projeto com nome, descrição e datas de início e de fim (R-12).
+- O nome é obrigatório (D-06), até 100 caracteres (A-20).
+- A descrição vai até 5000 caracteres (A-20).
+- As datas são opcionais (R-12). Se ambas forem indicadas, a data de fim tem de ser igual ou posterior à de início (A-12).
+- Quem cria o projeto é o seu Gestor (D-03, A-03) e membro do projeto (A-01).
+
+**RF-05 — Editar projeto.** O Gestor edita os dados de um projeto de que é Gestor (D-07).
+- Aplicam-se as regras de RF-04.
+- Não é possível num projeto arquivado (D-09).
+
+**RF-06 — Gerir membros.** O Gestor adiciona e remove membros do projeto (R-07, D-08).
+- Para adicionar membros, o Gestor vê a lista de utilizadores ativos, com nome e email (A-21).
+- As tarefas de um membro removido ficam sem responsável (A-14).
+- Uma pessoa pode estar em vários projetos (R-07).
+- O Gestor do projeto não pode ser removido dos membros; para deixar o projeto, este tem de ser transferido (Q-05).
+- Um utilizador só com o perfil Administrador pode ser adicionado como membro; nesse projeto tem as permissões de Membro (Q-06).
+
+**RF-07 — Arquivar e desarquivar.** O Gestor arquiva um projeto (D-09); um projeto nunca é apagado (R-12).
+- Um projeto arquivado fica só de consulta (D-09).
+- É possível arquivar com tarefas por concluir; as tarefas mantêm o estado (A-13).
+- O Gestor pode desarquivar um projeto (A-05).
+- Um projeto arquivado pode ser transferido (A-04, RF-30).
+
+**RF-08 — Lista de projetos.** Cada utilizador vê a lista dos projetos a que pertence (D-10).
+- Os projetos arquivados aparecem na lista, marcados como "Arquivado", depois dos ativos (A-06).
+- O Administrador só vê projetos em que participa (D-05). A exceção é a transferência, em RF-30 (A-02).
+
+### Tarefas
+
+**RF-09 — Criar tarefa.** O Gestor cria tarefas num projeto de que é Gestor.
+- Só o Gestor cria tarefas (D-11).
+- Não há tarefas fora de projetos (R-07).
+- Campos (R-10):
+  - Título: obrigatório, até 200 caracteres (A-20). Um título só com espaços conta como vazio (Q-01).
+  - Descrição: opcional, até 5000 caracteres (A-20).
+  - Responsável: opcional (RF-10).
+  - Prioridade: obrigatória; valores Alta, Média ou Baixa (D-19); por omissão Média (A-19).
+  - Data limite: opcional; pode ser no passado e, nesse caso, a tarefa fica logo em atraso (A-07).
+  - Estado: o valor inicial é sempre "Por fazer" (RF-12).
+
+**RF-10 — Responsável.** O Gestor atribui, reatribui ou retira o responsável de uma tarefa (R-08).
+- O responsável tem de ser membro do projeto (D-12) e ter conta ativa (A-15).
+- O Gestor do projeto pode ser responsável (A-01).
+- Uma tarefa pode ficar sem responsável (R-10).
+
+**RF-11 — Estados.** Uma tarefa tem um de três estados fixos: Por fazer, Em curso, Concluída (R-11).
+- Só o responsável da tarefa e o Gestor do projeto mudam o estado (R-11).
+
+**RF-12 — Transições.** Uma tarefa nova começa em "Por fazer" (D-13).
+- É possível passar de qualquer estado para qualquer outro, incluindo reabrir uma tarefa concluída (D-13).
+
+**RF-13 — Edição pelo Membro.** O Membro edita apenas o estado e a descrição das tarefas de que é responsável (D-14).
+
+**RF-14 — Edição pelo Gestor.** O Gestor edita todos os campos das tarefas dos seus projetos (D-15).
+- Aplicam-se as regras de RF-09 e RF-10.
+
+**RF-15 — Lista de tarefas.** Cada projeto mostra a lista das suas tarefas com título, responsável, prioridade, data limite e estado (D-16).
+- Um responsável com conta desativada aparece com o aviso "conta desativada" (A-15).
+
+**RF-22 — Eliminar tarefa.** O Gestor elimina uma tarefa de um projeto seu.
+- Pode eliminar-se uma tarefa em qualquer estado (A-11).
+- A eliminação pede confirmação e é definitiva (A-10).
+- Não é possível num projeto arquivado (D-09).
+
+### Progresso
+
+**RF-16 — Contagem por estado.** Cada projeto mostra o número de tarefas em cada estado (R-09).
+
+**RF-17 — Percentagem concluída.** Cada projeto mostra a percentagem concluída: tarefas concluídas a dividir pelo total de tarefas (D-17).
+- O valor é arredondado ao inteiro mais próximo (A-09).
+- Um projeto sem tarefas mostra "Sem tarefas" em vez da percentagem (A-09).
+
+**RF-18 — Tarefas em atraso.** Cada projeto mostra quantas e quais tarefas estão em atraso (R-09).
+- Uma tarefa está em atraso quando a data limite é anterior ao dia de hoje e o estado é diferente de Concluída (D-18).
+- No próprio dia da data limite, a tarefa não está em atraso (A-08).
+- O dia de hoje é determinado no fuso horário Europe/Lisbon (A-08).
+
+### Transferência
+
+**RF-30 — Transferir projeto.** O Administrador transfere um projeto para outro Gestor (D-22).
+- O destino tem de ter perfil Gestor (D-22).
+- Para transferir, o Administrador vê apenas o nome e o Gestor de cada projeto, sem acesso ao conteúdo (A-02).
+- Pode transferir-se um projeto arquivado (A-04).
+- Após a transferência, o novo Gestor gere o projeto e o anterior deixa de o gerir (A-03).
+- O Gestor anterior continua como membro do projeto, sem permissões de Gestor, e mantém as tarefas de que é responsável (Q-04).
+
+## 5. Requisitos não funcionais
+
+| ID | Requisito | Origem |
+|---|---|---|
+| RNF-01 | A interface está em português. | G-04 |
+| RNF-02 | Todas as regras que dependem do dia de hoje usam o fuso horário Europe/Lisbon. | A-08 |
+| RNF-03 | Limites de tamanho: título da tarefa até 200 caracteres, nome do projeto até 100, descrições até 5000. Um texto acima do limite não é guardado e é indicado o limite excedido (Q-03). | A-20 |
+| RNF-04 | O acesso cumpre a matriz de permissões da secção 3. Os requisitos de segurança e privacidade estão em [constraints.md](constraints.md#3-segurança-e-privacidade). | D-01, D-05, D-10, A-02 |
+| RNF-05 | A aplicação é web, de uso interno e serve uma só empresa. | G-01, G-02 |
+| RNF-06 | O piloto tem 10 a 20 utilizadores. O volume de projetos e tarefas está por definir. | R-04 |
+| RNF-07 | Conservação de dados: os projetos nunca são apagados; as contas são desativadas, não apagadas; as tarefas eliminadas são removidas de forma definitiva. | R-12, D-02, A-10 |
+| RNF-08 | Desempenho, disponibilidade e acessibilidade: por definir. | — |
+
+## 6. Âmbito do MVP e critério de conclusão
+
+**Âmbito:** RF-01 a RF-18, RF-22 e RF-30.
+
+O MVP permite a uma equipa piloto de 10 a 20 pessoas (R-04) substituir o Excel e o email na gestão do trabalho:
+- O Administrador gere contas, perfis e a transferência de projetos.
+- O Gestor cria e gere projetos, a sua equipa e as tarefas.
+- Cada membro atualiza o estado e a descrição das tarefas de que é responsável.
+- Qualquer membro do projeto vê as contagens por estado, a percentagem concluída e as tarefas em atraso.
+
+O prazo para o piloto é de 3 meses (R-05).
+
+**Critério de conclusão:**
+1. **Entrega:** todos os RF do MVP estão implementados e os critérios de aceitação de [user-stories.md](user-stories.md) foram aprovados pela dona do produto numa sessão de validação.
+2. **Piloto (D-20):** durante 2 semanas consecutivas, o gestor do piloto não envia nem recebe pedidos de ponto de situação por email. A verificação é feita fora da aplicação: a dona do produto confirma semanalmente com o gestor do piloto (A-22).
+
+## 7. Fora do âmbito inicial
+
+Estas funcionalidades não têm User Stories nesta fase.
+
+| ID | Funcionalidade | Prioridade |
+|---|---|---|
+| RF-19 | Vista "As minhas tarefas", com as tarefas do utilizador em todos os projetos | Should |
+| RF-20 | Visão geral do Gestor, com os indicadores de todos os seus projetos | Should |
+| RF-21 | Filtrar e ordenar tarefas por estado, responsável, prioridade e data limite | Should |
+| RF-23 | Histórico de alterações de cada tarefa | Could |
+| RF-24 | Comentários em tarefas | Could |
+| RF-25 | Notificações (tarefa atribuída, prazo a aproximar-se) | Could |
+| RF-26 | Importação de tarefas a partir de folhas de cálculo | Could |
+| RF-27 | Estados configuráveis por projeto | Won't |
+| RF-28 | Acesso de pessoas externas | Won't |
+| RF-29 | Uso por várias empresas | Won't |
