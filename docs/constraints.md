@@ -120,9 +120,9 @@ Questões levantadas ao consolidar a documentação, já decididas pela dona do 
 | Q-06 | Um utilizador só com o perfil Administrador pode ser adicionado como membro de um projeto? | Sim; nesse projeto tem as permissões de Membro. | RF-06, EC-30 | Decidido |
 | Q-07 | A-16 e A-17 abrangem também os projetos arquivados? | Sim, abrangem todos os projetos, ativos e arquivados. | RF-02, RF-03, EC-23, EC-26 | Decidido |
 | Q-08 | Que dados tem uma conta além de nome e email? | No MVP, apenas nome e email. | requirements.md, secção 2 | Decidido |
-| Q-09 | Numa transferência, o novo Gestor passa a membro do projeto, se ainda não o for? | Sim, na mesma operação da transferência, para cumprir A-01. Levantada no modelo de dados (Ficha 02). | RF-30, database.md | Decidido |
-| Q-10 | A unicidade do email ignora maiúsculas e minúsculas? | Sim: emails que só diferem em maiúsculas e minúsculas contam como o mesmo email. Levantada no modelo de dados (Ficha 02). | RF-02, RV-18, database.md | Decidido |
-| Q-11 | Pode adicionar-se um utilizador com conta desativada como membro de um projeto? | Não: só se adicionam utilizadores com conta ativa, coerente com A-21. Levantada no modelo de dados (Ficha 02). | RF-06, A-21, database.md | Decidido |
+| Q-09 | Numa transferência, o novo Gestor passa a membro do projeto, se ainda não o for? | Sim, na mesma operação da transferência, para cumprir A-01. Levantada no modelo de dados (Ficha 02). | RF-30, EC-37, database.md | Decidido |
+| Q-10 | A unicidade do email ignora maiúsculas e minúsculas? | Sim: emails que só diferem em maiúsculas e minúsculas contam como o mesmo email. Levantada no modelo de dados (Ficha 02). | RF-02, RV-18, EC-38, database.md | Decidido |
+| Q-11 | Pode adicionar-se um utilizador com conta desativada como membro de um projeto? | Não: só se adicionam utilizadores com conta ativa, coerente com A-21. Levantada no modelo de dados (Ficha 02). | RF-06, A-21, EC-39, database.md | Decidido |
 
 ### Decisões da revisão crítica
 

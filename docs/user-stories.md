@@ -181,3 +181,8 @@ Versão 1.1 · 25 de outubro de 2026
 - **EC-34 · Assumir uma tarefa com responsável (US-20)** — **Dada** uma tarefa que já tem responsável, **quando** outro membro do projeto se tenta atribuir a tarefa, **então** a ação é recusada e o responsável mantém-se (RV-02).
 - **EC-35 · Administrador como destino de transferência (US-10)** — **Dado** um utilizador com perfil Administrador, mesmo que acumule o perfil Gestor, **quando** um Administrador lhe tenta transferir um projeto, **então** a transferência é recusada (RV-01).
 - **EC-36 · Administrador atribui-se o perfil Gestor (US-03)** — **Dado** um Administrador, **quando** tenta atribuir a si próprio o perfil Gestor, **então** a alteração é recusada (RV-01).
+
+### Casos acrescentados no modelo de dados
+- **EC-37 · Transferir para um Gestor que não é membro (US-10)** — **Dado** um projeto e um utilizador com perfil Gestor, conta ativa e sem perfil Administrador, que não é membro desse projeto, **quando** o Administrador lhe transfere o projeto, **então** esse utilizador passa a ser o Gestor e membro do projeto, e o projeto aparece na sua lista de projetos (A-01, Q-09).
+- **EC-38 · Email repetido com maiúsculas diferentes (US-02)** — **Dada** uma conta existente, ativa ou desativada, com o email `ana@empresa.pt`, **quando** o Administrador tenta criar outra conta com `Ana@Empresa.pt`, **então** a criação é recusada e é indicado que o email já existe (RV-18, Q-10).
+- **EC-39 · Adicionar um utilizador desativado como membro (US-07)** — **Dado** um Gestor a gerir os membros de um projeto seu e um utilizador com conta desativada, **quando** tenta adicioná-lo ao projeto, **então** a adição é recusada e o utilizador não passa a ser membro (A-21, Q-11).
