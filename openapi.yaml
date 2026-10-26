@@ -1,0 +1,505 @@
+openapi: 3.1.0
+info:
+  title: Matriz API
+  version: 0.1.0
+  summary: Contrato REST simplificado do MVP da Matriz.
+  description: |
+    Ficha Prática 02, Exercício 3. Proposta, por aprovar pela dona do produto (R-06).
+
+    Documenta três operações do ciclo principal do MVP (R-03):
+    criar uma tarefa (RF-09), mudar o estado de uma tarefa (RF-11, RF-12)
+    e consultar o progresso de um projeto (RF-16 a RF-18).
+
+    Contexto:
+    - Arquitetura em `docs/architecture.md`; modelo de dados em `docs/database.md`.
+    - Todas as operações exigem um utilizador autenticado com conta ativa (RF-01, D-01).
+      O método de autenticação está por definir (`docs/constraints.md`, secção 4),
+      por isso este contrato ainda não declara um esquema de segurança.
+    - A autorização é verificada em cada pedido, com o estado atual da conta e dos papéis (RV-09).
+    - As mensagens de erro estão em português (RNF-01).
+
+    Pressupostos deste contrato (por aprovar):
+    - Os caminhos e os nomes dos campos estão em português, alinhados com o modelo de dados.
+    - Um projeto de que o utilizador não é membro responde 404, para não revelar que existe
+      (D-10, EC-18, CA-18.4). Um membro sem permissão para a ação recebe 403.
+    - Uma ação recusada por o projeto estar arquivado responde 409 (D-09, EC-16).
+    - Dados que violam regras de negócio respondem 422 com o campo e o motivo (Q-03).
+    - Os identificadores são texto opaco; o formato é decidido com a stack.
+
+servers:
+  - url: /api
+    description: Caminho base relativo; o alojamento está por definir.
+
+tags:
+  - name: Tarefas
+    description: Criar tarefas e mudar o seu estado (RF-09 a RF-12).
+  - name: Progresso
+    description: Indicadores de progresso de um projeto (RF-16 a RF-18).
+
+paths:
+  /projetos/{projetoId}/tarefas:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+    post:
+      tags: [Tarefas]
+      operationId: criarTarefa
+      summary: Criar uma tarefa num projeto
+      description: |
+        US-11, RF-09, RF-10, RF-12.
+
+        - Só o Gestor do projeto cria tarefas (D-11, EC-05).
+        - O projeto não pode estar arquivado (D-09, EC-16).
+        - O estado inicial é sempre "Por fazer" e não pode ser indicado no pedido (D-13, CA-11.4).
+        - A prioridade é Média por omissão (A-19, CA-11.3).
+        - O responsável, se indicado, tem de ser membro do projeto com conta ativa (D-12, A-15, EC-03, EC-22).
+        - A data limite pode estar no passado; a tarefa fica logo em atraso (A-07, EC-06).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NovaTarefa'
+            examples:
+              soTitulo:
+                summary: Só com o título (CA-11.1)
+                value:
+                  titulo: Preparar reunião de arranque
+              completa:
+                summary: Todos os campos (CA-11.2)
+                value:
+                  titulo: Rever orçamento
+                  descricao: Confirmar os valores com a equipa financeira.
+                  responsavelId: u-102
+                  prioridade: Alta
+                  dataLimite: '2026-11-15'
+      responses:
+        '201':
+          description: Tarefa criada.
+          headers:
+            Location:
+              description: Caminho da tarefa criada.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarefa'
+              example:
+                id: t-501
+                projetoId: p-12
+                titulo: Preparar reunião de arranque
+                descricao: null
+                responsavel: null
+                prioridade: Média
+                dataLimite: null
+                estado: Por fazer
+                emAtraso: false
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/ProjetoNaoEncontrado'
+        '409':
+          $ref: '#/components/responses/ProjetoArquivado'
+        '422':
+          description: |
+            Dados que violam regras de negócio:
+            título vazio ou só com espaços (EC-01, EC-02, Q-01);
+            texto acima do limite (EC-29, RNF-03);
+            responsável que não é membro do projeto ou tem a conta desativada (EC-03, EC-22).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+              examples:
+                tituloVazio:
+                  summary: Título vazio ou só com espaços
+                  value:
+                    codigo: TITULO_OBRIGATORIO
+                    mensagem: O título é obrigatório.
+                    campo: titulo
+                tituloLongo:
+                  summary: Título acima do limite
+                  value:
+                    codigo: LIMITE_EXCEDIDO
+                    mensagem: O título não pode ter mais de 200 caracteres.
+                    campo: titulo
+                    limite: 200
+                responsavelInvalido:
+                  summary: Responsável que não é membro ativo do projeto
+                  value:
+                    codigo: RESPONSAVEL_INVALIDO
+                    mensagem: O responsável tem de ser membro do projeto com conta ativa.
+                    campo: responsavelId
+
+  /projetos/{projetoId}/tarefas/{tarefaId}/estado:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+      - $ref: '#/components/parameters/TarefaId'
+    put:
+      tags: [Tarefas]
+      operationId: mudarEstadoTarefa
+      summary: Mudar o estado de uma tarefa
+      description: |
+        US-13, US-14, RF-11, RF-12, RF-13.
+
+        - Mudam o estado o responsável da tarefa e o Gestor do projeto (R-11, CA-13.1, CA-13.2).
+        - Qualquer outro membro recebe 403, incluindo numa tarefa sem responsável (CA-13.3, EC-04).
+        - Qualquer transição é permitida, incluindo reabrir uma tarefa concluída (D-13, CA-13.4, EC-08).
+        - O projeto não pode estar arquivado (D-09, EC-16).
+        - A operação é idempotente: indicar o estado atual devolve 200 sem alterações.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MudancaEstado'
+            example:
+              estado: Em curso
+      responses:
+        '200':
+          description: Estado atualizado. Devolve a tarefa com o novo estado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarefa'
+              example:
+                id: t-501
+                projetoId: p-12
+                titulo: Preparar reunião de arranque
+                descricao: null
+                responsavel:
+                  id: u-102
+                  nome: Ana Silva
+                  contaAtiva: true
+                prioridade: Média
+                dataLimite: '2026-11-15'
+                estado: Em curso
+                emAtraso: false
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          description: O projeto não existe ou o utilizador não é membro, ou a tarefa não existe nesse projeto (EC-11, EC-18).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+              example:
+                codigo: NAO_ENCONTRADO
+                mensagem: Tarefa não encontrada.
+        '409':
+          $ref: '#/components/responses/ProjetoArquivado'
+
+  /projetos/{projetoId}/progresso:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+    get:
+      tags: [Progresso]
+      operationId: obterProgressoProjeto
+      summary: Consultar o progresso de um projeto
+      description: |
+        US-18, US-19, RF-16, RF-17, RF-18.
+
+        - Qualquer membro do projeto pode consultar, também num projeto arquivado (D-09).
+        - Quem não é membro recebe 404 (CA-18.4, EC-18); inclui o Administrador que não é membro (D-05).
+        - Os valores são calculados no momento do pedido e não são guardados (docs/database.md).
+        - O dia de hoje é determinado no fuso Europe/Lisbon (RNF-02, A-08).
+      responses:
+        '200':
+          description: Progresso do projeto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Progresso'
+              examples:
+                comTarefas:
+                  summary: 10 tarefas, 3 concluídas, 1 em atraso (CA-18.1)
+                  value:
+                    projetoId: p-12
+                    dataReferencia: '2026-10-26'
+                    total: 10
+                    contagemPorEstado:
+                      porFazer: 5
+                      emCurso: 2
+                      concluida: 3
+                    percentagemConcluida: 30.0
+                    tarefasEmAtraso:
+                      quantidade: 1
+                      tarefas:
+                        - id: t-480
+                          titulo: Enviar proposta ao fornecedor
+                          responsavel:
+                            id: u-107
+                            nome: Rui Costa
+                            contaAtiva: false
+                          dataLimite: '2026-10-20'
+                          estado: Em curso
+                semTarefas:
+                  summary: Projeto sem tarefas (CA-18.5)
+                  value:
+                    projetoId: p-13
+                    dataReferencia: '2026-10-26'
+                    total: 0
+                    contagemPorEstado:
+                      porFazer: 0
+                      emCurso: 0
+                      concluida: 0
+                    percentagemConcluida: null
+                    tarefasEmAtraso:
+                      quantidade: 0
+                      tarefas: []
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '404':
+          $ref: '#/components/responses/ProjetoNaoEncontrado'
+
+components:
+  parameters:
+    ProjetoId:
+      name: projetoId
+      in: path
+      required: true
+      description: Identificador do projeto.
+      schema:
+        type: string
+    TarefaId:
+      name: tarefaId
+      in: path
+      required: true
+      description: Identificador da tarefa.
+      schema:
+        type: string
+
+  schemas:
+    Prioridade:
+      type: string
+      enum: [Alta, Média, Baixa]
+      description: Valores de D-19.
+
+    Estado:
+      type: string
+      enum: [Por fazer, Em curso, Concluída]
+      description: Estados fixos de R-11.
+
+    Data:
+      type: string
+      format: date
+      description: Data sem hora (AAAA-MM-DD).
+
+    ResponsavelResumo:
+      type: object
+      description: |
+        Responsável de uma tarefa. Com `contaAtiva` falso, a interface mostra o aviso
+        "conta desativada" (A-15, EC-21).
+      required: [id, nome, contaAtiva]
+      properties:
+        id:
+          type: string
+        nome:
+          type: string
+        contaAtiva:
+          type: boolean
+
+    NovaTarefa:
+      type: object
+      description: Dados para criar uma tarefa (RF-09). O estado não é aceite (CA-11.4).
+      required: [titulo]
+      additionalProperties: false
+      properties:
+        titulo:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Obrigatório; só espaços conta como vazio (Q-01). Até 200 caracteres (A-20).
+        descricao:
+          type: [string, 'null']
+          maxLength: 5000
+          description: Opcional; até 5000 caracteres (A-20).
+        responsavelId:
+          type: [string, 'null']
+          description: Opcional. Membro do projeto com conta ativa (D-12, A-15).
+        prioridade:
+          $ref: '#/components/schemas/Prioridade'
+          default: Média
+        dataLimite:
+          description: Opcional; pode estar no passado (A-07).
+          oneOf:
+            - $ref: '#/components/schemas/Data'
+            - type: 'null'
+
+    MudancaEstado:
+      type: object
+      required: [estado]
+      additionalProperties: false
+      properties:
+        estado:
+          $ref: '#/components/schemas/Estado'
+
+    Tarefa:
+      type: object
+      required: [id, projetoId, titulo, descricao, responsavel, prioridade, dataLimite, estado, emAtraso]
+      properties:
+        id:
+          type: string
+        projetoId:
+          type: string
+        titulo:
+          type: string
+          maxLength: 200
+        descricao:
+          type: [string, 'null']
+          maxLength: 5000
+        responsavel:
+          description: Vazio quando a tarefa não tem responsável (R-10).
+          oneOf:
+            - $ref: '#/components/schemas/ResponsavelResumo'
+            - type: 'null'
+        prioridade:
+          $ref: '#/components/schemas/Prioridade'
+        dataLimite:
+          oneOf:
+            - $ref: '#/components/schemas/Data'
+            - type: 'null'
+        estado:
+          $ref: '#/components/schemas/Estado'
+        emAtraso:
+          type: boolean
+          description: |
+            Calculado, não guardado. Verdadeiro quando a data limite é anterior ao dia de hoje
+            (Europe/Lisbon) e o estado não é "Concluída" (D-18, A-08).
+
+    TarefaEmAtraso:
+      type: object
+      required: [id, titulo, responsavel, dataLimite, estado]
+      properties:
+        id:
+          type: string
+        titulo:
+          type: string
+        responsavel:
+          oneOf:
+            - $ref: '#/components/schemas/ResponsavelResumo'
+            - type: 'null'
+        dataLimite:
+          $ref: '#/components/schemas/Data'
+        estado:
+          type: string
+          enum: [Por fazer, Em curso]
+
+    Progresso:
+      type: object
+      required: [projetoId, dataReferencia, total, contagemPorEstado, percentagemConcluida, tarefasEmAtraso]
+      properties:
+        projetoId:
+          type: string
+        dataReferencia:
+          $ref: '#/components/schemas/Data'
+          description: Dia de hoje em Europe/Lisbon, usado para calcular os atrasos (RNF-02).
+        total:
+          type: integer
+          minimum: 0
+        contagemPorEstado:
+          type: object
+          description: Número de tarefas em cada estado (RF-16).
+          required: [porFazer, emCurso, concluida]
+          properties:
+            porFazer:
+              type: integer
+              minimum: 0
+            emCurso:
+              type: integer
+              minimum: 0
+            concluida:
+              type: integer
+              minimum: 0
+        percentagemConcluida:
+          type: [number, 'null']
+          minimum: 0
+          maximum: 100
+          description: |
+            Tarefas concluídas sobre o total, arredondada às décimas (RF-17, A-09).
+            100 só quando todas as tarefas estão concluídas; caso contrário, no máximo 99.9 (RV-12, CA-18.6).
+            Vazio quando o projeto não tem tarefas; a interface mostra "Sem tarefas" (A-09, CA-18.5).
+        tarefasEmAtraso:
+          type: object
+          description: Quantas e quais tarefas estão em atraso (RF-18).
+          required: [quantidade, tarefas]
+          properties:
+            quantidade:
+              type: integer
+              minimum: 0
+            tarefas:
+              type: array
+              items:
+                $ref: '#/components/schemas/TarefaEmAtraso'
+
+    Erro:
+      type: object
+      required: [codigo, mensagem]
+      properties:
+        codigo:
+          type: string
+          description: Código estável do erro, para o cliente web.
+        mensagem:
+          type: string
+          description: Mensagem em português para mostrar ao utilizador (RNF-01).
+        campo:
+          type: string
+          description: Campo do pedido que causou o erro, quando se aplica.
+        limite:
+          type: integer
+          description: Limite de caracteres excedido, quando se aplica (Q-03).
+
+  responses:
+    PedidoInvalido:
+      description: Pedido mal formado (JSON inválido, campo desconhecido ou valor fora do enumerado).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erro'
+          example:
+            codigo: PEDIDO_INVALIDO
+            mensagem: O pedido tem um formato inválido.
+    NaoAutenticado:
+      description: Sem sessão válida ou com a conta desativada (RF-01, RV-09, EC-20, EC-31).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erro'
+          example:
+            codigo: NAO_AUTENTICADO
+            mensagem: É necessário iniciar sessão.
+    SemPermissao:
+      description: O utilizador é membro do projeto, mas o seu papel não permite esta ação (secção 3 de requirements.md).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erro'
+          example:
+            codigo: SEM_PERMISSAO
+            mensagem: Não tem permissão para esta ação.
+    ProjetoNaoEncontrado:
+      description: O projeto não existe ou o utilizador não é membro (D-10, EC-18, CA-18.4).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erro'
+          example:
+            codigo: NAO_ENCONTRADO
+            mensagem: Projeto não encontrado.
+    ProjetoArquivado:
+      description: O projeto está arquivado e só permite consulta (D-09, EC-16).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erro'
+          example:
+            codigo: PROJETO_ARQUIVADO
+            mensagem: O projeto está arquivado e só pode ser consultado.
