@@ -28,7 +28,7 @@ Versão 1.1 · 25 de outubro de 2026 · consolida o "Âmbito funcional e MVP" v0
 
 **Regras gerais:**
 - Uma pessoa pode acumular perfis; as permissões somam-se (D-04).
-- No MVP, uma conta tem apenas nome e email (A-21, Q-08). O email é único (RV-18).
+- No MVP, uma conta tem apenas nome e email (A-21, Q-08). O email é único, sem distinguir maiúsculas de minúsculas (RV-18, Q-10).
 - A primeira conta é criada pela dona do produto e fica com o perfil Administrador (RV-11).
 - **Papéis num projeto:** *Gestor do projeto*; *membro do projeto* (inclui o Gestor do projeto, A-01); *responsável* de uma tarefa (um membro do projeto).
 
@@ -94,7 +94,7 @@ Todos os requisitos desta secção são **Must** (D-23).
 - A primeira conta é criada pela dona do produto e fica com o perfil Administrador (RV-11).
 - Todas as contas têm o perfil Membro, que não pode ser retirado (RV-02).
 - Um utilizador pode ter vários perfis (D-04).
-- O email de cada conta é único (RV-18).
+- O email de cada conta é único (RV-18). A comparação ignora maiúsculas e minúsculas (Q-10).
 - O Administrador não pode atribuir a si próprio o perfil Gestor (RV-01).
 - Só se pode retirar o perfil Gestor a quem já não é Gestor de nenhum projeto, ativo ou arquivado. Os projetos têm de ser transferidos antes (A-17, Q-07).
 - Tem de existir sempre pelo menos 1 Administrador ativo (A-18).
@@ -120,7 +120,7 @@ Todos os requisitos desta secção são **Must** (D-23).
 - Não é possível num projeto arquivado (D-09).
 
 **RF-06 — Gerir membros.** O Gestor adiciona e remove membros do projeto (R-07, D-08).
-- Para adicionar membros, o Gestor vê a lista de utilizadores ativos, com nome e email (A-21).
+- Para adicionar membros, o Gestor vê a lista de utilizadores ativos, com nome e email (A-21). Só se adicionam utilizadores com conta ativa (Q-11).
 - As tarefas de um membro removido ficam sem responsável (A-14).
 - Uma pessoa pode estar em vários projetos (R-07).
 - O Gestor do projeto não pode ser removido dos membros; para deixar o projeto, este tem de ser transferido (Q-05).
@@ -198,6 +198,7 @@ Todos os requisitos desta secção são **Must** (D-23).
 - Para transferir, o Administrador vê apenas o nome e o Gestor de cada projeto, sem acesso ao conteúdo (A-02).
 - Pode transferir-se um projeto arquivado (A-04).
 - Após a transferência, o novo Gestor gere o projeto e o anterior deixa de o gerir (A-03).
+- Se o novo Gestor ainda não for membro do projeto, passa a sê-lo na mesma operação (A-01, Q-09).
 - O Gestor anterior continua como membro do projeto, sem permissões de Gestor, e mantém as tarefas de que é responsável (Q-04).
 
 ## 5. Requisitos não funcionais

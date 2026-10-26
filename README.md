@@ -39,7 +39,7 @@ O detalhe, as regras de negócio e a matriz de permissões estão em [docs/requi
 
 ## Estado atual
 
-- **Fase de especificação:** concluída e revista. Todas as questões (Q-01 a Q-08) e os pontos da revisão crítica (RV-01 a RV-23) estão decididos.
+- **Fase de especificação:** concluída e revista. Todas as questões (Q-01 a Q-11) e os pontos da revisão crítica (RV-01 a RV-23) estão decididos.
 - **Código:** ainda não existe.
 - **Próxima fase (Aula 2):** decisão da stack e da arquitetura.
 - **Pendente:** decisões técnicas e requisitos de segurança por definir, em [docs/constraints.md](docs/constraints.md#4-decisões-técnicas-pendentes).

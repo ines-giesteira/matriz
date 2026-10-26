@@ -2,7 +2,7 @@
 
 Versão 0.1 · 26 de outubro de 2026 · Ficha Prática 02, Exercício 2
 
-> **Estado: proposta, por aprovar pela dona do produto (R-06).** Modelo conceptual dos dados do MVP (RF-01 a RF-18, RF-22, RF-30), coerente com a arquitetura de [architecture.md](architecture.md): uma base de dados única, partilhada pelos módulos Contas, Projetos e Tarefas. Não fixa tecnologia nem tipos físicos: o tipo de base de dados é decidido com a stack ([constraints.md](constraints.md#4-decisões-técnicas-pendentes)). Os pressupostos e as questões por confirmar estão nas secções 5 e 6.
+> **Estado: proposta, por aprovar pela dona do produto (R-06).** Modelo conceptual dos dados do MVP (RF-01 a RF-18, RF-22, RF-30), coerente com a arquitetura de [architecture.md](architecture.md): uma base de dados única, partilhada pelos módulos Contas, Projetos e Tarefas. Não fixa tecnologia nem tipos físicos: o tipo de base de dados é decidido com a stack ([constraints.md](constraints.md#4-decisões-técnicas-pendentes)). Os pressupostos por aprovar estão na secção 5; as questões levantadas por este modelo, já decididas, na secção 6.
 
 ## 1. Entidades
 
@@ -12,7 +12,7 @@ Versão 0.1 · 26 de outubro de 2026 · Ficha Prática 02, Exercício 2
 |---|---|---|---|---|
 | `id` | identificador | Sim | Identificador técnico, chave primária. | — |
 | `nome` | texto | Sim | | A-21, Q-08 |
-| `email` | texto | Sim | Único entre todas as contas, ativas ou desativadas. | RV-18, EC-33 |
+| `email` | texto | Sim | Único entre todas as contas, ativas ou desativadas, sem distinguir maiúsculas de minúsculas. | RV-18, Q-10, EC-33 |
 | `ativo` | booleano | Sim | `verdadeiro` ao criar. A conta nunca é apagada no MVP; desativar e reativar muda só este campo. | RF-03, D-02, RV-18 |
 
 No MVP, uma conta tem apenas nome e email (Q-08). Os dados de autenticação dependem do método de autenticação, ainda por definir, e não fazem parte deste modelo.
@@ -45,7 +45,7 @@ O perfil **Membro** não é guardado: todos os utilizadores o têm e não pode s
 | `projeto_id` | identificador | Sim | Chave estrangeira para PROJETO. Parte da chave primária. | R-07 |
 | `utilizador_id` | identificador | Sim | Chave estrangeira para UTILIZADOR. Parte da chave primária. | R-07 |
 
-Remover um membro apaga a linha correspondente. Contas desativadas mantêm as suas linhas (EC-32).
+Só se adicionam utilizadores com conta ativa (A-21, Q-11). Remover um membro apaga a linha correspondente. Contas desativadas mantêm as linhas que já tinham (EC-32).
 
 ### TAREFA (RF-09 a RF-15, RF-22)
 
@@ -136,16 +136,17 @@ Regras que o diagrama não mostra e que têm de ser garantidas pelos módulos (o
 
 8. A transferência muda `projeto.gestor_id`, numa só transação. O destino tem perfil Gestor, conta ativa e não tem perfil Administrador (D-22, RV-01, RV-13, EC-24, EC-35).
 9. O Gestor anterior mantém a sua linha em MEMBRO_PROJETO e as tarefas de que é responsável (Q-04, EC-25).
+10. Se o novo Gestor ainda não for membro, a mesma transação acrescenta a linha (`projeto.id`, novo `gestor_id`) em MEMBRO_PROJETO, para cumprir a regra 1 (A-01, Q-09).
 
 **Projetos arquivados**
 
-10. Com `arquivado = verdadeiro`, os dados do projeto, dos seus membros e das suas tarefas não mudam. As únicas exceções são desarquivar e transferir (D-09, A-04, A-05, EC-16).
+11. Com `arquivado = verdadeiro`, os dados do projeto, dos seus membros e das suas tarefas não mudam. As únicas exceções são desarquivar e transferir (D-09, A-04, A-05, EC-16).
 
 **Dados derivados (não guardados)**
 
-11. O progresso (contagem por estado, percentagem concluída e tarefas em atraso) é calculado a partir de TAREFA e não é guardado (RF-16 a RF-18, ver [architecture.md](architecture.md#6-pressupostos-desta-proposta-por-aprovar)).
-12. Uma tarefa está em atraso quando `data_limite` é anterior ao dia de hoje em Europe/Lisbon e `estado` é diferente de `Concluída` (D-18, A-08). O atraso não é guardado.
-13. A ordem da lista de projetos (ativos primeiro, depois arquivados) vem de `arquivado` (A-06).
+12. O progresso (contagem por estado, percentagem concluída e tarefas em atraso) é calculado a partir de TAREFA e não é guardado (RF-16 a RF-18, ver [architecture.md](architecture.md#6-pressupostos-desta-proposta-por-aprovar)).
+13. Uma tarefa está em atraso quando `data_limite` é anterior ao dia de hoje em Europe/Lisbon e `estado` é diferente de `Concluída` (D-18, A-08). O atraso não é guardado.
+14. A ordem da lista de projetos (ativos primeiro, depois arquivados) vem de `arquivado` (A-06).
 
 ## 5. Pressupostos deste modelo (por aprovar)
 
@@ -154,10 +155,12 @@ Regras que o diagrama não mostra e que têm de ser garantidas pelos módulos (o
 - Os dados de autenticação ficam fora deste modelo até ser escolhido o método de autenticação.
 - Não se guardam datas de criação ou de alteração, porque nenhum requisito do MVP as pede. O histórico de alterações (RF-23) e o registo de auditoria estão fora do âmbito ou por decidir.
 
-## 6. Questões por confirmar
+## 6. Questões levantadas por este modelo
 
-| Questão | Porque importa | Proposta |
-|---|---|---|
-| Numa transferência, o novo Gestor passa automaticamente a membro do projeto, se ainda não o for? | A-01 diz que o Gestor é membro do próprio projeto, mas RF-30 não diz o que acontece aos membros na transferência. Sem isto, o novo Gestor podia gerir um projeto de que não é membro. | Sim: a transferência acrescenta o novo Gestor a MEMBRO_PROJETO, na mesma transação. |
-| A unicidade do email ignora maiúsculas e minúsculas? | RV-18 diz que o email é único, mas não diz se `Ana@empresa.pt` e `ana@empresa.pt` contam como o mesmo email. | Sim, comparar sem distinguir maiúsculas e minúsculas. |
-| Um utilizador desativado pode ser adicionado como membro de um projeto? | RF-06 e A-21 mostram só utilizadores ativos na lista, mas nenhuma regra proíbe explicitamente o caso. | Não: só se adicionam utilizadores ativos, coerente com A-21. |
+Decididas pela dona do produto, que aceitou as propostas. Registadas em [constraints.md](constraints.md#questões-da-consolidação) e aplicadas em [requirements.md](requirements.md).
+
+| ID | Questão | Decisão | Aplicada em |
+|---|---|---|---|
+| Q-09 | Numa transferência, o novo Gestor passa a membro do projeto, se ainda não o for? | Sim, na mesma transação (A-01). | RF-30; secção 4, regra 10 |
+| Q-10 | A unicidade do email ignora maiúsculas e minúsculas? | Sim. | RF-02; UTILIZADOR.`email` |
+| Q-11 | Pode adicionar-se um utilizador desativado como membro de um projeto? | Não; só utilizadores com conta ativa (A-21). | RF-06; MEMBRO_PROJETO |
