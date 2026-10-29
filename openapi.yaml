@@ -1,71 +1,689 @@
 openapi: 3.1.0
 info:
   title: Matriz API
-  version: 0.3.0
-  summary: Contrato REST simplificado do MVP da Matriz.
+  version: 1.0.0
+  summary: Contrato REST do MVP da Matriz.
   description: |
-    Ficha Prática 02, Exercício 3. Proposta, por aprovar pela dona do produto (R-06).
+    Ficha Prática 02, Exercício 3; completado na Ficha Prática 03, Exercício 1.
+    Proposta, por aprovar pela dona do produto (R-06).
 
-    Documenta três operações do ciclo principal do MVP (R-03):
-    criar uma tarefa (RF-09), mudar o estado de uma tarefa (RF-11, RF-12)
-    e consultar o progresso de um projeto (RF-16 a RF-18).
+    Cobre todas as operações do MVP (RF-01 a RF-18, RF-22, RF-24, RF-30, RF-32 a RF-35).
 
     Contexto:
-    - Arquitetura em `docs/architecture.md`; modelo de dados em `docs/database.md`.
-    - Todas as operações exigem um utilizador autenticado com conta ativa (RF-01, D-01).
-      O método de autenticação está por definir (`docs/constraints.md`, secção 4),
-      por isso este contrato ainda não declara um esquema de segurança.
-    - A autorização é verificada em cada pedido, com o estado atual da conta e dos papéis (RV-09).
+    - Arquitetura em `docs/architecture.md`; modelo de dados em `docs/database.md`;
+      plano de implementação em `docs/implementation-plan.md`.
+    - Autenticação por sessão (Q-22): `POST /sessao` devolve o cookie httpOnly `matriz_sessao`.
+      Todas as outras operações exigem esse cookie e uma conta ativa (RF-01, D-01).
+    - A autorização é verificada em cada pedido, com o estado atual da conta, dos perfis e dos papéis (RV-09).
+    - A identidade do utilizador, o autor dos comentários e as datas são obtidos no backend,
+      nunca aceites do cliente (Q-15, Q-22).
+    - Estados e prioridades usam códigos técnicos (Q-21); a interface traduz para português (RNF-01).
     - As mensagens de erro estão em português (RNF-01).
+    - As operações exclusivas do Administrador sobre projetos ficam em `/admin`, porque nelas o
+      Administrador só vê o nome e o Gestor de cada projeto (A-02, Q-18, Q-19).
+
+    Códigos de erro:
+    - 400: pedido mal formado (JSON inválido, campo desconhecido, tipo errado ou valor fora do enumerado).
+    - 401: sem sessão válida ou com a conta desativada.
+    - 403: o utilizador tem acesso ao recurso, mas o seu perfil ou papel não permite a ação.
+    - 404: o recurso não existe ou o utilizador não é membro do projeto; não se revela se existe (D-10, EC-18).
+    - 409: o estado atual do recurso impede a ação (projeto arquivado, projeto com tarefas,
+      tarefa já iniciada, responsável já atribuído).
+    - 422: os dados do pedido violam uma regra de negócio, com o campo e o motivo (Q-03).
+      Por isso os textos obrigatórios e os limites de tamanho não são declarados no schema do pedido
+      (um validador automático responderia 400): são verificados como regras de negócio.
+
+    Ordem de verificação (RV-25): 401, 404, 403, 409, 400, 422. As permissões são verificadas antes
+    do conteúdo do pedido. Exemplo: um Membro que tenta criar uma tarefa num projeto arquivado
+    recebe 403; o Gestor recebe 409.
 
     Pressupostos deste contrato (por aprovar):
     - Os caminhos e os nomes dos campos estão em português, alinhados com o modelo de dados.
-    - Um projeto de que o utilizador não é membro responde 404, para não revelar que existe
-      (D-10, EC-18, CA-18.4). Um membro sem permissão para a ação recebe 403.
-    - Uma ação recusada por o projeto estar arquivado responde 409 (D-09, EC-16).
-    - Dados que violam regras de negócio respondem 422 com o campo e o motivo (Q-03).
-      Por isso o título vazio e os limites de tamanho não são declarados no schema do pedido
-      (um validador automático responderia 400): são verificados como regras de negócio.
-    - 400 fica reservado a pedidos mal formados: JSON inválido, campo desconhecido,
-      tipo errado ou valor fora do enumerado.
-
-    Ordem de verificação (RV-25). Quando um pedido tem vários problemas, devolve-se
-    o primeiro desta lista: 401, 404, 403, 409, 400, 422. As permissões são verificadas
-    antes do conteúdo do pedido. Exemplo: um Membro que tenta criar uma tarefa num projeto
-    arquivado recebe 403; o Gestor recebe 409.
-
-    Operações usadas pelo wireframe (`docs/ui/`) e ainda por documentar (RV-27):
-    lista de tarefas e dados do projeto (RF-15, RF-04), membros do projeto (RF-06, Q-13),
-    atribuir, assumir e largar o responsável (RF-10), editar tarefa (RF-13, RF-14)
-    e eliminar tarefa (RF-22).
-    - Os identificadores são texto opaco; o formato é decidido com a stack.
+    - Os identificadores são números inteiros.
+    - As listas não são paginadas, por o piloto ser pequeno (RNF-06); ver docs/implementation-plan.md.
 
 servers:
   - url: /api
-    description: Caminho base relativo; o alojamento está por definir.
+    description: Caminho base relativo; em desenvolvimento, o Vite encaminha /api para o backend.
+
+security:
+  - sessao: []
 
 tags:
+  - name: Sessão
+    description: Entrar, sair e consultar o utilizador autenticado (RF-01).
+  - name: Contas
+    description: Gestão de contas e perfis pelo Administrador (RF-02, RF-03).
+  - name: Administração de projetos
+    description: Criar, eliminar e transferir projetos, com a vista restrita do Administrador (RF-04, RF-30, RF-32).
+  - name: Projetos
+    description: Lista, pesquisa, painel, consulta, edição e arquivo de projetos (RF-05, RF-07, RF-08, RF-33, RF-35).
+  - name: Membros
+    description: Membros de um projeto (RF-06).
   - name: Tarefas
-    description: Criar tarefas e mudar o seu estado (RF-09 a RF-12).
+    description: Tarefas, estado e filtros (RF-09 a RF-15, RF-22, RF-34).
+  - name: Responsáveis
+    description: Responsáveis de uma tarefa (RF-10).
+  - name: Comentários
+    description: Comentários de uma tarefa (RF-24).
   - name: Progresso
     description: Indicadores de progresso de um projeto (RF-16 a RF-18).
 
 paths:
+  # ---------------------------------------------------------------- Sessão
+  /sessao:
+    post:
+      tags: [Sessão]
+      operationId: entrar
+      summary: Iniciar sessão
+      description: |
+        US-01, RF-01, Q-22. Em caso de sucesso, devolve o cookie `matriz_sessao` (httpOnly, SameSite=Lax).
+        Credenciais erradas e conta desativada recebem a mesma resposta 401, para não revelar que a conta existe
+        (CA-01.3, EC-20).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credenciais'
+            example:
+              email: ana.silva@matriz.test
+              palavraPasse: demo-1234
+      responses:
+        '200':
+          description: Sessão iniciada.
+          headers:
+            Set-Cookie:
+              description: Cookie de sessão `matriz_sessao`, httpOnly.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UtilizadorAutenticado'
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '401':
+          description: Credenciais erradas ou conta desativada (CA-01.3, EC-20).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+              example:
+                codigo: CREDENCIAIS_INVALIDAS
+                mensagem: Email ou palavra-passe incorretos.
+    get:
+      tags: [Sessão]
+      operationId: obterSessao
+      summary: Consultar o utilizador autenticado
+      description: US-01, RF-01. Usado pela interface para saber quem está autenticado e que perfis tem.
+      responses:
+        '200':
+          description: Utilizador autenticado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UtilizadorAutenticado'
+              example:
+                id: 2
+                nome: Ana Silva
+                email: ana.silva@matriz.test
+                perfis: [GESTOR]
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+    delete:
+      tags: [Sessão]
+      operationId: sair
+      summary: Terminar sessão
+      description: US-01, CA-01.4. Apaga a sessão no servidor e o cookie.
+      responses:
+        '204':
+          description: Sessão terminada.
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+
+  # ---------------------------------------------------------------- Contas
+  /utilizadores:
+    get:
+      tags: [Contas]
+      operationId: listarUtilizadores
+      summary: Listar todas as contas (Administrador)
+      description: US-02 a US-04. Só o Administrador.
+      responses:
+        '200':
+          description: Contas, ativas e desativadas.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Conta'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+    post:
+      tags: [Contas]
+      operationId: criarUtilizador
+      summary: Criar uma conta (Administrador)
+      description: |
+        US-02, RF-02. A conta fica ativa e com o perfil Membro, que não se guarda (RV-02).
+        A palavra-passe inicial é guardada só como hash e nunca é devolvida (Q-22, EC-49).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NovaConta'
+            example:
+              nome: João Pires
+              email: joao.pires@matriz.test
+              palavraPasse: inicial-5678
+              perfis: []
+      responses:
+        '201':
+          description: Conta criada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conta'
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '422':
+          description: |
+            Nome ou email vazios; email repetido, sem distinguir maiúsculas (EC-33, EC-38);
+            palavra-passe fora das regras.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+              example:
+                codigo: EMAIL_REPETIDO
+                mensagem: Já existe uma conta com este email.
+                campo: email
+
+  /utilizadores/{utilizadorId}:
+    parameters:
+      - $ref: '#/components/parameters/UtilizadorId'
+    patch:
+      tags: [Contas]
+      operationId: alterarUtilizador
+      summary: Alterar perfis ou ativar e desativar uma conta (Administrador)
+      description: |
+        US-03, US-04, RF-02, RF-03. Desativar uma conta apaga as suas sessões (RV-09, EC-31).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlteracaoConta'
+            example:
+              perfis: [GESTOR]
+      responses:
+        '200':
+          description: Conta alterada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conta'
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '422':
+          description: |
+            Administrador a atribuir a si próprio o perfil Gestor (EC-36); retirar o perfil Gestor ou
+            desativar quem ainda gere projetos (EC-23, EC-26); deixar de haver um Administrador ativo (EC-27).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+              example:
+                codigo: GESTOR_COM_PROJETOS
+                mensagem: Transfira primeiro todos os projetos deste Gestor.
+
+  /utilizadores/gestores-elegiveis:
+    get:
+      tags: [Contas]
+      operationId: listarGestoresElegiveis
+      summary: Utilizadores que podem ser Gestor de um projeto (Administrador)
+      description: |
+        Para criar e transferir projetos: perfil Gestor, conta ativa e sem perfil Administrador
+        (Q-18, D-22, RV-01, RV-13, EC-24, EC-42).
+      responses:
+        '200':
+          description: Gestores elegíveis.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UtilizadorResumo'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+
+  # ---------------------------------------------------------------- Administração de projetos
+  /admin/projetos:
+    get:
+      tags: [Administração de projetos]
+      operationId: listarProjetosAdmin
+      summary: Listar todos os projetos, só com nome e Gestor (Administrador)
+      description: US-05, US-10, US-21, RF-30, RF-33, A-02, CA-10.1. Não devolve tarefas, membros nem progresso.
+      parameters:
+        - $ref: '#/components/parameters/PesquisaNome'
+      responses:
+        '200':
+          description: Projetos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjetoAdmin'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+    post:
+      tags: [Administração de projetos]
+      operationId: criarProjeto
+      summary: Criar um projeto e indicar o seu Gestor (Administrador)
+      description: |
+        US-05, RF-04, Q-18. O Gestor indicado passa a Gestor e membro do projeto, na mesma operação (A-01).
+        O Administrador não passa a membro (CA-05.3). Outros perfis recebem 403 (EC-41).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NovoProjeto'
+            example:
+              nome: Lançamento do novo site
+              gestorId: 2
+      responses:
+        '201':
+          description: Projeto criado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjetoAdmin'
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '422':
+          description: |
+            Nome vazio ou só com espaços (EC-14, EC-02); texto acima do limite (EC-29);
+            data de fim anterior à de início (EC-15); Gestor indicado inválido (EC-42).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+              example:
+                codigo: GESTOR_INVALIDO
+                mensagem: O Gestor tem de ter o perfil Gestor, conta ativa e não ser Administrador.
+                campo: gestorId
+
+  /admin/projetos/{projetoId}:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+    delete:
+      tags: [Administração de projetos]
+      operationId: eliminarProjeto
+      summary: Eliminar um projeto sem tarefas (Administrador)
+      description: |
+        US-21, RF-32, Q-19. Definitivo; apaga também a lista de membros. A confirmação é pedida na interface (EC-10).
+      responses:
+        '204':
+          description: Projeto eliminado.
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          description: O projeto tem tarefas (EC-40).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+              example:
+                codigo: PROJETO_COM_TAREFAS
+                mensagem: O projeto tem tarefas e não pode ser eliminado. O Gestor pode arquivá-lo.
+
+  /admin/projetos/{projetoId}/gestor:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+    put:
+      tags: [Administração de projetos]
+      operationId: transferirProjeto
+      summary: Transferir um projeto para outro Gestor (Administrador)
+      description: US-10, RF-30, Q-04, Q-09. Permitido também em projetos arquivados (A-04).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [gestorId]
+              additionalProperties: false
+              properties:
+                gestorId:
+                  type: integer
+            example:
+              gestorId: 3
+      responses:
+        '200':
+          description: Projeto transferido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjetoAdmin'
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '422':
+          description: Destino sem perfil Gestor, desativado ou com perfil Administrador (EC-24, EC-35).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+
+  # ---------------------------------------------------------------- Projetos
+  /projetos:
+    get:
+      tags: [Projetos]
+      operationId: listarProjetos
+      summary: Projetos do utilizador, com contagens por estado (lista e painel inicial)
+      description: |
+        US-09, US-22, US-25, RF-08, RF-33, RF-35. Só os projetos de que o utilizador é membro (D-10);
+        ativos primeiro, depois arquivados (A-06). Inclui as contagens por estado para o painel (RF-16).
+      parameters:
+        - $ref: '#/components/parameters/PesquisaNome'
+      responses:
+        '200':
+          description: Projetos do utilizador. Lista vazia quando não há resultados (EC-47, CA-25.3).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjetoResumo'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+
+  /projetos/{projetoId}:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+    get:
+      tags: [Projetos]
+      operationId: obterProjeto
+      summary: Consultar um projeto
+      description: US-06, US-09. Só membros do projeto (EC-18).
+      responses:
+        '200':
+          description: Projeto.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Projeto'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+    patch:
+      tags: [Projetos]
+      operationId: editarProjeto
+      summary: Editar os dados de um projeto (Gestor do projeto)
+      description: US-06, RF-05. Aplicam-se as regras de RF-04 para o nome, a descrição e as datas.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlteracaoProjeto'
+      responses:
+        '200':
+          description: Projeto alterado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Projeto'
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          $ref: '#/components/responses/ProjetoArquivado'
+        '422':
+          $ref: '#/components/responses/RegraNegocio'
+
+  /projetos/{projetoId}/arquivado:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+    put:
+      tags: [Projetos]
+      operationId: arquivarProjeto
+      summary: Arquivar ou desarquivar um projeto (Gestor do projeto)
+      description: US-08, RF-07, A-05, A-13. Idempotente.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [arquivado]
+              additionalProperties: false
+              properties:
+                arquivado:
+                  type: boolean
+            example:
+              arquivado: true
+      responses:
+        '200':
+          description: Estado de arquivo atualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Projeto'
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+
+  # ---------------------------------------------------------------- Membros
+  /projetos/{projetoId}/membros:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+    get:
+      tags: [Membros]
+      operationId: listarMembros
+      summary: Membros do projeto (só o nome)
+      description: |
+        US-07, RF-06, Q-13, CA-07.3. Qualquer membro. Sem email. Também serve para escolher responsáveis:
+        a interface mostra só os membros com conta ativa que ainda não são responsáveis (CA-12.4).
+      responses:
+        '200':
+          description: Membros do projeto.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResponsavelResumo'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+    post:
+      tags: [Membros]
+      operationId: adicionarMembro
+      summary: Adicionar um membro (Gestor do projeto)
+      description: US-07, RF-06. Só utilizadores com conta ativa (Q-11, EC-39).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [utilizadorId]
+              additionalProperties: false
+              properties:
+                utilizadorId:
+                  type: integer
+      responses:
+        '201':
+          description: Membro adicionado. Devolve a lista atualizada.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResponsavelResumo'
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          $ref: '#/components/responses/ProjetoArquivado'
+        '422':
+          description: Utilizador inexistente, desativado ou já membro (EC-39).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+
+  /projetos/{projetoId}/membros/{utilizadorId}:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+      - $ref: '#/components/parameters/UtilizadorId'
+    delete:
+      tags: [Membros]
+      operationId: removerMembro
+      summary: Remover um membro (Gestor do projeto)
+      description: US-07, RF-06. Remove também as suas atribuições nas tarefas do projeto (A-14, Q-20, EC-19).
+      responses:
+        '204':
+          description: Membro removido.
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          description: Projeto arquivado (EC-16) ou tentativa de remover o Gestor do projeto (EC-28).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+              example:
+                codigo: GESTOR_NAO_REMOVIVEL
+                mensagem: O Gestor não pode ser removido. Peça ao Administrador para transferir o projeto.
+
+  /projetos/{projetoId}/candidatos-membros:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+    get:
+      tags: [Membros]
+      operationId: listarCandidatosMembros
+      summary: Utilizadores que podem ser adicionados como membros (Gestor do projeto)
+      description: US-07, RF-06, A-21, CA-07.1. Utilizadores com conta ativa que ainda não são membros, com nome e email.
+      responses:
+        '200':
+          description: Candidatos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UtilizadorResumo'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+
+  # ---------------------------------------------------------------- Tarefas
   /projetos/{projetoId}/tarefas:
     parameters:
       - $ref: '#/components/parameters/ProjetoId'
+    get:
+      tags: [Tarefas]
+      operationId: listarTarefas
+      summary: Listar as tarefas de um projeto, com filtros
+      description: |
+        US-17, US-23, RF-15, RF-34. Qualquer membro. Ordem de Q-12: por estado (TODO, IN_PROGRESS, DONE)
+        e, dentro de cada estado, por data limite crescente, sem data no fim. Os filtros combinam-se (CA-23.2).
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Estado'
+        - name: prioridade
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/Prioridade'
+      responses:
+        '200':
+          description: Tarefas. Lista vazia quando nenhuma cumpre os filtros (EC-48).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tarefa'
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
     post:
       tags: [Tarefas]
       operationId: criarTarefa
-      summary: Criar uma tarefa num projeto
+      summary: Criar uma tarefa num projeto (Gestor do projeto)
       description: |
         US-11, RF-09, RF-10, RF-12.
 
         - Só o Gestor do projeto cria tarefas (D-11, EC-05).
-        - O projeto não pode estar arquivado (D-09, EC-16).
-        - O estado inicial é sempre "Por fazer" e não pode ser indicado no pedido (D-13, CA-11.4).
-        - A prioridade é Média por omissão (A-19, CA-11.3).
-        - O responsável, se indicado, tem de ser membro do projeto com conta ativa (D-12, A-15, EC-03, EC-22).
+        - O estado inicial é sempre TODO e não pode ser indicado no pedido (D-13, CA-11.4).
+        - A prioridade é MEDIUM por omissão (A-19, CA-11.3).
+        - Os responsáveis, se indicados, têm de ser membros do projeto com conta ativa, sem repetir (D-12, A-15, Q-20).
         - A data limite pode estar no passado; a tarefa fica logo em atraso (A-07, EC-06).
       requestBody:
         required: true
@@ -83,30 +701,25 @@ paths:
                 value:
                   titulo: Rever orçamento
                   descricao: Confirmar os valores com a equipa financeira.
-                  responsavelId: u-102
-                  prioridade: Alta
+                  responsavelIds: [2, 4]
+                  prioridade: HIGH
                   dataLimite: '2026-11-15'
       responses:
         '201':
           description: Tarefa criada.
-          headers:
-            Location:
-              description: Caminho da tarefa criada.
-              schema:
-                type: string
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Tarefa'
               example:
-                id: t-501
-                projetoId: p-12
+                id: 501
+                projetoId: 12
                 titulo: Preparar reunião de arranque
                 descricao: null
-                responsavel: null
-                prioridade: Média
+                responsaveis: []
+                prioridade: MEDIUM
                 dataLimite: null
-                estado: Por fazer
+                estado: TODO
                 emAtraso: false
         '400':
           $ref: '#/components/responses/PedidoInvalido'
@@ -115,15 +728,13 @@ paths:
         '403':
           $ref: '#/components/responses/SemPermissao'
         '404':
-          $ref: '#/components/responses/ProjetoNaoEncontrado'
+          $ref: '#/components/responses/NaoEncontrado'
         '409':
           $ref: '#/components/responses/ProjetoArquivado'
         '422':
           description: |
-            Dados que violam regras de negócio:
-            título vazio ou só com espaços (EC-01, EC-02, Q-01);
-            texto acima do limite (EC-29, RNF-03);
-            responsável que não é membro do projeto ou tem a conta desativada (EC-03, EC-22).
+            Título vazio ou só com espaços (EC-01, EC-02); texto acima do limite (EC-29);
+            responsável que não é membro ativo do projeto ou repetido (EC-03, EC-22, EC-43).
           content:
             application/json:
               schema:
@@ -142,12 +753,85 @@ paths:
                     mensagem: O título não pode ter mais de 200 caracteres.
                     campo: titulo
                     limite: 200
-                responsavelInvalido:
-                  summary: Responsável que não é membro ativo do projeto
-                  value:
-                    codigo: RESPONSAVEL_INVALIDO
-                    mensagem: O responsável tem de ser membro do projeto com conta ativa.
-                    campo: responsavelId
+
+  /projetos/{projetoId}/tarefas/{tarefaId}:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+      - $ref: '#/components/parameters/TarefaId'
+    get:
+      tags: [Tarefas]
+      operationId: obterTarefa
+      summary: Consultar uma tarefa
+      description: US-17, RF-15, CA-17.2. Qualquer membro lê a descrição de qualquer tarefa (RV-17).
+      responses:
+        '200':
+          description: Tarefa.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarefa'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+    patch:
+      tags: [Tarefas]
+      operationId: editarTarefa
+      summary: Editar uma tarefa
+      description: |
+        US-14, US-15, RF-13, RF-14. O Gestor do projeto edita todos os campos. Um responsável que não é
+        Gestor só pode enviar `descricao` (CA-14.2); qualquer outro campo responde 403.
+        O estado muda-se em `/estado` e os responsáveis em `/responsaveis`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlteracaoTarefa'
+      responses:
+        '200':
+          description: Tarefa alterada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarefa'
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          $ref: '#/components/responses/ProjetoArquivado'
+        '422':
+          $ref: '#/components/responses/RegraNegocio'
+    delete:
+      tags: [Tarefas]
+      operationId: eliminarTarefa
+      summary: Eliminar uma tarefa em TODO (Gestor do projeto)
+      description: |
+        US-16, RF-22. Definitivo; apaga também as atribuições e os comentários (EC-09).
+        A confirmação é pedida na interface (EC-10).
+      responses:
+        '204':
+          description: Tarefa eliminada.
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          description: Projeto arquivado (EC-16) ou tarefa já iniciada (EC-13).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+              example:
+                codigo: TAREFA_INICIADA
+                mensagem: Só se podem eliminar tarefas por fazer.
 
   /projetos/{projetoId}/tarefas/{tarefaId}/estado:
     parameters:
@@ -160,19 +844,23 @@ paths:
       description: |
         US-13, US-14, RF-11, RF-12, RF-13.
 
-        - Mudam o estado o responsável da tarefa e o Gestor do projeto (R-11, CA-13.1, CA-13.2).
-        - Qualquer outro membro recebe 403, incluindo numa tarefa sem responsável (CA-13.3, EC-04).
+        - Mudam o estado os responsáveis da tarefa e o Gestor do projeto (R-11, Q-20, CA-13.1, CA-13.2).
+        - Qualquer outro membro recebe 403, incluindo numa tarefa sem responsáveis (CA-13.3, EC-04).
         - Qualquer transição é permitida, incluindo reabrir uma tarefa concluída (D-13, CA-13.4, EC-08).
-        - O projeto não pode estar arquivado (D-09, EC-16).
         - A operação é idempotente: indicar o estado atual devolve 200 sem alterações.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MudancaEstado'
+              type: object
+              required: [estado]
+              additionalProperties: false
+              properties:
+                estado:
+                  $ref: '#/components/schemas/Estado'
             example:
-              estado: Em curso
+              estado: IN_PROGRESS
       responses:
         '200':
           description: Estado atualizado. Devolve a tarefa com o novo estado.
@@ -180,19 +868,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Tarefa'
-              example:
-                id: t-501
-                projetoId: p-12
-                titulo: Preparar reunião de arranque
-                descricao: null
-                responsavel:
-                  id: u-102
-                  nome: Ana Silva
-                  contaAtiva: true
-                prioridade: Média
-                dataLimite: '2026-11-15'
-                estado: Em curso
-                emAtraso: false
         '400':
           $ref: '#/components/responses/PedidoInvalido'
         '401':
@@ -200,17 +875,186 @@ paths:
         '403':
           $ref: '#/components/responses/SemPermissao'
         '404':
-          description: O projeto não existe ou o utilizador não é membro, ou a tarefa não existe nesse projeto (EC-11, EC-18).
+          $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          $ref: '#/components/responses/ProjetoArquivado'
+
+  # ---------------------------------------------------------------- Responsáveis
+  /projetos/{projetoId}/tarefas/{tarefaId}/responsaveis:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+      - $ref: '#/components/parameters/TarefaId'
+    post:
+      tags: [Responsáveis]
+      operationId: adicionarResponsavel
+      summary: Adicionar um responsável, ou juntar-se a uma tarefa
+      description: |
+        US-12, US-20, RF-10, Q-20.
+
+        - O Gestor do projeto adiciona qualquer membro com conta ativa (CA-12.1, CA-12.2).
+        - Outro membro só se pode adicionar a si próprio, e só numa tarefa sem responsáveis (CA-20.1, EC-34).
+          Indicar outro utilizador responde 403.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [utilizadorId]
+              additionalProperties: false
+              properties:
+                utilizadorId:
+                  type: integer
+            example:
+              utilizadorId: 4
+      responses:
+        '201':
+          description: Responsável adicionado. Devolve a tarefa atualizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarefa'
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          description: |
+            Projeto arquivado (EC-16); utilizador já é responsável (EC-43);
+            membro a juntar-se a uma tarefa que já tem responsáveis (EC-34).
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Erro'
               example:
-                codigo: NAO_ENCONTRADO
-                mensagem: Tarefa não encontrada.
+                codigo: RESPONSAVEL_REPETIDO
+                mensagem: Este utilizador já é responsável pela tarefa.
+        '422':
+          description: Utilizador inexistente, que não é membro do projeto ou com conta desativada (EC-03, EC-22).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+              example:
+                codigo: RESPONSAVEL_INVALIDO
+                mensagem: O responsável tem de ser membro do projeto com conta ativa.
+                campo: utilizadorId
+
+  /projetos/{projetoId}/tarefas/{tarefaId}/responsaveis/{utilizadorId}:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+      - $ref: '#/components/parameters/TarefaId'
+      - $ref: '#/components/parameters/UtilizadorId'
+    delete:
+      tags: [Responsáveis]
+      operationId: removerResponsavel
+      summary: Remover um responsável, ou sair de uma tarefa
+      description: |
+        US-12, US-20, RF-10. O Gestor do projeto remove qualquer responsável (CA-12.3);
+        outro membro só se pode remover a si próprio (CA-20.2).
+      responses:
+        '200':
+          description: Responsável removido. Devolve a tarefa atualizada.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarefa'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          description: Projeto, tarefa ou atribuição inexistentes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
         '409':
           $ref: '#/components/responses/ProjetoArquivado'
 
+  # ---------------------------------------------------------------- Comentários
+  /projetos/{projetoId}/tarefas/{tarefaId}/comentarios:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+      - $ref: '#/components/parameters/TarefaId'
+    get:
+      tags: [Comentários]
+      operationId: listarComentarios
+      summary: Listar os comentários de uma tarefa
+      description: US-24, RF-24, CA-24.2. Qualquer membro; o mais antigo primeiro. Também em projetos arquivados.
+      responses:
+        '200':
+          description: Comentários.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comentario'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+    post:
+      tags: [Comentários]
+      operationId: adicionarComentario
+      summary: Adicionar um comentário
+      description: |
+        US-24, RF-24, Q-15. Qualquer membro do projeto. O autor e a data são obtidos no backend;
+        um pedido com outros campos responde 400 (EC-45).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [conteudo]
+              additionalProperties: false
+              properties:
+                conteudo:
+                  type: string
+                  description: Obrigatório; só espaços conta como vazio (EC-44). Limite em RNF-03 (EC-29).
+            example:
+              conteudo: Já falei com o fornecedor; envia a proposta até sexta.
+      responses:
+        '201':
+          description: Comentário adicionado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comentario'
+              example:
+                id: 77
+                autor:
+                  id: 4
+                  nome: Marta Lopes
+                  contaAtiva: true
+                conteudo: Já falei com o fornecedor; envia a proposta até sexta.
+                criadoEm: '2026-10-29T15:42:10Z'
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          $ref: '#/components/responses/ProjetoArquivado'
+        '422':
+          description: Conteúdo vazio, só com espaços ou acima do limite (EC-44, EC-29).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+              example:
+                codigo: CONTEUDO_OBRIGATORIO
+                mensagem: O comentário não pode estar vazio.
+                campo: conteudo
+
+  # ---------------------------------------------------------------- Progresso
   /projetos/{projetoId}/progresso:
     parameters:
       - $ref: '#/components/parameters/ProjetoId'
@@ -223,7 +1067,7 @@ paths:
 
         - Qualquer membro do projeto pode consultar, também num projeto arquivado (D-09).
         - Quem não é membro recebe 404 (CA-18.4, EC-18); inclui o Administrador que não é membro (D-05).
-        - Os valores são calculados no momento do pedido e não são guardados (docs/database.md).
+        - Os valores são calculados no momento do pedido, sobre todas as tarefas, sem filtros (RF-34).
         - O dia de hoje é determinado no fuso Europe/Lisbon (RNF-02, A-08).
       responses:
         '200':
@@ -236,35 +1080,35 @@ paths:
                 comTarefas:
                   summary: 10 tarefas, 3 concluídas, 1 em atraso (CA-18.1)
                   value:
-                    projetoId: p-12
-                    dataReferencia: '2026-10-26'
+                    projetoId: 12
+                    dataReferencia: '2026-10-29'
                     total: 10
                     contagemPorEstado:
-                      porFazer: 5
-                      emCurso: 2
-                      concluida: 3
+                      TODO: 5
+                      IN_PROGRESS: 2
+                      DONE: 3
                     percentagemConcluida: 30.0
                     tarefasEmAtraso:
                       quantidade: 1
                       tarefas:
-                        - id: t-480
+                        - id: 480
                           titulo: Enviar proposta ao fornecedor
-                          responsavel:
-                            id: u-107
-                            nome: Rui Costa
-                            contaAtiva: false
+                          responsaveis:
+                            - id: 7
+                              nome: Rui Costa
+                              contaAtiva: false
                           dataLimite: '2026-10-20'
-                          estado: Em curso
+                          estado: IN_PROGRESS
                 semTarefas:
                   summary: Projeto sem tarefas (CA-18.5)
                   value:
-                    projetoId: p-13
-                    dataReferencia: '2026-10-26'
+                    projetoId: 13
+                    dataReferencia: '2026-10-29'
                     total: 0
                     contagemPorEstado:
-                      porFazer: 0
-                      emCurso: 0
-                      concluida: 0
+                      TODO: 0
+                      IN_PROGRESS: 0
+                      DONE: 0
                     percentagemConcluida: null
                     tarefasEmAtraso:
                       quantidade: 0
@@ -272,54 +1116,284 @@ paths:
         '401':
           $ref: '#/components/responses/NaoAutenticado'
         '404':
-          $ref: '#/components/responses/ProjetoNaoEncontrado'
+          $ref: '#/components/responses/NaoEncontrado'
 
 components:
+  securitySchemes:
+    sessao:
+      type: apiKey
+      in: cookie
+      name: matriz_sessao
+      description: Cookie httpOnly devolvido por `POST /sessao` (Q-22).
+
   parameters:
     ProjetoId:
       name: projetoId
       in: path
       required: true
-      description: Identificador do projeto.
       schema:
-        type: string
+        type: integer
     TarefaId:
       name: tarefaId
       in: path
       required: true
-      description: Identificador da tarefa.
+      schema:
+        type: integer
+    UtilizadorId:
+      name: utilizadorId
+      in: path
+      required: true
+      schema:
+        type: integer
+    PesquisaNome:
+      name: nome
+      in: query
+      required: false
+      description: Texto contido no nome do projeto, sem distinguir maiúsculas de minúsculas (RF-33).
       schema:
         type: string
 
   schemas:
     Prioridade:
       type: string
-      enum: [Alta, Média, Baixa]
-      description: Valores de D-19.
+      enum: [HIGH, MEDIUM, LOW]
+      description: Alta, Média, Baixa (D-19, Q-21).
 
     Estado:
       type: string
-      enum: [Por fazer, Em curso, Concluída]
-      description: Estados fixos de R-11.
+      enum: [TODO, IN_PROGRESS, DONE]
+      description: Por fazer, Em curso, Concluída (R-11, Q-21).
+
+    Perfil:
+      type: string
+      enum: [ADMIN, GESTOR]
+      description: Perfis guardados; o perfil Membro é comum a todos e não aparece (RV-02).
 
     Data:
       type: string
       format: date
       description: Data sem hora (AAAA-MM-DD).
 
+    Credenciais:
+      type: object
+      required: [email, palavraPasse]
+      additionalProperties: false
+      properties:
+        email:
+          type: string
+        palavraPasse:
+          type: string
+
+    UtilizadorAutenticado:
+      type: object
+      required: [id, nome, email, perfis]
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        email:
+          type: string
+        perfis:
+          type: array
+          items:
+            $ref: '#/components/schemas/Perfil'
+
+    Conta:
+      type: object
+      description: Conta vista pelo Administrador. Nunca inclui a palavra-passe nem o seu hash (EC-49).
+      required: [id, nome, email, perfis, ativo]
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        email:
+          type: string
+        perfis:
+          type: array
+          items:
+            $ref: '#/components/schemas/Perfil'
+        ativo:
+          type: boolean
+
+    NovaConta:
+      type: object
+      required: [nome, email, palavraPasse, perfis]
+      additionalProperties: false
+      properties:
+        nome:
+          type: string
+        email:
+          type: string
+        palavraPasse:
+          type: string
+          description: Palavra-passe inicial (Q-22); pelo menos 8 caracteres (P3).
+        perfis:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Perfil'
+
+    AlteracaoConta:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        perfis:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/Perfil'
+        ativo:
+          type: boolean
+
+    UtilizadorResumo:
+      type: object
+      description: Nome e email, para escolher membros (A-21) ou Gestores.
+      required: [id, nome, email]
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        email:
+          type: string
+
     ResponsavelResumo:
       type: object
       description: |
-        Responsável de uma tarefa. Com `contaAtiva` falso, a interface mostra o aviso
-        "conta desativada" (A-15, EC-21).
+        Utilizador visto dentro de um projeto, sem email (Q-13). Com `contaAtiva` falso,
+        a interface mostra o aviso "conta desativada" (A-15, EC-21).
       required: [id, nome, contaAtiva]
       properties:
         id:
-          type: string
+          type: integer
         nome:
           type: string
         contaAtiva:
           type: boolean
+
+    GestorResumo:
+      type: object
+      required: [id, nome]
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+
+    ContagemPorEstado:
+      type: object
+      description: Número de tarefas em cada estado (RF-16).
+      required: [TODO, IN_PROGRESS, DONE]
+      properties:
+        TODO:
+          type: integer
+          minimum: 0
+        IN_PROGRESS:
+          type: integer
+          minimum: 0
+        DONE:
+          type: integer
+          minimum: 0
+
+    ProjetoAdmin:
+      type: object
+      description: Vista restrita do Administrador (A-02).
+      required: [id, nome, arquivado, gestor]
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        arquivado:
+          type: boolean
+        gestor:
+          $ref: '#/components/schemas/GestorResumo'
+
+    ProjetoResumo:
+      type: object
+      description: Projeto na lista e no painel inicial (RF-08, RF-35).
+      required: [id, nome, arquivado, gestor, contagemPorEstado]
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        arquivado:
+          type: boolean
+        gestor:
+          $ref: '#/components/schemas/GestorResumo'
+        contagemPorEstado:
+          $ref: '#/components/schemas/ContagemPorEstado'
+
+    Projeto:
+      type: object
+      required: [id, nome, descricao, dataInicio, dataFim, arquivado, gestor, souGestor]
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        descricao:
+          type: [string, 'null']
+        dataInicio:
+          oneOf:
+            - $ref: '#/components/schemas/Data'
+            - type: 'null'
+        dataFim:
+          oneOf:
+            - $ref: '#/components/schemas/Data'
+            - type: 'null'
+        arquivado:
+          type: boolean
+        gestor:
+          $ref: '#/components/schemas/GestorResumo'
+        souGestor:
+          type: boolean
+          description: Verdadeiro se o utilizador autenticado é o Gestor do projeto; a interface usa-o para mostrar as ações.
+
+    NovoProjeto:
+      type: object
+      required: [nome, gestorId]
+      additionalProperties: false
+      properties:
+        nome:
+          type: string
+          description: Obrigatório; até 100 caracteres (D-06, A-20).
+        descricao:
+          type: [string, 'null']
+          description: Até 5000 caracteres (A-20).
+        dataInicio:
+          oneOf:
+            - $ref: '#/components/schemas/Data'
+            - type: 'null'
+        dataFim:
+          oneOf:
+            - $ref: '#/components/schemas/Data'
+            - type: 'null'
+        gestorId:
+          type: integer
+          description: Perfil Gestor, conta ativa, sem perfil Administrador (Q-18).
+
+    AlteracaoProjeto:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        nome:
+          type: string
+        descricao:
+          type: [string, 'null']
+        dataInicio:
+          oneOf:
+            - $ref: '#/components/schemas/Data'
+            - type: 'null'
+        dataFim:
+          oneOf:
+            - $ref: '#/components/schemas/Data'
+            - type: 'null'
 
     NovaTarefa:
       type: object
@@ -329,51 +1403,58 @@ components:
       properties:
         titulo:
           type: string
-          description: |
-            Obrigatório; vazio ou só com espaços responde 422 (Q-01, EC-01, EC-02).
-            Até 200 caracteres; acima do limite responde 422 (A-20, EC-29).
+          description: Obrigatório; até 200 caracteres (Q-01, A-20).
         descricao:
           type: [string, 'null']
-          description: Opcional; até 5000 caracteres; acima do limite responde 422 (A-20, EC-29).
-        responsavelId:
-          type: [string, 'null']
-          description: Opcional. Membro do projeto com conta ativa (D-12, A-15).
+          description: Opcional; até 5000 caracteres (A-20).
+        responsavelIds:
+          type: array
+          uniqueItems: true
+          items:
+            type: integer
+          description: Opcional. Membros do projeto com conta ativa (D-12, A-15, Q-20).
         prioridade:
           $ref: '#/components/schemas/Prioridade'
-          default: Média
+          default: MEDIUM
         dataLimite:
           description: Opcional; pode estar no passado (A-07).
           oneOf:
             - $ref: '#/components/schemas/Data'
             - type: 'null'
 
-    MudancaEstado:
+    AlteracaoTarefa:
       type: object
-      required: [estado]
+      minProperties: 1
       additionalProperties: false
       properties:
-        estado:
-          $ref: '#/components/schemas/Estado'
+        titulo:
+          type: string
+        descricao:
+          type: [string, 'null']
+        prioridade:
+          $ref: '#/components/schemas/Prioridade'
+        dataLimite:
+          oneOf:
+            - $ref: '#/components/schemas/Data'
+            - type: 'null'
 
     Tarefa:
       type: object
-      required: [id, projetoId, titulo, descricao, responsavel, prioridade, dataLimite, estado, emAtraso]
+      required: [id, projetoId, titulo, descricao, responsaveis, prioridade, dataLimite, estado, emAtraso]
       properties:
         id:
-          type: string
+          type: integer
         projetoId:
-          type: string
+          type: integer
         titulo:
           type: string
-          maxLength: 200
         descricao:
           type: [string, 'null']
-          maxLength: 5000
-        responsavel:
-          description: Vazio quando a tarefa não tem responsável (R-10).
-          oneOf:
-            - $ref: '#/components/schemas/ResponsavelResumo'
-            - type: 'null'
+        responsaveis:
+          type: array
+          description: Zero, um ou vários responsáveis (Q-20).
+          items:
+            $ref: '#/components/schemas/ResponsavelResumo'
         prioridade:
           $ref: '#/components/schemas/Prioridade'
         dataLimite:
@@ -386,32 +1467,32 @@ components:
           type: boolean
           description: |
             Calculado, não guardado. Verdadeiro quando a data limite é anterior ao dia de hoje
-            (Europe/Lisbon) e o estado não é "Concluída" (D-18, A-08).
+            (Europe/Lisbon) e o estado não é DONE (D-18, A-08).
 
     TarefaEmAtraso:
       type: object
-      required: [id, titulo, responsavel, dataLimite, estado]
+      required: [id, titulo, responsaveis, dataLimite, estado]
       properties:
         id:
-          type: string
+          type: integer
         titulo:
           type: string
-        responsavel:
-          oneOf:
-            - $ref: '#/components/schemas/ResponsavelResumo'
-            - type: 'null'
+        responsaveis:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponsavelResumo'
         dataLimite:
           $ref: '#/components/schemas/Data'
         estado:
           type: string
-          enum: [Por fazer, Em curso]
+          enum: [TODO, IN_PROGRESS]
 
     Progresso:
       type: object
       required: [projetoId, dataReferencia, total, contagemPorEstado, percentagemConcluida, tarefasEmAtraso]
       properties:
         projetoId:
-          type: string
+          type: integer
         dataReferencia:
           $ref: '#/components/schemas/Data'
           description: Dia de hoje em Europe/Lisbon, usado para calcular os atrasos (RNF-02).
@@ -419,19 +1500,7 @@ components:
           type: integer
           minimum: 0
         contagemPorEstado:
-          type: object
-          description: Número de tarefas em cada estado (RF-16).
-          required: [porFazer, emCurso, concluida]
-          properties:
-            porFazer:
-              type: integer
-              minimum: 0
-            emCurso:
-              type: integer
-              minimum: 0
-            concluida:
-              type: integer
-              minimum: 0
+          $ref: '#/components/schemas/ContagemPorEstado'
         percentagemConcluida:
           type: [number, 'null']
           minimum: 0
@@ -453,6 +1522,21 @@ components:
               description: Ordenadas por data limite crescente, a mais antiga primeiro (Q-12, CA-19.5).
               items:
                 $ref: '#/components/schemas/TarefaEmAtraso'
+
+    Comentario:
+      type: object
+      required: [id, autor, conteudo, criadoEm]
+      properties:
+        id:
+          type: integer
+        autor:
+          $ref: '#/components/schemas/ResponsavelResumo'
+        conteudo:
+          type: string
+        criadoEm:
+          type: string
+          format: date-time
+          description: Data e hora do servidor, em UTC; a interface mostra-a em Europe/Lisbon (RNF-02).
 
     Erro:
       type: object
@@ -482,16 +1566,16 @@ components:
             codigo: PEDIDO_INVALIDO
             mensagem: O pedido tem um formato inválido.
     NaoAutenticado:
-      description: Sem sessão válida ou com a conta desativada (RF-01, RV-09, EC-20, EC-31).
+      description: Sem sessão válida ou com a conta desativada (RF-01, RV-09, EC-20, EC-31, CA-01.5).
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Erro'
           example:
             codigo: NAO_AUTENTICADO
-            mensagem: É necessário iniciar sessão.
+            mensagem: A sessão terminou. Entre novamente.
     SemPermissao:
-      description: O utilizador é membro do projeto, mas o seu papel não permite esta ação (secção 3 de requirements.md).
+      description: O utilizador tem acesso ao recurso, mas o seu perfil ou papel não permite esta ação (secção 3 de requirements.md).
       content:
         application/json:
           schema:
@@ -499,15 +1583,15 @@ components:
           example:
             codigo: SEM_PERMISSAO
             mensagem: Não tem permissão para esta ação.
-    ProjetoNaoEncontrado:
-      description: O projeto não existe ou o utilizador não é membro (D-10, EC-18, CA-18.4).
+    NaoEncontrado:
+      description: O recurso não existe ou o utilizador não é membro do projeto (D-10, EC-18, CA-18.4).
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Erro'
           example:
             codigo: NAO_ENCONTRADO
-            mensagem: Projeto não encontrado.
+            mensagem: Não encontrado.
     ProjetoArquivado:
       description: O projeto está arquivado e só permite consulta (D-09, EC-16).
       content:
@@ -517,3 +1601,9 @@ components:
           example:
             codigo: PROJETO_ARQUIVADO
             mensagem: O projeto está arquivado e só pode ser consultado.
+    RegraNegocio:
+      description: Os dados violam uma regra de negócio (Q-03); ver `codigo`, `campo` e `limite`.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erro'

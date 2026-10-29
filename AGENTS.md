@@ -1,6 +1,6 @@
 # AGENTS.md — Matriz
 
-A Matriz é uma aplicação de gestão de projetos e tarefas para equipas. O cliente é fictício: todas as regras são pressupostos aprovados pela dona do produto. A especificação está concluída e revista; a arquitetura, o modelo de dados, o contrato da API e o wireframe estão propostos, por aprovar (ver o estado atual no `README.md`). Ainda não há código e a stack tecnológica está por escolher.
+A Matriz é uma aplicação de gestão de projetos e tarefas para equipas. O cliente é fictício: todas as regras são pressupostos aprovados pela dona do produto. A especificação está concluída e revista; a arquitetura, o modelo de dados, o contrato da API e o wireframe estão propostos, por aprovar (ver o estado atual no `README.md`). A stack está escolhida (Node.js e TypeScript, Express, React, SQLite; Q-14) e a implementação segue `docs/implementation-plan.md`.
 
 ## 1. Ler antes de agir
 
@@ -15,6 +15,7 @@ Antes de qualquer tarefa, lê o `README.md` e o ficheiro indicado para o tipo de
 | Dados, entidades e regras de integridade | `docs/database.md` |
 | Endpoints, pedidos, respostas e códigos de erro | `openapi.yaml` |
 | Ecrãs, navegação e elementos da interface | `docs/ui/wireframe.md` |
+| Implementar um incremento: sequência, ficheiros, verificações e estado | `docs/implementation-plan.md` (I0 a I10, propostas P1 a P10) |
 
 ## 2. Regras de trabalho
 
@@ -46,12 +47,14 @@ Comunica sempre:
 - **Alterações** feitas, ficheiro a ficheiro.
 - **Verificações** efetuadas, com os CA-xx.x e EC-xx cobertos e o resultado de cada uma.
 
-## A completar quando a stack for escolhida
+## Stack e estrutura
 
-- Stack tecnológica escolhida.
-- Estrutura de pastas do código.
+- **Stack:** Node.js 24 LTS e TypeScript, Express, React com Vite, SQLite, Vitest e Supertest (Q-14, `docs/architecture.md`, secção 3.1).
+- **Estrutura de pastas prevista e definição de pronto:** `docs/implementation-plan.md`, secções 3 e 6.
+
+## A completar no Exercício 2 da Ficha 3
+
 - Como instalar, executar e construir o projeto.
 - Como correr os testes.
 - Convenções de código e de nomes.
 - Convenções de commits e de branches.
-- Definição de "pronto" para cada User Story.

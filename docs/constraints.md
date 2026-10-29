@@ -1,6 +1,6 @@
 # Matriz — Restrições, pressupostos e pendentes
 
-Versão 1.3 · 29 de outubro de 2026 · a 1.2 acrescentou Q-09 a Q-11 e atualizou o estado da arquitetura; a 1.3 acrescenta Q-12, Q-13 e a revisão crítica do Architecture Pack (RV-24 a RV-30).
+Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou Q-12, Q-13 e a revisão crítica do Architecture Pack (RV-24 a RV-30); a 1.4 acrescenta a conciliação com a Ficha 3 (Q-14 a Q-22).
 
 > **Origem da informação.** O cliente é fictício. A única informação confirmada é a frase original do cliente (C-00). Todos os outros pontos são pressupostos da dona do produto: estão aprovados para orientar o desenvolvimento, mas **não são requisitos confirmados pelo cliente**.
 >
@@ -12,8 +12,8 @@ Versão 1.3 · 29 de outubro de 2026 · a 1.2 acrescentou Q-09 a Q-11 e atualizo
 ## 1. Restrições conhecidas
 
 - **Cliente fictício.** Só a frase original (C-00) está confirmada. A dona do produto assume o papel de cliente e é a única responsável pela aprovação (R-06).
-- **Sem código.** A especificação está concluída e a arquitetura está proposta; ainda não há código.
-- **Stack por decidir.** A arquitetura proposta (monólito modular, [architecture.md](architecture.md)) não escolhe tecnologias. Os documentos de especificação e de arquitetura não referem tecnologias.
+- **Implementação a começar.** A especificação e a arquitetura estão revistas; o plano de implementação está em [implementation-plan.md](implementation-plan.md).
+- **Stack.** Node.js e TypeScript, Express, React e SQLite (Q-14), sobre a arquitetura de monólito modular ([architecture.md](architecture.md)). Os requisitos e as User Stories continuam sem referir tecnologias.
 - **Prazo.** O piloto tem um prazo de 3 meses (R-05).
 - **IDs estáveis.** Os IDs (C, RF, RNF, US, CA, EC, R, G, D, A, Q, RV) não são renumerados. IDs novos são acrescentados no fim de cada série.
 
@@ -38,11 +38,11 @@ Versão 1.3 · 29 de outubro de 2026 · a 1.2 acrescentou Q-09 a Q-11 e atualizo
 | R-05 | Prazo: 3 meses para o piloto. | Aprovado |
 | R-06 | Aprovação: um responsável único do lado do cliente (a dona do produto). | Aprovado |
 | R-07 | Um projeto tem uma equipa (os seus membros); uma pessoa pode estar em vários projetos; não há tarefas fora de projetos. | Aprovado |
-| R-08 | Perfis: Administrador (gere utilizadores), Gestor de projeto (cria projetos e atribui tarefas), Membro (atualiza as suas tarefas). | Aprovado (complementado por RV-02) |
+| R-08 | Perfis: Administrador (gere utilizadores), Gestor de projeto (cria projetos e atribui tarefas), Membro (atualiza as suas tarefas). | Aprovado (complementado por RV-02; alterado por Q-18: quem cria projetos é o Administrador) |
 | R-09 | Progresso por projeto: número de tarefas em cada estado, percentagem concluída e tarefas em atraso. | Aprovado |
-| R-10 | Tarefa: título (obrigatório), descrição, responsável, prioridade, data limite, estado. | Aprovado (complementado por A-19, A-20) |
+| R-10 | Tarefa: título (obrigatório), descrição, responsável, prioridade, data limite, estado. | Aprovado (complementado por A-19, A-20; alterado por Q-20: vários responsáveis) |
 | R-11 | Estados fixos: Por fazer, Em curso, Concluída. Mudam o estado o responsável da tarefa e o Gestor do projeto. | Aprovado |
-| R-12 | Projeto: nome, descrição, datas opcionais; no fim é arquivado, não apagado. | Aprovado (complementado por A-05, A-12) |
+| R-12 | Projeto: nome, descrição, datas opcionais; no fim é arquivado, não apagado. | Aprovado (complementado por A-05, A-12; alterado por Q-19: um projeto sem tarefas pode ser eliminado pelo Administrador) |
 
 ### Pressupostos gerais
 
@@ -59,7 +59,7 @@ Versão 1.3 · 29 de outubro de 2026 · a 1.2 acrescentou Q-09 a Q-11 e atualizo
 |---|---|---|
 | D-01 | O acesso é feito com conta individual; não há acesso anónimo. | Aprovado |
 | D-02 | As contas são desativadas em vez de apagadas. | Aprovado (complementado por RV-04, RV-18) |
-| D-03 | "Gestor" é um perfil global; o Gestor gere os projetos de que é Gestor. | Aprovado (alterado por A-03) |
+| D-03 | "Gestor" é um perfil global; o Gestor gere os projetos de que é Gestor. | Aprovado (alterado por A-03 e Q-18) |
 | D-04 | Uma pessoa pode acumular perfis. | Aprovado |
 | D-05 | O Administrador só vê projetos de que é membro. | Aprovado (complementado por A-02) |
 | D-06 | O nome do projeto é obrigatório. | Aprovado |
@@ -68,7 +68,7 @@ Versão 1.3 · 29 de outubro de 2026 · a 1.2 acrescentou Q-09 a Q-11 e atualizo
 | D-09 | Um projeto arquivado fica só de consulta; é o Gestor quem arquiva. | Aprovado (complementado por A-04, A-05) |
 | D-10 | Cada utilizador só vê os projetos a que pertence. | Aprovado |
 | D-11 | Só o Gestor cria tarefas. | Aprovado |
-| D-12 | O responsável tem de ser membro do projeto. | Aprovado (complementado por A-15, RV-02) |
+| D-12 | O responsável tem de ser membro do projeto. | Aprovado (complementado por A-15, RV-02, Q-20) |
 | D-13 | Uma tarefa nova começa em "Por fazer"; qualquer transição é permitida, incluindo reabrir. | Aprovado |
 | D-14 | O Membro edita apenas o estado e a descrição das tarefas de que é responsável. | Aprovado |
 | D-15 | O Gestor edita todos os campos das tarefas dos seus projetos. | Aprovado |
@@ -79,7 +79,7 @@ Versão 1.3 · 29 de outubro de 2026 · a 1.2 acrescentou Q-09 a Q-11 e atualizo
 | D-20 | Durante 2 semanas consecutivas, os Gestores da equipa piloto não enviam nem recebem pedidos de ponto de situação por email. | Aprovado (alterado pela dona do produto; alinhado com R-02 por RV-08) |
 | D-21 | Classificação MoSCoW de RF-19 a RF-29. | Aprovado (alterado: RF-22 passou de Could para Must) |
 | D-22 | O Administrador pode transferir um projeto para outro Gestor (RF-30). | Aprovado (complementado por RV-01, RV-13) |
-| D-23 | RF-01 a RF-18, RF-22 e RF-30 são Must: implementam a primeira versão definida em R-03 e as correções aprovadas na revisão do Exercício 2. | Aprovado (RV-19) |
+| D-23 | RF-01 a RF-18, RF-22 e RF-30 são Must: implementam a primeira versão definida em R-03 e as correções aprovadas na revisão do Exercício 2. | Aprovado (RV-19; alargado por Q-15 a Q-19: RF-24, RF-32 a RF-35) |
 
 ### Decisões sobre as ambiguidades do backlog
 
@@ -98,8 +98,8 @@ Versão 1.3 · 29 de outubro de 2026 · a 1.2 acrescentou Q-09 a Q-11 e atualizo
 | A-11 | Só se pode eliminar uma tarefa em "Por fazer". | Aprovado (alterado por RV-10) |
 | A-12 | A data de fim de um projeto tem de ser igual ou posterior à de início. | Aprovado |
 | A-13 | Pode arquivar-se um projeto com tarefas por concluir; as tarefas mantêm o estado. | Aprovado |
-| A-14 | As tarefas de um membro removido do projeto ficam sem responsável. | Aprovado |
-| A-15 | As tarefas de um utilizador desativado mantêm a atribuição com o aviso "conta desativada"; um utilizador desativado não pode ser escolhido como responsável. | Aprovado |
+| A-14 | As tarefas de um membro removido do projeto ficam sem responsável. | Aprovado (alterado por Q-20: são removidas só as atribuições desse membro) |
+| A-15 | As tarefas de um utilizador desativado mantêm a atribuição com o aviso "conta desativada"; um utilizador desativado não pode ser escolhido como responsável. | Aprovado (mantido com vários responsáveis, Q-20) |
 | A-16 | O Administrador tem de transferir os projetos de um Gestor antes de o desativar. | Aprovado (âmbito confirmado em Q-07) |
 | A-17 | A regra de A-16 aplica-se também a retirar o perfil de Gestor. | Aprovado (âmbito confirmado em Q-07) |
 | A-18 | Tem de existir sempre pelo menos 1 Administrador ativo. | Aprovado |
@@ -121,12 +121,28 @@ Questões levantadas ao consolidar a documentação, já decididas pela dona do 
 | Q-05 | O Gestor pode ser removido dos membros do seu próprio projeto? | Não; para deixar o projeto, este tem de ser transferido. | RF-06, EC-28 | Decidido |
 | Q-06 | Um utilizador só com o perfil Administrador pode ser adicionado como membro de um projeto? | Sim; nesse projeto tem as permissões de Membro. | RF-06, EC-30 | Decidido |
 | Q-07 | A-16 e A-17 abrangem também os projetos arquivados? | Sim, abrangem todos os projetos, ativos e arquivados. | RF-02, RF-03, EC-23, EC-26 | Decidido |
-| Q-08 | Que dados tem uma conta além de nome e email? | No MVP, apenas nome e email. | requirements.md, secção 2 | Decidido |
+| Q-08 | Que dados tem uma conta além de nome e email? | No MVP, apenas nome e email. Complementado por Q-22: a conta guarda também o hash da palavra-passe. | requirements.md, secção 2 | Decidido |
 | Q-09 | Numa transferência, o novo Gestor passa a membro do projeto, se ainda não o for? | Sim, na mesma operação da transferência, para cumprir A-01. Levantada no modelo de dados (Ficha 02). | RF-30, EC-37, database.md | Decidido |
 | Q-10 | A unicidade do email ignora maiúsculas e minúsculas? | Sim: emails que só diferem em maiúsculas e minúsculas contam como o mesmo email. Levantada no modelo de dados (Ficha 02). | RF-02, RV-18, EC-38, database.md | Decidido |
 | Q-11 | Pode adicionar-se um utilizador com conta desativada como membro de um projeto? | Não: só se adicionam utilizadores com conta ativa, coerente com A-21. Levantada no modelo de dados (Ficha 02). | RF-06, A-21, EC-39, database.md | Decidido |
 | Q-12 | Por que ordem aparecem as tarefas na lista do projeto e na lista em atraso? | Lista do projeto: por estado (Por fazer, Em curso, Concluída) e, dentro de cada estado, por data limite crescente, com as tarefas sem data limite no fim. Lista em atraso: por data limite crescente. Não exige dados novos. Levantada no wireframe (Ficha 02, RV-26). | RF-15, RF-18, CA-17.3, CA-19.5, openapi.yaml, docs/ui/ | Decidido |
 | Q-13 | Um membro do projeto pode ver quem são os outros membros? | Sim, só pelo nome, sem email; não alarga a exposição de emails (RV-14). Levantada na revisão do Architecture Pack (RV-29). | RF-06, requirements.md secção 3, CA-07.3, docs/ui/ | Decidido |
+
+### Conciliação com o âmbito da Ficha 3
+
+A Ficha Prática 03 define um âmbito funcional que tinha de ser conciliado com o MVP aprovado antes de implementar (Exercício 1). A dona do produto decidiu cada diferença.
+
+| ID | Questão | Decisão | Onde se aplica | Estado |
+|---|---|---|---|---|
+| Q-14 | Que stack tecnológica se usa? | Node.js 24 LTS e TypeScript no backend e no frontend; backend com Express; frontend com React e Vite; base de dados SQLite; testes com Vitest e Supertest. | architecture.md, implementation-plan.md | Decidido |
+| Q-15 | Os comentários em tarefas entram no MVP? | Sim (RF-24 passa a Must). Qualquer membro do projeto adiciona e lista comentários; o autor e a data são obtidos no backend; não se comenta num projeto arquivado (D-09). | RF-24, US-24 | Decidido |
+| Q-16 | A pesquisa e os filtros entram no MVP? | Sim: pesquisar projetos pelo nome (RF-33) e filtrar tarefas por estado e prioridade (RF-34). Os outros filtros e a escolha da ordem continuam fora (RF-21). | RF-33, RF-34, US-22, US-23 | Decidido |
+| Q-17 | Há um painel inicial? | Sim (RF-35): o ecrã inicial mostra os projetos do utilizador com a contagem de tarefas por estado e ligação ao detalhe. A visão geral completa do Gestor continua fora (RF-20). | RF-35, US-25, CA-01.1 | Decidido |
+| Q-18 | Quem cria projetos? | Só o Administrador. Ao criar, indica o Gestor do projeto: perfil Gestor, conta ativa e sem perfil Administrador (RV-01). O Gestor deixa de criar projetos. | R-08, D-03, RF-04, US-05, CA-03.1, CA-03.2 | Decidido |
+| Q-19 | Um projeto pode ser eliminado? | Sim, pelo Administrador, só se não tiver tarefas, com confirmação e de forma definitiva. Os projetos com tarefas arquivam-se (RF-07). | R-12, RF-32, US-21, EC-40 | Decidido |
+| Q-20 | Uma tarefa pode ter vários responsáveis? | Sim. O Gestor adiciona e remove responsáveis, membros do projeto com conta ativa, sem repetir. Um membro pode juntar-se a uma tarefa sem responsáveis e sair das tarefas de que é responsável. Todos os responsáveis mudam o estado e a descrição. | R-10, D-12, A-14, A-15, RF-10, RF-11, RF-13, US-12, US-20 | Decidido |
+| Q-21 | Que valores usa a API para o estado e a prioridade? | Códigos técnicos: `TODO`, `IN_PROGRESS`, `DONE` e `LOW`, `MEDIUM`, `HIGH`. A interface mostra Por fazer, Em curso, Concluída e Baixa, Média, Alta (RNF-01). | RF-09, RF-11, openapi.yaml, database.md | Decidido |
+| Q-22 | Como funciona a autenticação? | Email e palavra-passe, guardada só como hash. Sessão guardada no servidor e identificada por um cookie httpOnly; cada pedido relê o estado atual da conta (RV-09). O Administrador define a palavra-passe inicial ao criar a conta. Contas de demonstração criadas por seed. | RF-01, RF-02, US-01, openapi.yaml, database.md | Decidido |
 
 ### Decisões da revisão crítica
 
@@ -178,36 +194,35 @@ Resultado da revisão da coerência entre requisitos, arquitetura, dados, API e 
 - Só utilizadores com conta individual ativa acedem à aplicação; não há acesso anónimo (RF-01, D-01).
 - Desativar uma conta, remover um membro ou retirar um perfil produz efeito no pedido seguinte, incluindo em sessões abertas (RV-09).
 - Pessoas externas à empresa não têm acesso (G-03).
-- Cada utilizador só vê os projetos a que pertence (D-10). O Administrador não vê o conteúdo de projetos de que não é membro; para transferir, vê apenas o nome e o Gestor (D-05, A-02).
+- Cada utilizador só vê os projetos a que pertence (D-10). O Administrador não vê o conteúdo de projetos de que não é membro; para criar, eliminar e transferir, vê apenas o nome e o Gestor (D-05, A-02, Q-18, Q-19).
 - O Administrador não pode atribuir a si próprio o perfil Gestor nem ser destino de uma transferência (RV-01).
 - As ações permitidas a cada perfil estão na matriz de permissões de [requirements.md](requirements.md#3-matriz-de-permissões).
 - Tem de existir sempre pelo menos 1 Administrador ativo (A-18).
 - **Dados pessoais conhecidos:** nome e email dos utilizadores. O email é único (RV-18) e fica visível aos Gestores ao adicionarem membros (A-21).
+- **Autenticação (Q-22):** email e palavra-passe; a palavra-passe é guardada só como hash, nunca em claro. A sessão fica no servidor e o cookie é httpOnly. A identidade do utilizador, o autor dos comentários e o Gestor indicado são sempre validados no backend, nunca aceites como prova enviada pelo cliente.
+- **Configuração:** as credenciais e os segredos ficam em variáveis de ambiente, fora do repositório; o repositório tem só um ficheiro de exemplo com valores fictícios. As contas de demonstração usam dados fictícios.
 
 **Riscos aceites:**
 - Dois Administradores podem contornar RV-01 em conjunto: um retira ao outro o perfil Administrador e dá-lhe o perfil Gestor, e este passa a poder receber transferências. Aceite para o MVP; a rever quando se decidir o registo de auditoria (RV-01).
 - Os Gestores veem o nome e o email de todos os utilizadores ativos da empresa (RV-14).
 
 **Por definir:**
-- Método de autenticação e regras para as credenciais.
+- Regras para as palavras-passe (comprimento, mudança pelo próprio utilizador) e duração da sessão: aprovadas em P2 e P3, [implementation-plan.md](implementation-plan.md#2-propostas-técnicas-aprovadas).
 - Requisitos legais de proteção de dados pessoais aplicáveis, incluindo o prazo de retenção das contas e uma eventual anonimização (RV-04).
 - Registo de acessos ou de auditoria: é necessário?
 - Cópias de segurança.
 
 ## 4. Decisões técnicas pendentes
 
-A arquitetura está proposta em [architecture.md](architecture.md) (monólito modular, por aprovar pela dona do produto). Para os pontos seguintes ainda não há soluções propostas.
+Já decididos: a arquitetura (monólito modular, [architecture.md](architecture.md)), a stack (Q-14) e o método de autenticação (Q-22). O efeito imediato das alterações de acesso (RV-09) fica garantido porque a sessão está no servidor e cada pedido relê a conta, os perfis e os papéis. A estratégia de testes está em [implementation-plan.md](implementation-plan.md).
 
-- Stack tecnológica (linguagens, frameworks, tipo de base de dados).
+Continuam pendentes:
 - Alojamento da aplicação e localização dos dados.
-- Método de autenticação (secção 3).
-- Como garantir que alterações de acesso produzem efeito em sessões já abertas (RV-09).
 - Como cumprir os valores de desempenho, disponibilidade e acessibilidade, ainda por definir (RNF-08).
-- Estratégia de testes para verificar os critérios CA-xx.x e EC-xx.
 
 ## 5. Limitações de âmbito
 
-- O MVP cobre apenas RF-01 a RF-18, RF-22 e RF-30. As funcionalidades excluídas estão em [requirements.md](requirements.md#7-fora-do-âmbito-inicial).
+- O MVP cobre apenas RF-01 a RF-18, RF-22, RF-24, RF-30 e RF-32 a RF-35 (D-23, Q-15 a Q-19). As funcionalidades excluídas estão em [requirements.md](requirements.md#7-fora-do-âmbito-inicial).
 - O piloto envolve uma só equipa, de 10 a 20 pessoas (R-04).
 - Os dados atuais em Excel não são importados no MVP; a importação é RF-26, fora do âmbito.
 - O critério de sucesso do piloto é verificado fora da aplicação (A-22).
