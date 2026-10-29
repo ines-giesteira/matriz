@@ -1,6 +1,6 @@
 # AGENTS.md — Matriz
 
-A Matriz é uma aplicação de gestão de projetos e tarefas para equipas. O cliente é fictício: todas as regras são pressupostos aprovados pela dona do produto. A especificação está concluída e revista; a arquitetura, o modelo de dados e o contrato da API estão propostos, por aprovar (ver o estado atual no `README.md`). Ainda não há código e a stack tecnológica está por escolher.
+A Matriz é uma aplicação de gestão de projetos e tarefas para equipas. O cliente é fictício: todas as regras são pressupostos aprovados pela dona do produto. A especificação está concluída e revista; a arquitetura, o modelo de dados, o contrato da API e o wireframe estão propostos, por aprovar (ver o estado atual no `README.md`). Ainda não há código e a stack tecnológica está por escolher.
 
 ## 1. Ler antes de agir
 
@@ -14,6 +14,7 @@ Antes de qualquer tarefa, lê o `README.md` e o ficheiro indicado para o tipo de
 | Estrutura do sistema, módulos e as suas dependências | `docs/architecture.md` |
 | Dados, entidades e regras de integridade | `docs/database.md` |
 | Endpoints, pedidos, respostas e códigos de erro | `openapi.yaml` |
+| Ecrãs, navegação e elementos da interface | `docs/ui/wireframe.md` |
 
 ## 2. Regras de trabalho
 
