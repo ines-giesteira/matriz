@@ -1,6 +1,6 @@
 # Matriz — User Stories e critérios de aceitação
 
-Versão 1.2 · 29 de outubro de 2026 · acrescenta EC-37 a EC-39 (Q-09 a Q-11).
+Versão 1.3 · 29 de outubro de 2026 · a 1.2 acrescentou EC-37 a EC-39 (Q-09 a Q-11); a 1.3 acrescenta CA-07.3, CA-17.3 e CA-19.5 (Q-12, Q-13).
 
 > **Origem da informação.** O cliente é fictício. Todas as regras são pressupostos da dona do produto.
 >
@@ -67,6 +67,7 @@ Versão 1.2 · 29 de outubro de 2026 · acrescenta EC-37 a EC-39 (Q-09 a Q-11).
 ### US-07: Gerir membros
 - **CA-07.1** — **Dado** um Gestor a adicionar membros a um projeto seu, **quando** consulta os utilizadores disponíveis, **então** vê apenas utilizadores com conta ativa, identificados por nome e email (A-21).
 - **CA-07.2** — **Dado** um Gestor e um utilizador ativo que não é membro do projeto, **quando** o adiciona, **então** o projeto passa a aparecer na lista de projetos desse utilizador.
+- **CA-07.3** — **Dado** um membro do projeto que não é o Gestor, **quando** consulta os membros do projeto, **então** vê o nome de cada membro, sem o email, e não pode adicionar nem remover membros (Q-13).
 
 ### US-08: Arquivar e desarquivar
 - **CA-08.1** — **Dado** um Gestor e um projeto seu não arquivado, **quando** o arquiva, **então** o projeto fica marcado como "Arquivado" e só pode ser consultado (D-09).
@@ -113,6 +114,7 @@ Versão 1.2 · 29 de outubro de 2026 · acrescenta EC-37 a EC-39 (Q-09 a Q-11).
 ### US-17: Lista de tarefas
 - **CA-17.1** — **Dado** um projeto com tarefas, **quando** um membro do projeto abre a lista de tarefas, **então** vê, para cada tarefa, o título, o responsável (ou a indicação de que não tem), a prioridade, a data limite (se tiver) e o estado.
 - **CA-17.2** — **Dado** um membro do projeto e uma tarefa de que não é responsável, **quando** abre essa tarefa, **então** consegue ler a descrição, mas não a consegue editar (RV-17).
+- **CA-17.3** — **Dado** um projeto com tarefas nos três estados, com e sem data limite, **quando** um membro do projeto abre a lista de tarefas, **então** vê primeiro as "Por fazer", depois as "Em curso" e por fim as "Concluída"; dentro de cada estado, as tarefas aparecem por data limite crescente e as que não têm data limite ficam no fim (Q-12).
 
 ### US-18: Contagens e percentagem concluída
 - **CA-18.1** — **Dado** um projeto com 10 tarefas (5 "Por fazer", 2 "Em curso", 3 "Concluída"), **quando** um membro do projeto abre o progresso, **então** vê as contagens 5, 2 e 3 e a percentagem concluída de 30,0%.
@@ -127,6 +129,7 @@ Versão 1.2 · 29 de outubro de 2026 · acrescenta EC-37 a EC-39 (Q-09 a Q-11).
 - **CA-19.2** — **Dada** uma tarefa "Concluída" com data limite anterior a hoje, **quando** um membro do projeto abre o progresso, **então** a tarefa não aparece como em atraso.
 - **CA-19.3** — **Dada** uma tarefa sem data limite, **quando** um membro do projeto abre o progresso, **então** a tarefa não aparece como em atraso.
 - **CA-19.4** — **Dada** uma tarefa em atraso, **quando** o responsável ou o Gestor a muda para "Concluída", **então** deixa de ser contada e listada como em atraso.
+- **CA-19.5** — **Dadas** várias tarefas em atraso com datas limite diferentes, **quando** um membro do projeto abre o progresso, **então** as tarefas em atraso aparecem por data limite crescente, a mais antiga primeiro (Q-12).
 
 ### US-20: Assumir uma tarefa
 - **CA-20.1** — **Dado** um membro do projeto e uma tarefa sem responsável num projeto não arquivado, **quando** se atribui a tarefa, **então** passa a constar como responsável e pode mudar o estado e a descrição dessa tarefa (RV-02).

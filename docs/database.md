@@ -1,6 +1,6 @@
 # Matriz — Modelo de dados
 
-Versão 0.1 · 26 de outubro de 2026 · Ficha Prática 02, Exercício 2
+Versão 0.2 · 29 de outubro de 2026 · Ficha Prática 02, Exercício 2 · acrescenta a regra 15 (Q-12) e clarifica o email no diagrama (RV-30).
 
 > **Estado: proposta, por aprovar pela dona do produto (R-06).** Modelo conceptual dos dados do MVP (RF-01 a RF-18, RF-22, RF-30), coerente com a arquitetura de [architecture.md](architecture.md): uma base de dados única, partilhada pelos módulos Contas, Projetos e Tarefas. Não fixa tecnologia nem tipos físicos: o tipo de base de dados é decidido com a stack ([constraints.md](constraints.md#4-decisões-técnicas-pendentes)). Os pressupostos por aprovar estão na secção 5; as questões levantadas por este modelo, já decididas, na secção 6.
 
@@ -87,7 +87,7 @@ erDiagram
     UTILIZADOR {
         id id PK
         texto nome
-        texto email UK "único"
+        texto email UK "único, ignora maiúsculas e minúsculas"
         booleano ativo
     }
     PERFIL_ATRIBUIDO {
@@ -147,6 +147,7 @@ Regras que o diagrama não mostra e que têm de ser garantidas pelos módulos (o
 12. O progresso (contagem por estado, percentagem concluída e tarefas em atraso) é calculado a partir de TAREFA e não é guardado (RF-16 a RF-18, ver [architecture.md](architecture.md#6-pressupostos-desta-proposta-por-aprovar)).
 13. Uma tarefa está em atraso quando `data_limite` é anterior ao dia de hoje em Europe/Lisbon e `estado` é diferente de `Concluída` (D-18, A-08). O atraso não é guardado.
 14. A ordem da lista de projetos (ativos primeiro, depois arquivados) vem de `arquivado` (A-06).
+15. A ordem da lista de tarefas e da lista em atraso vem de `estado` e `data_limite` (Q-12); não exige atributos novos.
 
 ## 5. Pressupostos deste modelo (por aprovar)
 

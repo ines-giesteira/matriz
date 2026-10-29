@@ -1,6 +1,6 @@
 # Matriz — Arquitetura
 
-Versão 0.2 · 29 de outubro de 2026 · Ficha Prática 02, Exercício 1 · corrige o sentido das dependências entre módulos.
+Versão 0.3 · 29 de outubro de 2026 · Ficha Prática 02, Exercício 1 · a 0.2 corrigiu o sentido das dependências entre módulos; a 0.3 retira o acesso direto do Progresso à base de dados (RV-24).
 
 > **Estado: proposta, por aprovar pela dona do produto (R-06).** Este documento decide o estilo de arquitetura e os componentes do MVP. Não escolhe tecnologias: a stack, o alojamento e o método de autenticação continuam pendentes ([constraints.md](constraints.md#4-decisões-técnicas-pendentes)). Os pressupostos novos estão na secção 6, separados dos requisitos confirmados.
 
@@ -64,7 +64,6 @@ flowchart TB
     end
 
     CON & PRO & TAR --> DB[(Base de dados única)]
-    PRG -.->|só leitura| DB
 ```
 
 | Componente | Responsabilidades | RF / regras |
@@ -75,7 +74,7 @@ flowchart TB
 | **Contas e perfis** | Criar contas, atribuir e retirar perfis, desativar e reativar contas. Garante o email único, o perfil Membro permanente, pelo menos 1 Administrador ativo e que o Administrador não se atribui o perfil Gestor. Antes de desativar ou retirar o perfil Gestor, verifica se o utilizador ainda gere algum projeto, através de uma interface definida pelo próprio módulo de Contas (ver as regras entre módulos). | RF-01 a RF-03, RV-01, RV-02, RV-11, RV-18, A-16 a A-18 |
 | **Projetos e membros** | Criar, editar, arquivar e desarquivar projetos; gerir membros; lista de projetos do utilizador; transferência de projetos e a vista restrita do Administrador (nome e Gestor). | RF-04 a RF-08, RF-30, A-02 a A-06, A-14, Q-04 a Q-06 |
 | **Tarefas** | Criar, editar e eliminar tarefas; atribuir, assumir e largar responsável; mudar o estado; lista de tarefas do projeto. Aplica as regras de edição por perfil. | RF-09 a RF-15, RF-22, A-07, A-11, A-15, A-19 |
-| **Progresso** | Calcula, a partir das tarefas, a contagem por estado, a percentagem concluída (arredondada às décimas, máximo 99,9% até tudo estar concluído, "Sem tarefas") e as tarefas em atraso. Não guarda dados próprios. | RF-16 a RF-18, A-08, A-09, RV-12 |
+| **Progresso** | Calcula, a partir das tarefas lidas através da interface do módulo de Tarefas (RV-24), a contagem por estado, a percentagem concluída (arredondada às décimas, máximo 99,9% até tudo estar concluído, "Sem tarefas") e as tarefas em atraso. Não guarda dados próprios. | RF-16 a RF-18, A-08, A-09, RV-12 |
 | **Relógio de negócio** | Fornece o dia de hoje no fuso Europe/Lisbon a todas as regras que dependem da data. Isolado para os testes poderem fixar a data. | RNF-02, A-08 |
 | **Base de dados única** | Guarda contas, perfis, projetos, membros e tarefas. As alterações que cruzam módulos são feitas numa só transação. | RNF-07, D-02, R-12 |
 

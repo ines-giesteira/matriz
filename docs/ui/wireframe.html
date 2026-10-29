@@ -48,12 +48,13 @@
   .muted { color: #999; font-style: italic; }
   .sel::after { content: " ▾"; font-size: 11px; }
   .c { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #333; color: #fff; font-size: 12px; font-weight: 700; margin: 0 4px; vertical-align: middle; }
+  td a { color: #222; text-decoration: underline; }
   .toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 </style>
 </head>
 <body>
 <div class="frame">
-  <div class="note">Matriz · Wireframe de baixa fidelidade · Página do projeto, vista pelo Gestor do projeto · Hoje: 29/10/2026 (Europe/Lisbon) · Dados de exemplo do CA-18.1</div>
+  <div class="note">Matriz · Wireframe de baixa fidelidade · Página do projeto, vista pelo Gestor do projeto · Hoje: 29/10/2026 (Europe/Lisbon) · Dados de exemplo do CA-18.1 · Tarefas ordenadas por estado e data limite (Q-12)</div>
 
   <div class="app">
     <div class="top">
@@ -108,16 +109,16 @@
             <tr><th>Título</th><th>Responsável <span class="c">10</span></th><th>Prioridade</th><th>Data limite</th><th>Estado <span class="c">11</span></th><th>Ações <span class="c">12</span></th></tr>
           </thead>
           <tbody>
-            <tr><td>Enviar proposta ao fornecedor <span class="tag dark">Em atraso</span></td><td><span class="box sel">Rui Costa</span> <span class="tag">conta desativada</span></td><td>Alta</td><td>20/10/2026</td><td><span class="box sel">Em curso</span></td><td><span class="btn small">Editar</span></td></tr>
-            <tr><td>Rever orçamento</td><td><span class="box sel">Ana Silva</span></td><td>Alta</td><td>15/11/2026</td><td><span class="box sel">Em curso</span></td><td><span class="btn small">Editar</span></td></tr>
-            <tr><td>Preparar reunião de arranque</td><td><span class="box sel muted">Sem responsável</span></td><td>Média</td><td class="muted">—</td><td><span class="box sel">Por fazer</span></td><td><span class="btn small">Editar</span> <span class="btn small">Eliminar</span></td></tr>
-            <tr><td>Definir mapa do site</td><td><span class="box sel">Marta Lopes</span></td><td>Média</td><td>05/11/2026</td><td><span class="box sel">Por fazer</span></td><td><span class="btn small">Editar</span> <span class="btn small">Eliminar</span></td></tr>
-            <tr><td>Configurar formulário de contacto</td><td><span class="box sel">Marta Lopes</span></td><td>Média</td><td>29/10/2026 <span class="c">13</span></td><td><span class="box sel">Por fazer</span></td><td><span class="btn small">Editar</span> <span class="btn small">Eliminar</span></td></tr>
-            <tr><td>Escrever textos da página inicial</td><td><span class="box sel muted">Sem responsável</span></td><td>Baixa</td><td>12/11/2026</td><td><span class="box sel">Por fazer</span></td><td><span class="btn small">Editar</span> <span class="btn small">Eliminar</span></td></tr>
-            <tr><td>Escolher fotografias</td><td><span class="box sel">João Pires</span></td><td>Baixa</td><td class="muted">—</td><td><span class="box sel">Por fazer</span></td><td><span class="btn small">Editar</span> <span class="btn small">Eliminar</span></td></tr>
-            <tr><td>Contratar alojamento</td><td><span class="box sel">Ana Silva</span></td><td>Média</td><td>10/10/2026</td><td><span class="box sel">Concluída</span></td><td><span class="btn small">Editar</span></td></tr>
-            <tr><td>Aprovar logótipo</td><td><span class="box sel">João Pires</span></td><td>Alta</td><td>01/10/2026</td><td><span class="box sel">Concluída</span></td><td><span class="btn small">Editar</span></td></tr>
-            <tr><td>Recolher requisitos</td><td><span class="box sel">Marta Lopes</span></td><td>Média</td><td class="muted">—</td><td><span class="box sel">Concluída</span></td><td><span class="btn small">Editar</span></td></tr>
+            <tr><td><a>Configurar formulário de contacto</a> <span class="c">14</span></td><td><span class="box sel">Marta Lopes</span></td><td>Média</td><td>29/10/2026 <span class="c">13</span></td><td><span class="box sel">Por fazer</span></td><td><span class="btn small">Editar</span> <span class="btn small">Eliminar</span></td></tr>
+            <tr><td><a>Definir mapa do site</a></td><td><span class="box sel">Marta Lopes</span></td><td>Média</td><td>05/11/2026</td><td><span class="box sel">Por fazer</span></td><td><span class="btn small">Editar</span> <span class="btn small">Eliminar</span></td></tr>
+            <tr><td><a>Escrever textos da página inicial</a></td><td><span class="box sel muted">Sem responsável</span></td><td>Baixa</td><td>12/11/2026</td><td><span class="box sel">Por fazer</span></td><td><span class="btn small">Editar</span> <span class="btn small">Eliminar</span></td></tr>
+            <tr><td><a>Preparar reunião de arranque</a></td><td><span class="box sel muted">Sem responsável</span></td><td>Média</td><td class="muted">—</td><td><span class="box sel">Por fazer</span></td><td><span class="btn small">Editar</span> <span class="btn small">Eliminar</span></td></tr>
+            <tr><td><a>Escolher fotografias</a></td><td><span class="box sel">João Pires</span></td><td>Baixa</td><td class="muted">—</td><td><span class="box sel">Por fazer</span></td><td><span class="btn small">Editar</span> <span class="btn small">Eliminar</span></td></tr>
+            <tr><td><a>Enviar proposta ao fornecedor</a> <span class="tag dark">Em atraso</span></td><td><span class="box sel">Rui Costa</span> <span class="tag">conta desativada</span></td><td>Alta</td><td>20/10/2026</td><td><span class="box sel">Em curso</span></td><td><span class="btn small">Editar</span></td></tr>
+            <tr><td><a>Rever orçamento</a></td><td><span class="box sel">Ana Silva</span></td><td>Alta</td><td>15/11/2026</td><td><span class="box sel">Em curso</span></td><td><span class="btn small">Editar</span></td></tr>
+            <tr><td><a>Aprovar logótipo</a></td><td><span class="box sel">João Pires</span></td><td>Alta</td><td>01/10/2026</td><td><span class="box sel">Concluída</span></td><td><span class="btn small">Editar</span></td></tr>
+            <tr><td><a>Contratar alojamento</a></td><td><span class="box sel">Ana Silva</span></td><td>Média</td><td>10/10/2026</td><td><span class="box sel">Concluída</span></td><td><span class="btn small">Editar</span></td></tr>
+            <tr><td><a>Recolher requisitos</a></td><td><span class="box sel">Marta Lopes</span></td><td>Média</td><td class="muted">—</td><td><span class="box sel">Concluída</span></td><td><span class="btn small">Editar</span></td></tr>
           </tbody>
         </table>
       </div>

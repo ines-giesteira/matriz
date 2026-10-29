@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Matriz API
-  version: 0.2.0
+  version: 0.3.0
   summary: Contrato REST simplificado do MVP da Matriz.
   description: |
     Ficha Prática 02, Exercício 3. Proposta, por aprovar pela dona do produto (R-06).
@@ -28,6 +28,16 @@ info:
       (um validador automático responderia 400): são verificados como regras de negócio.
     - 400 fica reservado a pedidos mal formados: JSON inválido, campo desconhecido,
       tipo errado ou valor fora do enumerado.
+
+    Ordem de verificação (RV-25). Quando um pedido tem vários problemas, devolve-se
+    o primeiro desta lista: 401, 404, 403, 409, 400, 422. As permissões são verificadas
+    antes do conteúdo do pedido. Exemplo: um Membro que tenta criar uma tarefa num projeto
+    arquivado recebe 403; o Gestor recebe 409.
+
+    Operações usadas pelo wireframe (`docs/ui/`) e ainda por documentar (RV-27):
+    lista de tarefas e dados do projeto (RF-15, RF-04), membros do projeto (RF-06, Q-13),
+    atribuir, assumir e largar o responsável (RF-10), editar tarefa (RF-13, RF-14)
+    e eliminar tarefa (RF-22).
     - Os identificadores são texto opaco; o formato é decidido com a stack.
 
 servers:
@@ -440,6 +450,7 @@ components:
               minimum: 0
             tarefas:
               type: array
+              description: Ordenadas por data limite crescente, a mais antiga primeiro (Q-12, CA-19.5).
               items:
                 $ref: '#/components/schemas/TarefaEmAtraso'
 

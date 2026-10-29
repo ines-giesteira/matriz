@@ -1,6 +1,6 @@
 # Matriz — Requisitos
 
-Versão 1.2 · 29 de outubro de 2026 · consolida o "Âmbito funcional e MVP" v0.1, o "Backlog inicial do MVP" v0.1 (versões de trabalho anteriores, não incluídas no repositório), as decisões da dona do produto, a revisão crítica (RV-xx) e as decisões Q-09 a Q-11. A versão 1.2 acrescenta a justificação das funcionalidades fora do âmbito (secção 7).
+Versão 1.3 · 29 de outubro de 2026 · consolida o "Âmbito funcional e MVP" v0.1, o "Backlog inicial do MVP" v0.1 (versões de trabalho anteriores, não incluídas no repositório), as decisões da dona do produto, as revisões críticas (RV-xx) e as decisões Q-09 a Q-13. A versão 1.2 acrescentou a justificação das funcionalidades fora do âmbito (secção 7); a 1.3 acrescenta a ordem das listas (Q-12) e a visibilidade dos membros (Q-13).
 
 > **Origem da informação.** O cliente é fictício. A única informação confirmada é a frase original do cliente:
 >
@@ -62,6 +62,7 @@ Resume as permissões de cada perfil. É verificada pelos critérios de aceitaç
 | Editar os dados do projeto | ❌ | ✅ | ❌ | RF-05 |
 | Ver utilizadores ativos (nome e email) para adicionar membros | ❌ | ✅ | ❌ | RF-06 |
 | Adicionar e remover membros | ❌ | ✅ | ❌ | RF-06 |
+| Ver os membros do projeto (só o nome) | ❌ | ✅ | ✅ | RF-06 |
 | Arquivar e desarquivar | ❌ | ✅ | ❌ | RF-07 |
 | Ver a lista dos projetos a que pertence | ❌ | ✅ | ✅ | RF-08 |
 
@@ -125,6 +126,7 @@ Todos os requisitos desta secção são **Must** (D-23).
 - Uma pessoa pode estar em vários projetos (R-07).
 - O Gestor do projeto não pode ser removido dos membros; para deixar o projeto, este tem de ser transferido (Q-05).
 - Um utilizador só com o perfil Administrador pode ser adicionado como membro; nesse projeto tem as permissões de Membro (Q-06).
+- Qualquer membro do projeto vê os membros desse projeto, identificados só pelo nome, sem email (Q-13).
 
 **RF-07 — Arquivar e desarquivar.** O Gestor arquiva um projeto (D-09); um projeto nunca é apagado (R-12).
 - Um projeto arquivado fica só de consulta (D-09).
@@ -170,6 +172,7 @@ Todos os requisitos desta secção são **Must** (D-23).
 **RF-15 — Lista de tarefas.** Cada projeto mostra a lista das suas tarefas com título, responsável, prioridade, data limite e estado (D-16).
 - Um responsável com conta desativada aparece com o aviso "conta desativada" (A-15).
 - Qualquer membro do projeto pode ler a descrição de todas as tarefas do projeto, incluindo as que não são suas (RV-17).
+- Ordem da lista: por estado (Por fazer, Em curso, Concluída) e, dentro de cada estado, por data limite crescente; as tarefas sem data limite ficam no fim do seu estado (Q-12).
 
 **RF-22 — Eliminar tarefa.** O Gestor elimina uma tarefa de um projeto seu, criada por engano.
 - Só é possível eliminar uma tarefa em "Por fazer" (A-11, alterada por RV-10).
@@ -189,6 +192,7 @@ Todos os requisitos desta secção são **Must** (D-23).
 - Uma tarefa está em atraso quando a data limite é anterior ao dia de hoje e o estado é diferente de Concluída (D-18).
 - No próprio dia da data limite, a tarefa não está em atraso (A-08).
 - O dia de hoje é determinado no fuso horário Europe/Lisbon (A-08).
+- A lista das tarefas em atraso está ordenada por data limite crescente, a mais antiga primeiro (Q-12).
 
 ### Transferência
 

@@ -43,7 +43,8 @@ O detalhe, as regras de negócio e a matriz de permissões estão em [docs/requi
 
 ## Estado atual
 
-- **Specification Pack (Aula 1):** concluído e revisto. Todas as questões (Q-01 a Q-11) e os pontos da revisão crítica (RV-01 a RV-23) estão decididos.
-- **Architecture Pack (Aula 2):** em curso. A arquitetura, o modelo de dados, o contrato OpenAPI e o wireframe estão propostos, por aprovar pela dona do produto (R-06). Falta a revisão crítica final.
+- **Specification Pack (Aula 1):** concluído e revisto (RV-01 a RV-23).
+- **Architecture Pack (Aula 2):** concluído e revisto (RV-24 a RV-30). A arquitetura, o modelo de dados, o contrato OpenAPI e o wireframe continuam como proposta, por aprovar pela dona do produto (R-06).
+- **Questões:** todas decididas (Q-01 a Q-13).
 - **Código:** ainda não existe. A stack tecnológica continua por escolher.
 - **Pendente:** decisões técnicas e requisitos de segurança por definir, em [docs/constraints.md](docs/constraints.md#4-decisões-técnicas-pendentes).

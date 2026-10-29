@@ -1,6 +1,6 @@
 # Matriz — Restrições, pressupostos e pendentes
 
-Versão 1.2 · 29 de outubro de 2026 · acrescenta Q-09 a Q-11 e atualiza o estado da arquitetura.
+Versão 1.3 · 29 de outubro de 2026 · a 1.2 acrescentou Q-09 a Q-11 e atualizou o estado da arquitetura; a 1.3 acrescenta Q-12, Q-13 e a revisão crítica do Architecture Pack (RV-24 a RV-30).
 
 > **Origem da informação.** O cliente é fictício. A única informação confirmada é a frase original do cliente (C-00). Todos os outros pontos são pressupostos da dona do produto: estão aprovados para orientar o desenvolvimento, mas **não são requisitos confirmados pelo cliente**.
 >
@@ -125,6 +125,8 @@ Questões levantadas ao consolidar a documentação, já decididas pela dona do 
 | Q-09 | Numa transferência, o novo Gestor passa a membro do projeto, se ainda não o for? | Sim, na mesma operação da transferência, para cumprir A-01. Levantada no modelo de dados (Ficha 02). | RF-30, EC-37, database.md | Decidido |
 | Q-10 | A unicidade do email ignora maiúsculas e minúsculas? | Sim: emails que só diferem em maiúsculas e minúsculas contam como o mesmo email. Levantada no modelo de dados (Ficha 02). | RF-02, RV-18, EC-38, database.md | Decidido |
 | Q-11 | Pode adicionar-se um utilizador com conta desativada como membro de um projeto? | Não: só se adicionam utilizadores com conta ativa, coerente com A-21. Levantada no modelo de dados (Ficha 02). | RF-06, A-21, EC-39, database.md | Decidido |
+| Q-12 | Por que ordem aparecem as tarefas na lista do projeto e na lista em atraso? | Lista do projeto: por estado (Por fazer, Em curso, Concluída) e, dentro de cada estado, por data limite crescente, com as tarefas sem data limite no fim. Lista em atraso: por data limite crescente. Não exige dados novos. Levantada no wireframe (Ficha 02, RV-26). | RF-15, RF-18, CA-17.3, CA-19.5, openapi.yaml, docs/ui/ | Decidido |
+| Q-13 | Um membro do projeto pode ver quem são os outros membros? | Sim, só pelo nome, sem email; não alarga a exposição de emails (RV-14). Levantada na revisão do Architecture Pack (RV-29). | RF-06, requirements.md secção 3, CA-07.3, docs/ui/ | Decidido |
 
 ### Decisões da revisão crítica
 
@@ -155,6 +157,20 @@ Resultado da revisão independente da documentação (Exercício 6). A dona do p
 | RV-21 | US-03 dependia de US-10, entregue depois. | US-10 passa para a ordem 2. | user-stories.md, secção 1 | Decidido (alterado) |
 | RV-22 | README e AGENTS.md desatualizados um em relação ao outro. | Atualizadas as duas referências. | README.md, AGENTS.md | Decidido |
 | RV-23 | A regra 6 do AGENTS.md omitia séries de IDs. | Alinhada com a secção 1 deste ficheiro. | AGENTS.md | Decidido |
+
+### Decisões da revisão crítica do Architecture Pack
+
+Resultado da revisão da coerência entre requisitos, arquitetura, dados, API e wireframe (Ficha 02, Exercício 5). A dona do produto decidiu cada ponto.
+
+| ID | Problema | Decisão | Onde se aplica | Estado |
+|---|---|---|---|---|
+| RV-24 | O diagrama de componentes mostrava o Progresso a ler a base de dados diretamente, contra a regra de os módulos não usarem as tabelas de outro módulo. | O Progresso lê as tarefas através da interface do módulo de Tarefas. | architecture.md, secção 4 | Decidido |
+| RV-25 | Não estava definido que erro se devolve quando um pedido tem vários problemas (ex.: Membro a criar uma tarefa num projeto arquivado). | Ordem de verificação: 401, 404, 403, 409, 400, 422. As permissões são verificadas antes do conteúdo do pedido. | openapi.yaml | Decidido |
+| RV-26 | A ordem da lista de tarefas e da lista em atraso não estava definida. | Decidida em Q-12. | Q-12 | Decidido |
+| RV-27 | O wireframe usa operações que o contrato não documenta (listar tarefas, dados do projeto, atribuir responsável, eliminar). | Listadas no openapi.yaml como operações por documentar; corrigida a validação do wireframe. | openapi.yaml, docs/ui/wireframe.md | Decidido |
+| RV-28 | O wireframe não mostrava como abrir uma tarefa para ler a descrição (CA-17.2). | O título da tarefa é um link para o detalhe. | docs/ui/ | Decidido |
+| RV-29 | Não estava definido se um membro vê os outros membros do projeto. | Decidida em Q-13. | Q-13 | Decidido |
+| RV-30 | O diagrama ER não dizia que a unicidade do email ignora maiúsculas e minúsculas (Q-10). | Acrescentado ao comentário do atributo. | database.md, secção 3 | Decidido |
 
 ## 3. Segurança e privacidade
 
