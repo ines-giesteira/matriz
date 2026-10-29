@@ -1,6 +1,6 @@
 # Matriz — Requisitos
 
-Versão 1.1 · 25 de outubro de 2026 · consolida o "Âmbito funcional e MVP" v0.1, o "Backlog inicial do MVP" v0.1, as decisões da dona do produto e a revisão crítica (RV-xx).
+Versão 1.2 · 29 de outubro de 2026 · consolida o "Âmbito funcional e MVP" v0.1, o "Backlog inicial do MVP" v0.1 (versões de trabalho anteriores, não incluídas no repositório), as decisões da dona do produto, a revisão crítica (RV-xx) e as decisões Q-09 a Q-11. A versão 1.2 acrescenta a justificação das funcionalidades fora do âmbito (secção 7).
 
 > **Origem da informação.** O cliente é fictício. A única informação confirmada é a frase original do cliente:
 >
@@ -232,18 +232,20 @@ O prazo para o piloto é de 3 meses (R-05).
 
 ## 7. Fora do âmbito inicial
 
-Estas funcionalidades não têm User Stories nesta fase.
+Estas funcionalidades não têm User Stories nesta fase. Ficam fora do MVP porque a primeira versão se limita ao definido em R-03 (D-23). A prioridade vem de D-21.
 
-| ID | Funcionalidade | Prioridade |
-|---|---|---|
-| RF-19 | Vista "As minhas tarefas", com as tarefas do utilizador em todos os projetos | Should |
-| RF-20 | Visão geral do Gestor, com os indicadores de todos os seus projetos | Should |
-| RF-21 | Filtrar e ordenar tarefas por estado, responsável, prioridade e data limite | Should |
-| RF-23 | Histórico de alterações de cada tarefa | Could |
-| RF-24 | Comentários em tarefas | Could |
-| RF-25 | Notificações (tarefa atribuída, prazo a aproximar-se) | Could |
-| RF-26 | Importação de tarefas a partir de folhas de cálculo | Could |
-| RF-27 | Estados configuráveis por projeto | Won't |
-| RF-28 | Acesso de pessoas externas | Won't |
-| RF-29 | Uso por várias empresas | Won't |
-| RF-31 | Definition of Done por tarefa, como condição para a concluir (RV-12) | Por priorizar |
+A coluna **Justificação** é uma proposta, por aprovar pela dona do produto: liga cada funcionalidade aos pressupostos já registados.
+
+| ID | Funcionalidade | Prioridade | Justificação (por aprovar) |
+|---|---|---|---|
+| RF-19 | Vista "As minhas tarefas", com as tarefas do utilizador em todos os projetos | Should | Útil a quem está em vários projetos (R-07); no MVP, cada membro já vê as suas tarefas projeto a projeto (RF-15). |
+| RF-20 | Visão geral do Gestor, com os indicadores de todos os seus projetos | Should | Apoia o objetivo de acabar com os pedidos de ponto de situação (R-02); no MVP, o progresso já se vê projeto a projeto (RF-16 a RF-18). |
+| RF-21 | Filtrar e ordenar tarefas por estado, responsável, prioridade e data limite | Should | Ganha valor quando há muitas tarefas; o volume do piloto está por definir (RNF-06). |
+| RF-23 | Histórico de alterações de cada tarefa | Could | Não é pedido por R-03; relaciona-se com o registo de auditoria, ainda por decidir (constraints.md, secção 3). |
+| RF-24 | Comentários em tarefas | Could | Não é pedido por R-03; no MVP, a descrição da tarefa já é editável pelo responsável (RF-13). |
+| RF-25 | Notificações (tarefa atribuída, prazo a aproximar-se) | Could | Não é pedido por R-03; no MVP, os atrasos já ficam visíveis no progresso (RF-18). |
+| RF-26 | Importação de tarefas a partir de folhas de cálculo | Could | Facilitaria sair do Excel (R-01), mas o piloto começa sem importação (constraints.md, secção 5). |
+| RF-27 | Estados configuráveis por projeto | Won't | Os estados são fixos (R-11). |
+| RF-28 | Acesso de pessoas externas | Won't | Sem acesso de pessoas externas (G-03). |
+| RF-29 | Uso por várias empresas | Won't | Uso interno de uma só empresa (G-02). |
+| RF-31 | Definition of Done por tarefa, como condição para a concluir (RV-12) | Por priorizar | Levantada na revisão crítica do cálculo da percentagem concluída; fica fora do MVP (RV-12). |

@@ -1,6 +1,6 @@
 # Matriz — Arquitetura
 
-Versão 0.1 · 26 de outubro de 2026 · Ficha Prática 02, Exercício 1
+Versão 0.2 · 29 de outubro de 2026 · Ficha Prática 02, Exercício 1 · corrige o sentido das dependências entre módulos.
 
 > **Estado: proposta, por aprovar pela dona do produto (R-06).** Este documento decide o estilo de arquitetura e os componentes do MVP. Não escolhe tecnologias: a stack, o alojamento e o método de autenticação continuam pendentes ([constraints.md](constraints.md#4-decisões-técnicas-pendentes)). Os pressupostos novos estão na secção 6, separados dos requisitos confirmados.
 
@@ -72,7 +72,7 @@ flowchart TB
 | **Cliente web** | Ecrãs da aplicação em português. Mostra só as ações permitidas ao utilizador, mas não é ele que garante as permissões. Pede confirmação antes de eliminar uma tarefa. | RNF-01, RNF-05, A-10 |
 | **Camada de API** | Recebe os pedidos, identifica o utilizador autenticado, valida o formato dos dados e os limites de tamanho, e devolve erros claros. | RNF-03, Q-01, Q-03 |
 | **Autorização** | Verifica, em cada pedido, se a conta está ativa e se o utilizador tem o perfil ou o papel no projeto necessário (Gestor do projeto, membro, responsável). Bloqueia alterações em projetos arquivados. Lê sempre o estado atual. | RF-01, RNF-04, RV-09, D-09, D-05, A-02 |
-| **Contas e perfis** | Criar contas, atribuir e retirar perfis, desativar e reativar contas. Garante o email único, o perfil Membro permanente, pelo menos 1 Administrador ativo e que o Administrador não se atribui o perfil Gestor. Antes de desativar ou retirar o perfil Gestor, pergunta ao módulo de Projetos se o utilizador ainda gere algum projeto. | RF-01 a RF-03, RV-01, RV-02, RV-11, RV-18, A-16 a A-18 |
+| **Contas e perfis** | Criar contas, atribuir e retirar perfis, desativar e reativar contas. Garante o email único, o perfil Membro permanente, pelo menos 1 Administrador ativo e que o Administrador não se atribui o perfil Gestor. Antes de desativar ou retirar o perfil Gestor, verifica se o utilizador ainda gere algum projeto, através de uma interface definida pelo próprio módulo de Contas (ver as regras entre módulos). | RF-01 a RF-03, RV-01, RV-02, RV-11, RV-18, A-16 a A-18 |
 | **Projetos e membros** | Criar, editar, arquivar e desarquivar projetos; gerir membros; lista de projetos do utilizador; transferência de projetos e a vista restrita do Administrador (nome e Gestor). | RF-04 a RF-08, RF-30, A-02 a A-06, A-14, Q-04 a Q-06 |
 | **Tarefas** | Criar, editar e eliminar tarefas; atribuir, assumir e largar responsável; mudar o estado; lista de tarefas do projeto. Aplica as regras de edição por perfil. | RF-09 a RF-15, RF-22, A-07, A-11, A-15, A-19 |
 | **Progresso** | Calcula, a partir das tarefas, a contagem por estado, a percentagem concluída (arredondada às décimas, máximo 99,9% até tudo estar concluído, "Sem tarefas") e as tarefas em atraso. Não guarda dados próprios. | RF-16 a RF-18, A-08, A-09, RV-12 |
@@ -81,7 +81,8 @@ flowchart TB
 
 **Regras entre módulos:**
 - Os módulos só comunicam pelas interfaces uns dos outros, nunca pelas tabelas de outro módulo.
-- As dependências seguem um só sentido: Progresso → Tarefas → Projetos → Contas. A verificação de A-16/A-17 (Contas precisa de saber se o utilizador gere projetos) é feita através de uma interface de consulta que o módulo de Projetos disponibiliza, para não criar uma dependência circular.
+- As dependências seguem um só sentido: Progresso → Tarefas → Projetos → Contas.
+- A verificação de A-16/A-17 precisa que Contas saiba se o utilizador ainda gere projetos. Para não criar a dependência Contas → Projetos, o módulo de Contas **define** a interface de que precisa ("este utilizador gere algum projeto, ativo ou arquivado?") e o módulo de Projetos **implementa-a**. Contas depende só da sua própria interface; o sentido Projetos → Contas mantém-se.
 - A autorização é verificada no backend em todos os pedidos; o cliente web nunca é a única barreira.
 
 ## 5. O que esta decisão não resolve
@@ -100,3 +101,4 @@ Continuam pendentes, conforme [constraints.md](constraints.md#4-decisões-técni
 - O cliente web e o backend comunicam por uma API HTTP (base para o `openapi.yaml` do Exercício 3).
 - O progresso é calculado no momento do pedido, sem valores guardados, por o volume do piloto ser baixo (RNF-06). A rever quando o volume de projetos e tarefas for definido.
 - Uma única base de dados serve todos os módulos; o tipo de base de dados é decidido com a stack.
+- A verificação de A-16/A-17 usa uma interface definida por Contas e implementada por Projetos, para manter as dependências num só sentido (secção 4).

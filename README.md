@@ -35,11 +35,14 @@ O detalhe, as regras de negócio e a matriz de permissões estão em [docs/requi
 | [`docs/requirements.md`](docs/requirements.md) | Visão, utilizadores, matriz de permissões, requisitos funcionais e não funcionais, âmbito do MVP e critério de conclusão. |
 | [`docs/user-stories.md`](docs/user-stories.md) | User Stories do MVP, critérios de aceitação e casos excecionais. |
 | [`docs/constraints.md`](docs/constraints.md) | Restrições, pressupostos e decisões (com estado), segurança e privacidade, decisões técnicas pendentes, limitações de âmbito. |
+| [`docs/architecture.md`](docs/architecture.md) | Arquitetura do MVP (monólito modular): comparação das alternativas, decisão e componentes. |
+| [`docs/database.md`](docs/database.md) | Modelo de dados e diagrama ER (Mermaid). |
+| [`openapi.yaml`](openapi.yaml) | Contrato REST simplificado (OpenAPI 3.1) com três operações do MVP. |
 | [`AGENTS.md`](AGENTS.md) | Instruções persistentes para agentes de desenvolvimento. |
 
 ## Estado atual
 
-- **Fase de especificação:** concluída e revista. Todas as questões (Q-01 a Q-11) e os pontos da revisão crítica (RV-01 a RV-23) estão decididos.
-- **Código:** ainda não existe.
-- **Próxima fase (Aula 2):** decisão da stack e da arquitetura.
+- **Specification Pack (Aula 1):** concluído e revisto. Todas as questões (Q-01 a Q-11) e os pontos da revisão crítica (RV-01 a RV-23) estão decididos.
+- **Architecture Pack (Aula 2):** em curso. A arquitetura, o modelo de dados e o contrato OpenAPI estão propostos, por aprovar pela dona do produto (R-06). Faltam o wireframe (`docs/ui/`) e a revisão crítica final.
+- **Código:** ainda não existe. A stack tecnológica continua por escolher.
 - **Pendente:** decisões técnicas e requisitos de segurança por definir, em [docs/constraints.md](docs/constraints.md#4-decisões-técnicas-pendentes).

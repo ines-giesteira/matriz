@@ -1,6 +1,6 @@
 # Matriz — User Stories e critérios de aceitação
 
-Versão 1.1 · 25 de outubro de 2026
+Versão 1.2 · 29 de outubro de 2026 · acrescenta EC-37 a EC-39 (Q-09 a Q-11).
 
 > **Origem da informação.** O cliente é fictício. Todas as regras são pressupostos da dona do produto.
 >

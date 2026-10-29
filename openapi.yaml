@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Matriz API
-  version: 0.1.0
+  version: 0.2.0
   summary: Contrato REST simplificado do MVP da Matriz.
   description: |
     Ficha Prática 02, Exercício 3. Proposta, por aprovar pela dona do produto (R-06).
@@ -24,6 +24,10 @@ info:
       (D-10, EC-18, CA-18.4). Um membro sem permissão para a ação recebe 403.
     - Uma ação recusada por o projeto estar arquivado responde 409 (D-09, EC-16).
     - Dados que violam regras de negócio respondem 422 com o campo e o motivo (Q-03).
+      Por isso o título vazio e os limites de tamanho não são declarados no schema do pedido
+      (um validador automático responderia 400): são verificados como regras de negócio.
+    - 400 fica reservado a pedidos mal formados: JSON inválido, campo desconhecido,
+      tipo errado ou valor fora do enumerado.
     - Os identificadores são texto opaco; o formato é decidido com a stack.
 
 servers:
@@ -315,13 +319,12 @@ components:
       properties:
         titulo:
           type: string
-          minLength: 1
-          maxLength: 200
-          description: Obrigatório; só espaços conta como vazio (Q-01). Até 200 caracteres (A-20).
+          description: |
+            Obrigatório; vazio ou só com espaços responde 422 (Q-01, EC-01, EC-02).
+            Até 200 caracteres; acima do limite responde 422 (A-20, EC-29).
         descricao:
           type: [string, 'null']
-          maxLength: 5000
-          description: Opcional; até 5000 caracteres (A-20).
+          description: Opcional; até 5000 caracteres; acima do limite responde 422 (A-20, EC-29).
         responsavelId:
           type: [string, 'null']
           description: Opcional. Membro do projeto com conta ativa (D-12, A-15).
@@ -459,7 +462,7 @@ components:
 
   responses:
     PedidoInvalido:
-      description: Pedido mal formado (JSON inválido, campo desconhecido ou valor fora do enumerado).
+      description: Pedido mal formado (JSON inválido, campo desconhecido, tipo errado ou valor fora do enumerado).
       content:
         application/json:
           schema:

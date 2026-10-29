@@ -1,6 +1,6 @@
 # AGENTS.md — Matriz
 
-A Matriz é uma aplicação de gestão de projetos e tarefas para equipas. O cliente é fictício: todas as regras são pressupostos aprovados pela dona do produto. A fase de especificação está concluída e revista (ver o estado atual no `README.md`); ainda não há código e a stack só é escolhida na Aula 2.
+A Matriz é uma aplicação de gestão de projetos e tarefas para equipas. O cliente é fictício: todas as regras são pressupostos aprovados pela dona do produto. A especificação está concluída e revista; a arquitetura, o modelo de dados e o contrato da API estão propostos, por aprovar (ver o estado atual no `README.md`). Ainda não há código e a stack tecnológica está por escolher.
 
 ## 1. Ler antes de agir
 
@@ -11,6 +11,9 @@ Antes de qualquer tarefa, lê o `README.md` e o ficheiro indicado para o tipo de
 | Funcionalidade, regra de negócio ou permissões | `docs/requirements.md` (RF, RNF, matriz de permissões, âmbito do MVP) |
 | Implementação ou testes de uma User Story | `docs/user-stories.md` (US, CA-xx.x, EC-xx) e os RF que a US cobre |
 | Decisões, pressupostos, segurança, escolhas técnicas | `docs/constraints.md` (C, R, G, D, A, Q, RV, decisões pendentes) |
+| Estrutura do sistema, módulos e as suas dependências | `docs/architecture.md` |
+| Dados, entidades e regras de integridade | `docs/database.md` |
+| Endpoints, pedidos, respostas e códigos de erro | `openapi.yaml` |
 
 ## 2. Regras de trabalho
 
@@ -25,7 +28,7 @@ Antes de qualquer tarefa, lê o `README.md` e o ficheiro indicado para o tipo de
 
 - Apagar ou mover ficheiros.
 - Reescrever o histórico do repositório.
-- Alterar qualquer ficheiro em `docs/`, o `README.md` ou este `AGENTS.md`.
+- Alterar qualquer ficheiro em `docs/`, o `openapi.yaml`, o `README.md` ou este `AGENTS.md`.
 - Criar, alterar ou apagar dados.
 - Mexer em credenciais ou configurações de acesso.
 
@@ -42,7 +45,7 @@ Comunica sempre:
 - **Alterações** feitas, ficheiro a ficheiro.
 - **Verificações** efetuadas, com os CA-xx.x e EC-xx cobertos e o resultado de cada uma.
 
-## A completar após a Aula 2
+## A completar quando a stack for escolhida
 
 - Stack tecnológica escolhida.
 - Estrutura de pastas do código.

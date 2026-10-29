@@ -1,8 +1,10 @@
 # Matriz — Restrições, pressupostos e pendentes
 
-Versão 1.1 · 25 de outubro de 2026
+Versão 1.2 · 29 de outubro de 2026 · acrescenta Q-09 a Q-11 e atualiza o estado da arquitetura.
 
 > **Origem da informação.** O cliente é fictício. A única informação confirmada é a frase original do cliente (C-00). Todos os outros pontos são pressupostos da dona do produto: estão aprovados para orientar o desenvolvimento, mas **não são requisitos confirmados pelo cliente**.
+>
+> Os documentos "Âmbito funcional e MVP" v0.1 e "Backlog inicial do MVP" v0.1, citados como origem de D-xx e A-xx, foram versões de trabalho anteriores e não estão no repositório. O seu conteúdo aprovado está consolidado neste ficheiro e em [requirements.md](requirements.md).
 >
 > - Os requisitos (RF-xx, RNF-xx) estão em [requirements.md](requirements.md).
 > - Os critérios de aceitação (CA-xx.x, EC-xx) estão em [user-stories.md](user-stories.md).
@@ -10,8 +12,8 @@ Versão 1.1 · 25 de outubro de 2026
 ## 1. Restrições conhecidas
 
 - **Cliente fictício.** Só a frase original (C-00) está confirmada. A dona do produto assume o papel de cliente e é a única responsável pela aprovação (R-06).
-- **Fase de especificação.** Não há código nesta fase.
-- **Stack por decidir.** A stack tecnológica e a arquitetura são decididas na Aula 2. Os documentos de especificação não referem tecnologias.
+- **Sem código.** A especificação está concluída e a arquitetura está proposta; ainda não há código.
+- **Stack por decidir.** A arquitetura proposta (monólito modular, [architecture.md](architecture.md)) não escolhe tecnologias. Os documentos de especificação e de arquitetura não referem tecnologias.
 - **Prazo.** O piloto tem um prazo de 3 meses (R-05).
 - **IDs estáveis.** Os IDs (C, RF, RNF, US, CA, EC, R, G, D, A, Q, RV) não são renumerados. IDs novos são acrescentados no fim de cada série.
 
@@ -178,9 +180,9 @@ Resultado da revisão independente da documentação (Exercício 6). A dona do p
 
 ## 4. Decisões técnicas pendentes
 
-A decidir a partir da Aula 2. Não há soluções propostas nesta fase.
+A arquitetura está proposta em [architecture.md](architecture.md) (monólito modular, por aprovar pela dona do produto). Para os pontos seguintes ainda não há soluções propostas.
 
-- Stack tecnológica e arquitetura.
+- Stack tecnológica (linguagens, frameworks, tipo de base de dados).
 - Alojamento da aplicação e localização dos dados.
 - Método de autenticação (secção 3).
 - Como garantir que alterações de acesso produzem efeito em sessões já abertas (RV-09).
