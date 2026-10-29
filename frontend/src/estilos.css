@@ -1,0 +1,23 @@
+:root {
+  --texto: #222;
+  --texto-suave: #666;
+  --fundo: #fff;
+  --erro: #a40000;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: var(--texto);
+  background: var(--fundo);
+}
+
+body {
+  margin: 0;
+}
+
+.pagina {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.erro {
+  color: var(--erro);
+}

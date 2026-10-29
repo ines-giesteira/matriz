@@ -49,12 +49,26 @@ Comunica sempre:
 
 ## Stack e estrutura
 
-- **Stack:** Node.js 24 LTS e TypeScript, Express, React com Vite, SQLite, Vitest e Supertest (Q-14, `docs/architecture.md`, secção 3.1).
-- **Estrutura de pastas prevista e definição de pronto:** `docs/implementation-plan.md`, secções 3 e 6.
+- **Stack:** Node.js 26 e TypeScript, Express, React com Vite, SQLite através de `node:sqlite`, Vitest e Supertest (Q-14, `docs/architecture.md`, secção 3.1).
+- **Estrutura de pastas e definição de pronto:** `docs/implementation-plan.md`, secções 3 e 6.
 
-## A completar no Exercício 2 da Ficha 3
+## Comandos
 
-- Como instalar, executar e construir o projeto.
-- Como correr os testes.
+Instalação, configuração e contas de demonstração: `README.md`, secção "Como executar".
+
+| Comando | Quando usar |
+|---|---|
+| `npm install` | Depois de mudar dependências. |
+| `npm run bd:migrar` | Depois de acrescentar uma migration em `backend/migrations/`. |
+| `npm run bd:seed` | Para criar os dados de demonstração numa base vazia. |
+| `npm run dev` | Para experimentar a aplicação. |
+| `npm test` | Antes de cada commit; tem de passar. |
+| `npm run typecheck -w backend` e `npm run build` | Antes de cada commit; não podem ter erros. |
+
+- Nunca alterar uma migration já aplicada: as alterações ao esquema vão numa migration nova, com o número seguinte.
+- Não apagar a pasta `dados/` nem a base de dados sem aprovação (secção 3).
+
+## A completar
+
 - Convenções de código e de nomes.
 - Convenções de commits e de branches.

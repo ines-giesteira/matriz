@@ -49,12 +49,12 @@ Decidida na conciliação com a Ficha 3. Escolhida por ser simples de instalar (
 
 | Camada | Escolha | Estado |
 |---|---|---|
-| Runtime e linguagem | Node.js 24 LTS e TypeScript, no backend e no frontend | Decidido (Q-14) |
+| Runtime e linguagem | Node.js 26 e TypeScript, no backend e no frontend | Decidido (Q-14; versão atualizada ao instalar) |
 | Backend | Express | Decidido (Q-14) |
 | Frontend | React com Vite | Decidido (Q-14) |
 | Base de dados | SQLite, num ficheiro local | Decidido (Q-14) |
 | Testes | Vitest; Supertest para os pedidos HTTP ao backend | Decidido (Q-14) |
-| Acesso à base de dados | `better-sqlite3`, com SQL escrito à mão e migrations em ficheiros `.sql` | Aprovado (P1) |
+| Acesso à base de dados | `node:sqlite`, incluído no Node, com SQL escrito à mão e migrations em ficheiros `.sql` | Aprovado (P1; substitui `better-sqlite3`, que no Windows exigia compilar código nativo) |
 | Validação dos pedidos | `zod` | Aprovado (P1) |
 | Hash da palavra-passe | `bcryptjs` | Aprovado (P1) |
 | Navegação no frontend | React Router | Aprovado (P1) |

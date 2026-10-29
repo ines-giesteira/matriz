@@ -134,7 +134,7 @@ A Ficha Prática 03 define um âmbito funcional que tinha de ser conciliado com 
 
 | ID | Questão | Decisão | Onde se aplica | Estado |
 |---|---|---|---|---|
-| Q-14 | Que stack tecnológica se usa? | Node.js 24 LTS e TypeScript no backend e no frontend; backend com Express; frontend com React e Vite; base de dados SQLite; testes com Vitest e Supertest. | architecture.md, implementation-plan.md | Decidido |
+| Q-14 | Que stack tecnológica se usa? | Node.js 26 e TypeScript no backend e no frontend; backend com Express; frontend com React e Vite; base de dados SQLite, através do módulo `node:sqlite`; testes com Vitest e Supertest. Começou como Node.js 24 LTS; mudou para o Node.js 26, a versão instalada, por decisão da dona do produto no Exercício 2. | architecture.md, implementation-plan.md | Decidido |
 | Q-15 | Os comentários em tarefas entram no MVP? | Sim (RF-24 passa a Must). Qualquer membro do projeto adiciona e lista comentários; o autor e a data são obtidos no backend; não se comenta num projeto arquivado (D-09). | RF-24, US-24 | Decidido |
 | Q-16 | A pesquisa e os filtros entram no MVP? | Sim: pesquisar projetos pelo nome (RF-33) e filtrar tarefas por estado e prioridade (RF-34). Os outros filtros e a escolha da ordem continuam fora (RF-21). | RF-33, RF-34, US-22, US-23 | Decidido |
 | Q-17 | Há um painel inicial? | Sim (RF-35): o ecrã inicial mostra os projetos do utilizador com a contagem de tarefas por estado e ligação ao detalhe. A visão geral completa do Gestor continua fora (RF-20). | RF-35, US-25, CA-01.1 | Decidido |

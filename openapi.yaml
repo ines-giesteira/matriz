@@ -13,7 +13,7 @@ info:
     - Arquitetura em `docs/architecture.md`; modelo de dados em `docs/database.md`;
       plano de implementação em `docs/implementation-plan.md`.
     - Autenticação por sessão (Q-22): `POST /sessao` devolve o cookie httpOnly `matriz_sessao`.
-      Todas as outras operações exigem esse cookie e uma conta ativa (RF-01, D-01).
+      Todas as outras operações, exceto `GET /saude`, exigem esse cookie e uma conta ativa (RF-01, D-01).
     - A autorização é verificada em cada pedido, com o estado atual da conta, dos perfis e dos papéis (RV-09).
     - A identidade do utilizador, o autor dos comentários e as datas são obtidos no backend,
       nunca aceites do cliente (Q-15, Q-22).
@@ -70,6 +70,37 @@ tags:
     description: Indicadores de progresso de um projeto (RF-16 a RF-18).
 
 paths:
+  # ---------------------------------------------------------------- Saúde
+  /saude:
+    get:
+      tags: [Sessão]
+      operationId: obterSaude
+      summary: Confirmar que o backend e a base de dados respondem
+      description: Operação técnica, sem autenticação (Ficha 3, Exercício 2). Não devolve dados de negócio.
+      security: []
+      responses:
+        '200':
+          description: Backend e base de dados disponíveis.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [estado, baseDeDados, migrations]
+                properties:
+                  estado:
+                    type: string
+                    enum: [ok]
+                  baseDeDados:
+                    type: string
+                    enum: [ok]
+                  migrations:
+                    type: integer
+                    description: Número de migrations aplicadas.
+              example:
+                estado: ok
+                baseDeDados: ok
+                migrations: 1
+
   # ---------------------------------------------------------------- Sessão
   /sessao:
     post:

@@ -42,7 +42,7 @@ Detalhes que a documentação não fixava e de que a implementação precisa. Ap
 
 | # | Proposta | Motivo |
 |---|---|---|
-| P1 | Bibliotecas: `better-sqlite3` com SQL escrito à mão, `zod` para validar pedidos, `bcryptjs` para o hash das palavras-passe, React Router no frontend. | Poucas dependências, sem geração de código; `bcryptjs` não precisa de compilação nativa. |
+| P1 | Bibliotecas: `node:sqlite` (incluído no Node; substitui o `better-sqlite3`, que no Windows exigia compilar código nativo — ver secção 7) com SQL escrito à mão, `zod` para validar pedidos, `bcryptjs` para o hash das palavras-passe, React Router no frontend. | Poucas dependências, sem geração de código; `bcryptjs` não precisa de compilação nativa. |
 | P2 | Sessão expira após 8 horas sem atividade; cookie `matriz_sessao` httpOnly, `SameSite=Lax`, `Secure` fora do desenvolvimento. | Um dia de trabalho; `SameSite=Lax` e pedidos só em JSON reduzem o risco de pedidos forjados entre sites. |
 | P3 | Palavra-passe com pelo menos 8 caracteres. No MVP, só o Administrador a define, ao criar a conta; o utilizador não a muda. | A mudança e a recuperação da palavra-passe são extensões opcionais. |
 | P4 | Comentários com 1 a 2000 caracteres; não se editam nem eliminam no MVP. | Valor do exemplo da Ficha 3; a ficha só pede adicionar e listar. |
@@ -63,16 +63,18 @@ matriz/
 ├── backend/
 │   ├── package.json
 │   ├── tsconfig.json
+│   ├── migrations/           # fora de src/, para servir ao tsx e ao build
+│   │   └── 001_esquema_inicial.sql
 │   ├── src/
 │   │   ├── servidor.ts       # arranque: lê a configuração, aplica migrations, inicia o Express
 │   │   ├── app.ts            # cria a aplicação Express (usada também nos testes)
 │   │   ├── config.ts         # lê e valida as variáveis de ambiente
 │   │   ├── bd/
-│   │   │   ├── ligacao.ts    # abre o SQLite e ativa as chaves estrangeiras
+│   │   │   ├── ligacao.ts    # abre o SQLite (node:sqlite), chaves estrangeiras, transações
 │   │   │   ├── migrar.ts     # aplica as migrations por ordem, uma só vez
 │   │   │   ├── seed.ts       # dados de demonstração, só se a base estiver vazia
-│   │   │   └── migrations/
-│   │   │       └── 001_esquema_inicial.sql
+│   │   │   ├── cli-migrar.ts # npm run bd:migrar
+│   │   │   └── cli-seed.ts   # npm run bd:seed
 │   │   ├── http/             # camada de API: sessão, erros, validação
 │   │   ├── autorizacao/      # verificação de perfis e papéis
 │   │   ├── relogio.ts        # dia de hoje em Europe/Lisbon (substituível nos testes)
@@ -104,7 +106,7 @@ Cada módulo do backend tem rotas, serviço (regras de negócio) e repositório 
 | `npm run dev` | Arranca o backend e o frontend em modo de desenvolvimento. |
 | `npm test` | Corre os testes automáticos. |
 
-**Pré-requisito:** Node.js 24 LTS instalado. Hoje não está instalado neste computador; tem de ser instalado antes do Exercício 2.
+**Pré-requisito:** Node.js 26 (Q-14). Ferramentas de desenvolvimento acrescentadas no I0: `tsx` (correr TypeScript em desenvolvimento) e `concurrently` (arrancar backend e frontend com um só comando).
 
 ## 4. Incrementos
 
@@ -222,7 +224,7 @@ Cada incremento é vertical: base de dados, API, interface e testes. Para cada u
 
 | Risco | Mitigação |
 |---|---|
-| `better-sqlite3` precisa de binários nativos; pode falhar a instalação no Windows. | Usar Node.js 24 LTS, para o qual há binários pré-compilados; alternativa: o módulo `node:sqlite` incluído no Node. |
+| `better-sqlite3` precisa de binários nativos; pode falhar a instalação no Windows. | **Aconteceu no I0:** a versão 13 compila código C++ ao instalar, o que exige ferramentas que não estão instaladas. Aplicada a alternativa: `node:sqlite`, incluído no Node 26. |
 | O âmbito alargado (Q-15 a Q-20) aumenta o trabalho. | Incrementos pequenos e verticais; I8 a I10 só depois do essencial. |
 | Diferenças entre o contrato e a implementação. | Testes de API escritos a partir do `openapi.yaml`; atualizar os dois em conjunto. |
 
@@ -230,7 +232,7 @@ Cada incremento é vertical: base de dados, API, interface e testes. Para cada u
 
 | # | Estado | Notas |
 |---|---|---|
-| I0 | Por fazer | Requer Node.js 24 LTS instalado. |
+| I0 | Concluído (29/10/2026) | Estrutura, configuração, migration 001, seed, `GET /api/saude` e 19 testes. Base de dados com `node:sqlite` (ver secção 7). Verificado: migrations e seed idempotentes, dados mantidos após reiniciar o backend, interface ligada ao backend. |
 | I1 | Por fazer | |
 | I2 | Por fazer | |
 | I3 | Por fazer | |

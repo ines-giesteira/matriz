@@ -1,0 +1,23 @@
+{
+  "name": "matriz",
+  "private": true,
+  "description": "Matriz: gestão de projetos e tarefas para equipas (MVP).",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "engines": {
+    "node": ">=26"
+  },
+  "scripts": {
+    "dev": "concurrently --names backend,frontend --prefix-colors blue,green \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "bd:migrar": "npm run bd:migrar -w backend",
+    "bd:seed": "npm run bd:seed -w backend",
+    "build": "npm run build -w backend && npm run build -w frontend",
+    "start": "npm run start -w backend",
+    "test": "npm test -w backend"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.6"
+  }
+}

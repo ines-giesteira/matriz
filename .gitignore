@@ -1,0 +1,20 @@
+# Dependências
+node_modules/
+
+# Configuração local (pode ter segredos); só o .env.example vai para o Git
+.env
+
+# Base de dados local
+dados/
+
+# Builds
+backend/dist/
+frontend/dist/
+
+# Configuração local do Claude (caminhos desta máquina)
+.claude/launch.json
+
+# Registos e ficheiros do sistema
+*.log
+.DS_Store
+Thumbs.db
