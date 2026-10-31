@@ -233,7 +233,7 @@ Cada incremento é vertical: base de dados, API, interface e testes. Para cada u
 | # | Estado | Notas |
 |---|---|---|
 | I0 | Concluído (29/10/2026) | Estrutura, configuração, migration 001, seed, `GET /api/saude` e 19 testes. Base de dados com `node:sqlite` (ver secção 7). Verificado: migrations e seed idempotentes, dados mantidos após reiniciar o backend, interface ligada ao backend. |
-| I1 | Por fazer | |
+| I1 | Concluído (31/10/2026) | `POST`, `GET` e `DELETE /sessao`; sessão no servidor com o hash do identificador, renovada a cada pedido (P2); 401 em todo o `/api` exceto `/saude` e a entrada; verificações de perfil, membro, Gestor e responsável em `autorizacao/` (usadas a partir do I2). Interface: entrada, rota protegida, painel provisório e "Sair". React Router acrescentado (P1). 20 testes novos (39 no total). |
 | I2 | Por fazer | |
 | I3 | Por fazer | |
 | I4 | Por fazer | |

@@ -100,6 +100,16 @@ Criadas pelo seed; todos os dados são fictícios. A palavra-passe de todas é o
 
 O projeto "Lançamento do novo site" tem as 10 tarefas do CA-18.1 e do [wireframe](docs/ui/wireframe.md).
 
+### Sessão
+
+Entra-se em `http://localhost:5173` com o email e a palavra-passe de uma conta de demonstração. O ciclo da sessão (Q-22, P2):
+
+1. Ao entrar, o backend cria a sessão e devolve o cookie `matriz_sessao` (httpOnly, `SameSite=Lax`; `Secure` quando `NODE_ENV=production`). Na base de dados guarda-se só o hash do identificador.
+2. Cada pedido relê a conta e os perfis e renova a sessão: expira após `SESSAO_HORAS` horas sem atividade.
+3. A sessão termina com "Sair", quando expira ou quando a conta é desativada. A interface volta então à entrada com a mensagem "A sessão terminou. Entre novamente.".
+
+As palavras-passe são guardadas só como hash (`bcryptjs`). O contrato da sessão está em [`openapi.yaml`](openapi.yaml) (`/sessao`).
+
 ### Arranque
 
 Em desenvolvimento (backend em `http://localhost:3000/api`, interface em `http://localhost:5173`):
@@ -124,7 +134,7 @@ npm start
 npm test
 ```
 
-Para confirmar que o backend e a base de dados respondem, abre-se `http://localhost:5173` (a página mostra o estado do servidor) ou `http://localhost:3000/api/saude`.
+Para confirmar que o backend e a base de dados respondem, abre-se `http://localhost:3000/api/saude`.
 
 ## Estado atual
 
@@ -133,5 +143,5 @@ Para confirmar que o backend e a base de dados respondem, abre-se `http://localh
 - **Implementação (Aula 3):** plano consolidado em [docs/implementation-plan.md](docs/implementation-plan.md); âmbito conciliado com a Ficha 3 (Q-14 a Q-22). As propostas técnicas do plano (P1 a P10) estão aprovadas.
 - **Questões:** todas decididas (Q-01 a Q-22).
 - **Stack:** Node.js 26 e TypeScript, Express, React com Vite, SQLite através de `node:sqlite` (Q-14).
-- **Código:** incremento I0 concluído (estrutura, configuração, esquema, migrations, seed e testes). O estado de cada incremento está em [docs/implementation-plan.md](docs/implementation-plan.md#8-estado-do-plano).
+- **Código:** incrementos I0 (estrutura, configuração, esquema, migrations, seed e testes) e I1 (sessão e autorização base) concluídos. O estado de cada incremento está em [docs/implementation-plan.md](docs/implementation-plan.md#8-estado-do-plano).
 - **Pendente:** decisões técnicas e requisitos de segurança por definir, em [docs/constraints.md](docs/constraints.md#4-decisões-técnicas-pendentes).

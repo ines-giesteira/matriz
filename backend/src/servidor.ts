@@ -10,7 +10,11 @@ const bd = abrirBd(config.caminhoBd);
 const aplicadas = aplicarMigrations(bd);
 if (aplicadas.length > 0) console.log(`Migrations aplicadas: ${aplicadas.join(', ')}`);
 
-const app = criarApp({ bd });
+const app = criarApp({
+  bd,
+  sessao: { duracaoMs: config.sessaoHoras * 60 * 60 * 1000 },
+  cookieSeguro: config.cookieSeguro,
+});
 const servidor = app.listen(config.porta, () => {
   console.log(`Backend da Matriz em http://localhost:${config.porta}/api (base de dados: ${config.caminhoBd})`);
 });

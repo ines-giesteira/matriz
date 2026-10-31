@@ -21,6 +21,8 @@ export type Config = {
   caminhoBd: string;
   sessaoHoras: number;
   seedPalavraPasse: string | undefined;
+  /** Cookie de sessão com Secure fora do desenvolvimento (P2): ativo quando NODE_ENV=production. */
+  cookieSeguro: boolean;
 };
 
 /**
@@ -46,5 +48,6 @@ export function lerConfig(ambiente: NodeJS.ProcessEnv = process.env): Config {
     caminhoBd: path.isAbsolute(v.CAMINHO_BD) ? v.CAMINHO_BD : path.join(RAIZ_REPOSITORIO, v.CAMINHO_BD),
     sessaoHoras: v.SESSAO_HORAS,
     seedPalavraPasse: v.SEED_PALAVRA_PASSE,
+    cookieSeguro: ambiente.NODE_ENV === 'production',
   };
 }

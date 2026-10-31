@@ -14,6 +14,15 @@ info:
       plano de implementação em `docs/implementation-plan.md`.
     - Autenticação por sessão (Q-22): `POST /sessao` devolve o cookie httpOnly `matriz_sessao`.
       Todas as outras operações, exceto `GET /saude`, exigem esse cookie e uma conta ativa (RF-01, D-01).
+    - Ciclo da sessão (Q-22, P2):
+      1. `POST /sessao` com credenciais corretas e conta ativa cria a sessão no servidor e devolve o cookie
+         `matriz_sessao` (httpOnly, SameSite=Lax, Path=/; Secure fora do desenvolvimento). O cookie não tem
+         Max-Age: a expiração é decidida no servidor. Na base de dados guarda-se só o hash do identificador.
+      2. Cada pedido com o cookie relê a conta e os perfis e renova a expiração: a sessão expira após
+         8 horas sem atividade (`SESSAO_HORAS`).
+      3. A sessão deixa de ser aceite quando expira, quando a conta é desativada ou quando o utilizador
+         a termina com `DELETE /sessao`. A partir daí, os pedidos recebem 401 `NAO_AUTENTICADO` e a
+         resposta apaga o cookie.
     - A autorização é verificada em cada pedido, com o estado atual da conta, dos perfis e dos papéis (RV-09).
     - A identidade do utilizador, o autor dos comentários e as datas são obtidos no backend,
       nunca aceites do cliente (Q-15, Q-22).
@@ -109,8 +118,9 @@ paths:
       summary: Iniciar sessão
       description: |
         US-01, RF-01, Q-22. Em caso de sucesso, devolve o cookie `matriz_sessao` (httpOnly, SameSite=Lax).
-        Credenciais erradas e conta desativada recebem a mesma resposta 401, para não revelar que a conta existe
-        (CA-01.3, EC-20).
+        Credenciais erradas, email inexistente e conta desativada recebem a mesma resposta 401, para não revelar
+        que a conta existe (CA-01.3, EC-20). O email não distingue maiúsculas. Ver o ciclo da sessão na descrição
+        geral do contrato.
       security: []
       requestBody:
         required: true
@@ -167,7 +177,7 @@ paths:
       tags: [Sessão]
       operationId: sair
       summary: Terminar sessão
-      description: US-01, CA-01.4. Apaga a sessão no servidor e o cookie.
+      description: US-01, CA-01.4. Apaga a sessão no servidor e o cookie; os pedidos seguintes com o mesmo cookie recebem 401.
       responses:
         '204':
           description: Sessão terminada.

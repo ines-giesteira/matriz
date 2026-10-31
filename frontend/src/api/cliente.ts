@@ -14,6 +14,14 @@ export class ErroApi extends Error {
   }
 }
 
+// Chamado quando a API responde 401 (sessão inválida ou terminada), exceto no próprio pedido de entrada.
+// A sessão da interface regista aqui o encaminhamento para a entrada (CA-01.5).
+let aoPerderSessao: (() => void) | null = null;
+
+export function definirAoPerderSessao(funcao: (() => void) | null): void {
+  aoPerderSessao = funcao;
+}
+
 export async function pedido<T>(caminho: string, opcoes: RequestInit = {}): Promise<T> {
   let resposta: Response;
   try {
@@ -30,6 +38,8 @@ export async function pedido<T>(caminho: string, opcoes: RequestInit = {}): Prom
 
   const corpo = await resposta.json().catch(() => null);
   if (!resposta.ok) {
+    const eEntrada = caminho === '/sessao' && (opcoes.method ?? 'GET').toUpperCase() === 'POST';
+    if (resposta.status === 401 && !eEntrada) aoPerderSessao?.();
     throw new ErroApi(
       resposta.status,
       corpo?.codigo ?? 'ERRO',
