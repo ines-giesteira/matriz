@@ -52,3 +52,16 @@ export const eliminarProjeto = (id: number) => pedido<void>(`/admin/projetos/${i
 export const transferirProjeto = (id: number, gestorId: number) =>
   pedido<ProjetoAdmin>(`/admin/projetos/${id}/gestor`, json('PUT', { gestorId }));
 export const listarGestoresElegiveis = () => pedido<UtilizadorResumo[]>('/utilizadores/gestores-elegiveis');
+
+// ---------------------------------------------------------------- Membros (RF-06)
+
+/** Membro visto dentro do projeto, sem email (Q-13). */
+export type Membro = { id: number; nome: string; contaAtiva: boolean };
+
+export const listarMembros = (projetoId: number) => pedido<Membro[]>(`/projetos/${projetoId}/membros`);
+export const listarCandidatosMembros = (projetoId: number) =>
+  pedido<UtilizadorResumo[]>(`/projetos/${projetoId}/candidatos-membros`);
+export const adicionarMembro = (projetoId: number, utilizadorId: number) =>
+  pedido<Membro[]>(`/projetos/${projetoId}/membros`, json('POST', { utilizadorId }));
+export const removerMembro = (projetoId: number, utilizadorId: number) =>
+  pedido<void>(`/projetos/${projetoId}/membros/${utilizadorId}`, { method: 'DELETE' });

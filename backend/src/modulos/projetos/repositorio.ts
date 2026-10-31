@@ -113,3 +113,43 @@ export function garantirMembro(bd: Bd, projetoId: number, utilizadorId: number):
 export function apagarProjeto(bd: Bd, id: number): void {
   bd.prepare('DELETE FROM projeto WHERE id = ?').run(id);
 }
+
+// ---------------------------------------------------------------- Membros (RF-06)
+
+export type Membro = { id: number; nome: string; contaAtiva: boolean };
+export type Candidato = { id: number; nome: string; email: string };
+
+/** Membros do projeto, sem email (Q-13). */
+export function listarMembros(bd: Bd, projetoId: number): Membro[] {
+  return bd
+    .prepare(
+      `SELECT u.id, u.nome, u.ativo FROM membro_projeto m JOIN utilizador u ON u.id = m.utilizador_id
+       WHERE m.projeto_id = ?`,
+    )
+    .all(projetoId)
+    .map((l) => ({ id: Number(l.id), nome: String(l.nome), contaAtiva: Number(l.ativo) === 1 }));
+}
+
+/** Contas ativas que ainda não são membros do projeto, com nome e email (A-21, Q-11). */
+export function listarCandidatosMembros(bd: Bd, projetoId: number): Candidato[] {
+  return bd
+    .prepare(
+      `SELECT u.id, u.nome, u.email FROM utilizador u
+       WHERE u.ativo = 1
+         AND NOT EXISTS (SELECT 1 FROM membro_projeto m WHERE m.projeto_id = ? AND m.utilizador_id = u.id)`,
+    )
+    .all(projetoId)
+    .map((l) => ({ id: Number(l.id), nome: String(l.nome), email: String(l.email) }));
+}
+
+export function inserirMembro(bd: Bd, projetoId: number, utilizadorId: number): void {
+  bd.prepare('INSERT INTO membro_projeto (projeto_id, utilizador_id) VALUES (?, ?)').run(projetoId, utilizadorId);
+}
+
+/** Remove o membro e as suas atribuições nas tarefas desse projeto; as tarefas mantêm os outros responsáveis (A-14, Q-20). */
+export function apagarMembro(bd: Bd, projetoId: number, utilizadorId: number): void {
+  bd.prepare(
+    'DELETE FROM atribuicao WHERE utilizador_id = ? AND tarefa_id IN (SELECT id FROM tarefa WHERE projeto_id = ?)',
+  ).run(utilizadorId, projetoId);
+  bd.prepare('DELETE FROM membro_projeto WHERE projeto_id = ? AND utilizador_id = ?').run(projetoId, utilizadorId);
+}

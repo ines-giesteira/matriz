@@ -359,3 +359,47 @@ button:disabled {
   overflow: hidden;
   clip: rect(0 0 0 0);
 }
+
+/* Secções do detalhe do projeto e membros */
+.seccao {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid var(--borda);
+}
+
+.lista-membros {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+  max-width: 520px;
+}
+
+.lista-membros li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--fundo-suave);
+}
+
+.adicionar-membro {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 520px;
+}
+
+.adicionar-membro label {
+  font-weight: 600;
+}
+
+.adicionar-membro select {
+  font: inherit;
+  padding: 8px;
+  border: 1px solid var(--borda);
+  border-radius: 4px;
+  flex: 1 1 220px;
+  min-width: 0;
+}

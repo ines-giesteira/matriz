@@ -2,7 +2,7 @@
 
 Versão 0.1 · 29 de outubro de 2026 · Ficha Prática 03, Exercício 1
 
-> **Estado: plano aprovado pela dona do produto: decisões Q-14 a Q-22 e propostas técnicas P1 a P14 (secção 2).** Este plano transforma a documentação num conjunto de incrementos executáveis. Cada incremento indica os RF e as US que cobre, os componentes e ficheiros previstos, as dependências, os critérios de aceitação e a forma de verificação. O estado de cada incremento é atualizado ao longo da implementação (secção 8).
+> **Estado: plano aprovado pela dona do produto: decisões Q-14 a Q-22 e propostas técnicas P1 a P16 (secção 2).** Este plano transforma a documentação num conjunto de incrementos executáveis. Cada incremento indica os RF e as US que cobre, os componentes e ficheiros previstos, as dependências, os critérios de aceitação e a forma de verificação. O estado de cada incremento é atualizado ao longo da implementação (secção 8).
 
 **Fontes:** [requirements.md](requirements.md), [user-stories.md](user-stories.md), [constraints.md](constraints.md), [architecture.md](architecture.md), [database.md](database.md), [openapi.yaml](../openapi.yaml) e [ui/wireframe.md](ui/wireframe.md).
 
@@ -56,6 +56,8 @@ Detalhes que a documentação não fixava e de que a implementação precisa. Ap
 | P12 | Nas listas de projetos (do utilizador e do Administrador), dentro de cada grupo (ativos, arquivados), a ordem é alfabética do nome. Aprovado a 31/10/2026. | A-06 só fixava a ordem entre grupos. |
 | P13 | O nome do projeto guarda-se sem espaços no início e no fim, e o limite de 100 caracteres conta-se depois. A descrição guarda-se como foi escrita. Aprovado a 31/10/2026. | Q-01 só dizia que um nome só com espaços conta como vazio. |
 | P14 | Transferir um projeto para o seu Gestor atual é aceite sem efeito (200). Aprovado a 31/10/2026. | RF-30 não tratava este caso. |
+| P15 | Códigos de erro ao adicionar membros: `MEMBRO_INVALIDO` (utilizador inexistente ou desativado) e `MEMBRO_REPETIDO` (já é membro), com `campo: utilizadorId`. Aprovado a 31/10/2026. | O contrato previa o 422 sem códigos. |
+| P16 | As listas de membros e de candidatos a membros estão por ordem alfabética do nome, como em P12. Aprovado a 31/10/2026. | A ordem não estava definida. |
 
 ## 3. Estrutura prevista
 
@@ -164,7 +166,7 @@ Cada incremento é vertical: base de dados, API, interface e testes. Para cada u
 
 - **API:** `GET` e `POST /projetos/{id}/membros`, `DELETE /projetos/{id}/membros/{utilizadorId}`, `GET /projetos/{id}/candidatos-membros`.
 - **Frontend:** gestão de membros no detalhe do projeto (Gestor) e lista só de nomes (Membro).
-- **Aceitação:** CA-07.1 a CA-07.3; EC-28, EC-30, EC-39. O EC-19 é verificado em I6, quando existirem atribuições.
+- **Aceitação:** CA-07.1 a CA-07.3; EC-28, EC-30, EC-39. O EC-19 foi antecipado para o I4: o seed já tem atribuições e o RF-06 exige apagá-las ao remover um membro.
 - **Verificação:** testes de API; teste de que um membro não recebe emails.
 
 ### I5 — Tarefas, estado e filtros
@@ -240,7 +242,7 @@ Cada incremento é vertical: base de dados, API, interface e testes. Para cada u
 | I1 | Concluído (31/10/2026) | `POST`, `GET` e `DELETE /sessao`; sessão no servidor com o hash do identificador, renovada a cada pedido (P2); 401 em todo o `/api` exceto `/saude` e a entrada; verificações de perfil, membro, Gestor e responsável em `autorizacao/` (usadas a partir do I2). Interface: entrada, rota protegida, painel provisório e "Sair". React Router acrescentado (P1). 20 testes novos (39 no total). |
 | I2 | Concluído (31/10/2026) | `GET /projetos` (pesquisa e contagens), `GET` e `PATCH /projetos/{id}`, `PUT .../arquivado`, `/admin/projetos` (listar, criar, eliminar, transferir) e `GET /utilizadores/gestores-elegiveis`. Erros de negócio centralizados em `http/erros.ts`. Interface: navegação, lista de projetos com pesquisa, detalhe com edição e arquivo, administração de projetos com confirmação antes de eliminar. 45 testes novos (84 no total). Percurso manual: a Helena cria um projeto para a Ana; a Ana vê-o na lista e consulta-o depois de recarregar a página e de reiniciar o backend. Propostas P11 a P14. |
 | I3 | Por fazer | |
-| I4 | Por fazer | |
+| I4 | Concluído (31/10/2026) | `GET` e `POST /projetos/{id}/membros`, `DELETE /projetos/{id}/membros/{utilizadorId}` e `GET /projetos/{id}/candidatos-membros`. Remover um membro apaga as suas atribuições no projeto (EC-19, antecipado do I6). Interface: secção "Membros" no detalhe do projeto. 19 testes novos (103 no total). Percurso manual: a Ana adiciona o Paulo ao "Lançamento do novo site", o Paulo vê-o na sua lista, a Ana remove-o e não consegue remover-se a si própria. Propostas P15 e P16. |
 | I5 | Por fazer | |
 | I6 | Por fazer | |
 | I7 | Por fazer | |

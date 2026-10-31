@@ -25,6 +25,30 @@ export function rotasProjetos(bd: Bd): Router {
     resposta.json(servico.definirArquivo(bd, utilizadorDe(pedido), idDoCaminho(pedido.params.projetoId), pedido.body));
   });
 
+  rotas.get('/projetos/:projetoId/membros', (pedido, resposta) => {
+    resposta.json(servico.listarMembros(bd, utilizadorDe(pedido), idDoCaminho(pedido.params.projetoId)));
+  });
+
+  rotas.post('/projetos/:projetoId/membros', (pedido, resposta) => {
+    resposta
+      .status(201)
+      .json(servico.adicionarMembro(bd, utilizadorDe(pedido), idDoCaminho(pedido.params.projetoId), pedido.body));
+  });
+
+  rotas.delete('/projetos/:projetoId/membros/:utilizadorId', (pedido, resposta) => {
+    servico.removerMembro(
+      bd,
+      utilizadorDe(pedido),
+      idDoCaminho(pedido.params.projetoId),
+      idDoCaminho(pedido.params.utilizadorId),
+    );
+    resposta.status(204).end();
+  });
+
+  rotas.get('/projetos/:projetoId/candidatos-membros', (pedido, resposta) => {
+    resposta.json(servico.listarCandidatos(bd, utilizadorDe(pedido), idDoCaminho(pedido.params.projetoId)));
+  });
+
   return rotas;
 }
 

@@ -217,3 +217,64 @@ export function transferir(bd: Bd, id: number, corpo: unknown): ProjetoAdmin {
   });
   return paraAdmin(repo.lerProjeto(bd, id)!);
 }
+
+// ---------------------------------------------------------------- Membros (RF-06, US-07)
+
+const pedidoMembro = z.strictObject({ utilizadorId: z.number().int() });
+const porNome = <T extends { nome: string; id: number }>(a: T, b: T) => a.nome.localeCompare(b.nome, 'pt') || a.id - b.id;
+
+/** Projeto que o utilizador gere: 404 se não for membro (EC-18), 403 se for membro sem ser o Gestor. */
+function projetoDoGestor(bd: Bd, utilizador: UtilizadorAutenticado, id: number): LinhaProjeto {
+  const projeto = projetoDoMembro(bd, utilizador, id);
+  if (!eGestorDoProjeto(bd, utilizador.id, id)) throw semPermissao();
+  return projeto;
+}
+
+function exigirNaoArquivado(projeto: LinhaProjeto): void {
+  if (projeto.arquivado) {
+    throw new ErroHttp(409, 'PROJETO_ARQUIVADO', 'O projeto está arquivado e só pode ser consultado.'); // EC-16
+  }
+}
+
+/** Membros do projeto, só com o nome, para qualquer membro (Q-13, CA-07.3). Por ordem alfabética (P16). */
+export function listarMembros(bd: Bd, utilizador: UtilizadorAutenticado, id: number): repo.Membro[] {
+  projetoDoMembro(bd, utilizador, id);
+  return repo.listarMembros(bd, id).sort(porNome);
+}
+
+/** Utilizadores ativos que ainda não são membros, com nome e email, só para o Gestor (A-21, CA-07.1). */
+export function listarCandidatos(bd: Bd, utilizador: UtilizadorAutenticado, id: number): repo.Candidato[] {
+  projetoDoGestor(bd, utilizador, id);
+  return repo.listarCandidatosMembros(bd, id).sort(porNome);
+}
+
+/** Adicionar um membro com conta ativa; pode ser um Administrador, que tem as permissões de Membro (Q-06, Q-11). */
+export function adicionarMembro(bd: Bd, utilizador: UtilizadorAutenticado, id: number, corpo: unknown): repo.Membro[] {
+  exigirNaoArquivado(projetoDoGestor(bd, utilizador, id));
+  const { utilizadorId } = validarFormato(pedidoMembro, corpo);
+  const conta = lerConta(bd, utilizadorId);
+  if (!conta || !conta.ativo) {
+    // EC-39
+    throw new ErroHttp(422, 'MEMBRO_INVALIDO', 'Só se podem adicionar utilizadores com conta ativa.', 'utilizadorId');
+  }
+  if (eMembroDoProjeto(bd, utilizadorId, id)) {
+    throw new ErroHttp(422, 'MEMBRO_REPETIDO', 'O utilizador já é membro do projeto.', 'utilizadorId');
+  }
+  repo.inserirMembro(bd, id, utilizadorId);
+  return repo.listarMembros(bd, id).sort(porNome);
+}
+
+/** Remover um membro e as suas atribuições no projeto (A-14, Q-20, EC-19). O Gestor não pode ser removido (Q-05, EC-28). */
+export function removerMembro(bd: Bd, utilizador: UtilizadorAutenticado, id: number, utilizadorId: number): void {
+  const projeto = projetoDoGestor(bd, utilizador, id);
+  if (!eMembroDoProjeto(bd, utilizadorId, id)) throw naoEncontrado();
+  exigirNaoArquivado(projeto);
+  if (utilizadorId === projeto.gestor.id) {
+    throw new ErroHttp(
+      409,
+      'GESTOR_NAO_REMOVIVEL',
+      'O Gestor não pode ser removido. Peça ao Administrador para transferir o projeto.',
+    );
+  }
+  emTransacao(bd, () => repo.apagarMembro(bd, id, utilizadorId));
+}
