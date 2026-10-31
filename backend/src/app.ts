@@ -1,7 +1,10 @@
 import express, { type ErrorRequestHandler, type Express } from 'express';
 import type { Bd } from './bd/ligacao.js';
+import { exigirPerfil } from './autorizacao/index.js';
+import { ErroHttp } from './http/erros.js';
 import { exigirSessao } from './http/sessao.js';
-import { rotasSessao } from './modulos/contas/rotas.js';
+import { rotasContas, rotasSessao } from './modulos/contas/rotas.js';
+import { rotasAdminProjetos, rotasProjetos } from './modulos/projetos/rotas.js';
 import type { OpcoesSessao } from './modulos/contas/servico.js';
 
 export type Dependencias = {
@@ -40,12 +43,21 @@ export function criarApp({ bd, sessao, cookieSeguro = false }: Dependencias): Ex
   // Tudo o resto em /api exige uma sessão válida (CA-01.2). Ordem de verificação: 401 antes de 404 (RV-25).
   app.use('/api', comSessao);
 
+  app.use('/api', rotasContas(bd));
+  app.use('/api', rotasProjetos(bd));
+  // Operações exclusivas do Administrador: 403 para qualquer outro perfil, também em pedidos diretos (EC-41).
+  app.use('/api/admin', exigirPerfil('ADMIN'), rotasAdminProjetos(bd));
+
   // Qualquer outro caminho em /api: 404 no formato de erro do contrato.
   app.use('/api', (_pedido, resposta) => {
     resposta.status(404).json({ codigo: 'NAO_ENCONTRADO', mensagem: 'Não encontrado.' });
   });
 
   const tratarErros: ErrorRequestHandler = (erro, _pedido, resposta, _seguinte) => {
+    if (erro instanceof ErroHttp) {
+      resposta.status(erro.estado).json(erro.corpo());
+      return;
+    }
     if (erro?.type === 'entity.parse.failed') {
       resposta.status(400).json({ codigo: 'PEDIDO_INVALIDO', mensagem: 'O pedido tem um formato inválido.' });
       return;

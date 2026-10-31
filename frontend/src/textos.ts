@@ -9,6 +9,13 @@ export const NOME_ESTADO: Record<Estado, string> = {
   DONE: 'Concluída',
 };
 
+/** Data AAAA-MM-DD da API no formato português DD/MM/AAAA. */
+export function formatarData(data: string | null): string {
+  if (!data) return '—';
+  const [ano, mes, dia] = data.split('-');
+  return `${dia}/${mes}/${ano}`;
+}
+
 export const NOME_PRIORIDADE: Record<Prioridade, string> = {
   HIGH: 'Alta',
   MEDIUM: 'Média',

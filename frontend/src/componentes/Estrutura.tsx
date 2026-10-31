@@ -1,6 +1,7 @@
-// Estrutura das páginas com sessão: cabeçalho com o utilizador autenticado e o botão para sair (CA-01.4).
+// Estrutura das páginas com sessão: navegação, utilizador autenticado e "Sair" (wireframe, elementos 1 e 2).
 import { useState, type ReactNode } from 'react';
-import { ErroApi } from '../api/cliente';
+import { NavLink } from 'react-router';
+import { mensagemDeErro } from '../api/usarPedido';
 import { useSessao } from '../sessao/ContextoSessao';
 
 export function Estrutura({ children }: { children: ReactNode }) {
@@ -9,6 +10,7 @@ export function Estrutura({ children }: { children: ReactNode }) {
   const [erro, setErro] = useState<string | null>(null);
 
   if (estado.tipo !== 'autenticado') return null;
+  const eAdmin = estado.utilizador.perfis.includes('ADMIN');
 
   async function aoSair() {
     setASair(true);
@@ -16,7 +18,7 @@ export function Estrutura({ children }: { children: ReactNode }) {
     try {
       await sair();
     } catch (e) {
-      setErro(e instanceof ErroApi ? e.message : 'Não foi possível terminar a sessão.');
+      setErro(mensagemDeErro(e));
       setASair(false);
     }
   }
@@ -24,7 +26,13 @@ export function Estrutura({ children }: { children: ReactNode }) {
   return (
     <>
       <header className="cabecalho">
-        <span className="marca">Matriz</span>
+        <nav className="navegacao" aria-label="Navegação principal">
+          <NavLink to="/" end className="marca">
+            Matriz
+          </NavLink>
+          <NavLink to="/projetos">Projetos</NavLink>
+          {eAdmin && <NavLink to="/administracao/projetos">Administração</NavLink>}
+        </nav>
         <span className="cabecalho-utilizador">
           {estado.utilizador.nome}
           <button type="button" className="botao-secundario" onClick={aoSair} disabled={aSair}>

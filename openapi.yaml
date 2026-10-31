@@ -320,7 +320,9 @@ paths:
       tags: [Administração de projetos]
       operationId: listarProjetosAdmin
       summary: Listar todos os projetos, só com nome e Gestor (Administrador)
-      description: US-05, US-10, US-21, RF-30, RF-33, A-02, CA-10.1. Não devolve tarefas, membros nem progresso.
+      description: |
+        US-05, US-10, US-21, RF-30, RF-33, A-02, CA-10.1. Não devolve tarefas, membros nem progresso.
+        Ativos primeiro, depois arquivados; dentro de cada grupo, por ordem alfabética do nome (P12).
       parameters:
         - $ref: '#/components/parameters/PesquisaNome'
       responses:
@@ -369,14 +371,37 @@ paths:
           description: |
             Nome vazio ou só com espaços (EC-14, EC-02); texto acima do limite (EC-29);
             data de fim anterior à de início (EC-15); Gestor indicado inválido (EC-42).
+            Códigos (P11): `NOME_OBRIGATORIO`, `LIMITE_EXCEDIDO`, `DATAS_INVALIDAS`, `GESTOR_INVALIDO`.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Erro'
-              example:
-                codigo: GESTOR_INVALIDO
-                mensagem: O Gestor tem de ter o perfil Gestor, conta ativa e não ser Administrador.
-                campo: gestorId
+              examples:
+                nomeVazio:
+                  summary: Nome vazio ou só com espaços
+                  value:
+                    codigo: NOME_OBRIGATORIO
+                    mensagem: O nome do projeto é obrigatório.
+                    campo: nome
+                nomeLongo:
+                  summary: Nome acima do limite
+                  value:
+                    codigo: LIMITE_EXCEDIDO
+                    mensagem: O nome não pode ter mais de 100 caracteres.
+                    campo: nome
+                    limite: 100
+                datas:
+                  summary: Data de fim anterior à de início
+                  value:
+                    codigo: DATAS_INVALIDAS
+                    mensagem: A data de fim não pode ser anterior à data de início.
+                    campo: dataFim
+                gestor:
+                  summary: Gestor indicado inválido
+                  value:
+                    codigo: GESTOR_INVALIDO
+                    mensagem: O Gestor tem de ter o perfil Gestor, conta ativa e não ser Administrador.
+                    campo: gestorId
 
   /admin/projetos/{projetoId}:
     parameters:
@@ -413,7 +438,10 @@ paths:
       tags: [Administração de projetos]
       operationId: transferirProjeto
       summary: Transferir um projeto para outro Gestor (Administrador)
-      description: US-10, RF-30, Q-04, Q-09. Permitido também em projetos arquivados (A-04).
+      description: |
+        US-10, RF-30, Q-04, Q-09. Permitido também em projetos arquivados (A-04). O novo Gestor passa a membro,
+        se ainda não for (EC-37); o anterior continua membro (EC-25). Transferir para o Gestor atual não altera
+        nada e devolve 200 (P14).
       requestBody:
         required: true
         content:
@@ -448,6 +476,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Erro'
+              example:
+                codigo: GESTOR_INVALIDO
+                mensagem: O Gestor tem de ter o perfil Gestor, conta ativa e não ser Administrador.
+                campo: gestorId
 
   # ---------------------------------------------------------------- Projetos
   /projetos:
@@ -457,7 +489,7 @@ paths:
       summary: Projetos do utilizador, com contagens por estado (lista e painel inicial)
       description: |
         US-09, US-22, US-25, RF-08, RF-33, RF-35. Só os projetos de que o utilizador é membro (D-10);
-        ativos primeiro, depois arquivados (A-06). Inclui as contagens por estado para o painel (RF-16).
+        ativos primeiro, depois arquivados (A-06); dentro de cada grupo, por ordem alfabética do nome (P12). Inclui as contagens por estado para o painel (RF-16).
       parameters:
         - $ref: '#/components/parameters/PesquisaNome'
       responses:
@@ -495,7 +527,11 @@ paths:
       tags: [Projetos]
       operationId: editarProjeto
       summary: Editar os dados de um projeto (Gestor do projeto)
-      description: US-06, RF-05. Aplicam-se as regras de RF-04 para o nome, a descrição e as datas.
+      description: |
+        US-06, RF-05. Aplicam-se as regras de RF-04 para o nome, a descrição e as datas, com os mesmos códigos
+        de erro da criação (`NOME_OBRIGATORIO`, `LIMITE_EXCEDIDO`, `DATAS_INVALIDAS`; P11). Só se alteram os campos
+        enviados; as datas são comparadas também com os valores já guardados. O nome guarda-se sem espaços
+        nas pontas (P13).
       requestBody:
         required: true
         content:

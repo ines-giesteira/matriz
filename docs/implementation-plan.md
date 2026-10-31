@@ -2,7 +2,7 @@
 
 Versão 0.1 · 29 de outubro de 2026 · Ficha Prática 03, Exercício 1
 
-> **Estado: plano aprovado pela dona do produto: decisões Q-14 a Q-22 e propostas técnicas P1 a P10 (secção 2).** Este plano transforma a documentação num conjunto de incrementos executáveis. Cada incremento indica os RF e as US que cobre, os componentes e ficheiros previstos, as dependências, os critérios de aceitação e a forma de verificação. O estado de cada incremento é atualizado ao longo da implementação (secção 8).
+> **Estado: plano aprovado pela dona do produto: decisões Q-14 a Q-22 e propostas técnicas P1 a P14 (secção 2).** Este plano transforma a documentação num conjunto de incrementos executáveis. Cada incremento indica os RF e as US que cobre, os componentes e ficheiros previstos, as dependências, os critérios de aceitação e a forma de verificação. O estado de cada incremento é atualizado ao longo da implementação (secção 8).
 
 **Fontes:** [requirements.md](requirements.md), [user-stories.md](user-stories.md), [constraints.md](constraints.md), [architecture.md](architecture.md), [database.md](database.md), [openapi.yaml](../openapi.yaml) e [ui/wireframe.md](ui/wireframe.md).
 
@@ -52,6 +52,10 @@ Detalhes que a documentação não fixava e de que a implementação precisa. Ap
 | P8 | Identificadores numéricos inteiros na API e na base de dados. | Mais simples com SQLite. |
 | P9 | A sequência de incrementos da secção 4 substitui, para a implementação, a coluna "Ordem" de user-stories.md (Q-02). A ordem de US-21 a US-25 fica como em user-stories.md. | A Ficha 3 define uma sequência (sessão, projetos, tarefas, responsáveis e comentários, interface). |
 | P10 | A palavra-passe das contas de demonstração vem da variável de ambiente `SEED_PALAVRA_PASSE`, com um valor fictício em `.env.example`. | Nenhuma credencial fica escrita no código (AGENTS.md, secção 4). |
+| P11 | Códigos de erro dos projetos: `NOME_OBRIGATORIO` e `DATAS_INVALIDAS` (novos); `LIMITE_EXCEDIDO`, com `campo` e `limite`, e `GESTOR_INVALIDO`, também na transferência (reutilizados). Aprovado a 31/10/2026. | O contrato não tinha códigos para estas regras de RF-04. |
+| P12 | Nas listas de projetos (do utilizador e do Administrador), dentro de cada grupo (ativos, arquivados), a ordem é alfabética do nome. Aprovado a 31/10/2026. | A-06 só fixava a ordem entre grupos. |
+| P13 | O nome do projeto guarda-se sem espaços no início e no fim, e o limite de 100 caracteres conta-se depois. A descrição guarda-se como foi escrita. Aprovado a 31/10/2026. | Q-01 só dizia que um nome só com espaços conta como vazio. |
+| P14 | Transferir um projeto para o seu Gestor atual é aceite sem efeito (200). Aprovado a 31/10/2026. | RF-30 não tratava este caso. |
 
 ## 3. Estrutura prevista
 
@@ -234,7 +238,7 @@ Cada incremento é vertical: base de dados, API, interface e testes. Para cada u
 |---|---|---|
 | I0 | Concluído (29/10/2026) | Estrutura, configuração, migration 001, seed, `GET /api/saude` e 19 testes. Base de dados com `node:sqlite` (ver secção 7). Verificado: migrations e seed idempotentes, dados mantidos após reiniciar o backend, interface ligada ao backend. |
 | I1 | Concluído (31/10/2026) | `POST`, `GET` e `DELETE /sessao`; sessão no servidor com o hash do identificador, renovada a cada pedido (P2); 401 em todo o `/api` exceto `/saude` e a entrada; verificações de perfil, membro, Gestor e responsável em `autorizacao/` (usadas a partir do I2). Interface: entrada, rota protegida, painel provisório e "Sair". React Router acrescentado (P1). 20 testes novos (39 no total). |
-| I2 | Por fazer | |
+| I2 | Concluído (31/10/2026) | `GET /projetos` (pesquisa e contagens), `GET` e `PATCH /projetos/{id}`, `PUT .../arquivado`, `/admin/projetos` (listar, criar, eliminar, transferir) e `GET /utilizadores/gestores-elegiveis`. Erros de negócio centralizados em `http/erros.ts`. Interface: navegação, lista de projetos com pesquisa, detalhe com edição e arquivo, administração de projetos com confirmação antes de eliminar. 45 testes novos (84 no total). Percurso manual: a Helena cria um projeto para a Ana; a Ana vê-o na lista e consulta-o depois de recarregar a página e de reiniciar o backend. Propostas P11 a P14. |
 | I3 | Por fazer | |
 | I4 | Por fazer | |
 | I5 | Por fazer | |

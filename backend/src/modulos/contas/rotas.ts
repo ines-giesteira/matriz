@@ -3,6 +3,8 @@ import { Router, type RequestHandler } from 'express';
 import { z } from 'zod';
 import type { Bd } from '../../bd/ligacao.js';
 import { identificadorDoPedido, limparCookie, NOME_COOKIE, opcoesCookie, utilizadorDe } from '../../http/sessao.js';
+import { exigirPerfil } from '../../autorizacao/index.js';
+import { listarGestoresElegiveis } from './repositorio.js';
 import { entrar, sair, type OpcoesSessao } from './servico.js';
 
 // Schema `Credenciais` do contrato: os dois campos obrigatórios, sem campos a mais.
@@ -35,6 +37,17 @@ export function rotasSessao(bd: Bd, opcoes: OpcoesSessao, cookieSeguro: boolean,
     if (identificador) sair(bd, identificador);
     limparCookie(resposta, cookieSeguro);
     resposta.status(204).end();
+  });
+
+  return rotas;
+}
+
+/** Rotas de contas usadas a partir do I2 (as restantes chegam no I3). Montadas depois de exigirSessao. */
+export function rotasContas(bd: Bd): Router {
+  const rotas = Router();
+
+  rotas.get('/utilizadores/gestores-elegiveis', exigirPerfil('ADMIN'), (_pedido, resposta) => {
+    resposta.json(listarGestoresElegiveis(bd));
   });
 
   return rotas;

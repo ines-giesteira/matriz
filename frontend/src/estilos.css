@@ -129,3 +129,233 @@ button:disabled {
   background: var(--fundo);
   border: 1px solid var(--borda);
 }
+
+.botao-perigo {
+  color: #fff;
+  background: var(--erro);
+  border: 1px solid var(--erro);
+}
+
+/* Navegação */
+.navegacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.navegacao a {
+  color: var(--texto);
+  text-decoration: none;
+}
+
+.navegacao a.active:not(.marca) {
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* Elementos partilhados pelas páginas */
+.titulo-com-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.formulario .acoes {
+  margin-top: 16px;
+}
+
+.formulario .acoes .botao-principal {
+  margin-top: 0;
+}
+
+.formulario textarea,
+.formulario select,
+.tabela select,
+.pesquisa input {
+  font: inherit;
+  padding: 8px;
+  border: 1px solid var(--borda);
+  border-radius: 4px;
+}
+
+.formulario textarea[aria-invalid='true'] {
+  border-color: var(--erro);
+}
+
+.linha-campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.linha-campos > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pesquisa {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 360px;
+  margin: 16px 0;
+}
+
+.etiqueta {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  vertical-align: middle;
+  color: var(--texto-suave);
+  background: var(--fundo-suave);
+  border: 1px solid var(--borda);
+  border-radius: 10px;
+}
+
+.vazio {
+  padding: 16px;
+  color: var(--texto-suave);
+  background: var(--fundo-suave);
+  border-radius: 6px;
+}
+
+.sucesso {
+  padding: 8px 12px;
+  background: #e5f4e8;
+  border: 1px solid #7cb98a;
+  border-radius: 4px;
+}
+
+/* Lista de projetos */
+.lista-cartoes {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.cartao {
+  padding: 16px;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+}
+
+.cartao.arquivado {
+  background: var(--fundo-suave);
+}
+
+.cartao-titulo {
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.cartao p {
+  margin: 8px 0 0;
+}
+
+.contagens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+
+/* Detalhe do projeto */
+.dados-projeto {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 16px;
+}
+
+.dados-projeto dt {
+  font-weight: 600;
+}
+
+.dados-projeto dd {
+  margin: 0;
+}
+
+.descricao {
+  white-space: pre-wrap;
+}
+
+/* Tabela da administração; em ecrãs estreitos, cada linha passa a cartão */
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabela th,
+.tabela td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--borda);
+  vertical-align: top;
+}
+
+@media (max-width: 640px) {
+  .tabela thead {
+    position: absolute;
+    left: -9999px;
+  }
+
+  .tabela tr {
+    display: block;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--borda);
+  }
+
+  .tabela td {
+    display: block;
+    border: none;
+    padding: 4px 0;
+  }
+
+  .tabela td::before {
+    content: attr(data-rotulo) ': ';
+    font-weight: 600;
+  }
+}
+
+/* Diálogo de confirmação */
+.fundo-dialogo {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgb(0 0 0 / 40%);
+}
+
+.dialogo {
+  max-width: 420px;
+  padding: 20px;
+  background: var(--fundo);
+  border-radius: 6px;
+}
+
+.dialogo h2 {
+  margin-top: 0;
+}
+
+.so-leitor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}

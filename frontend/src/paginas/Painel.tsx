@@ -1,5 +1,6 @@
 // Painel inicial provisório do I1: confirma o utilizador autenticado.
 // Os projetos e as contagens por estado chegam no I7 (US-25, docs/implementation-plan.md).
+import { Link } from 'react-router';
 import { Estrutura } from '../componentes/Estrutura';
 import { useSessao } from '../sessao/ContextoSessao';
 
@@ -17,7 +18,10 @@ export function Painel() {
       <p className="texto-suave">
         {utilizador.email} · Perfis: {perfis}
       </p>
-      <p>Os seus projetos vão aparecer aqui.</p>
+      <p>
+        O painel com as contagens por estado chega num próximo incremento. Por agora, veja a{' '}
+        <Link to="/projetos">lista de projetos</Link>.
+      </p>
     </Estrutura>
   );
 }
