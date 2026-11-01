@@ -1,5 +1,5 @@
 // Detalhe do projeto (wireframe, elementos 3 e 4): dados e, para o Gestor, editar, arquivar e desarquivar.
-// Inclui as tarefas (I5) e os membros (I4). A percentagem e os atrasos do projeto chegam no I7.
+// Inclui o progresso (I7), as tarefas (I5) e os membros (I4).
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { arquivarProjeto, editarProjeto, obterProjeto } from '../api/projetos';

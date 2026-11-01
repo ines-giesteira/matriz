@@ -6,6 +6,7 @@ import { exigirSessao } from './http/sessao.js';
 import { rotasContas, rotasSessao } from './modulos/contas/rotas.js';
 import { rotasAdminProjetos, rotasProjetos } from './modulos/projetos/rotas.js';
 import type { OpcoesSessao } from './modulos/contas/servico.js';
+import { rotasProgresso } from './modulos/progresso/rotas.js';
 import { rotasTarefas } from './modulos/tarefas/rotas.js';
 import { hojeEmLisboa, type Hoje } from './relogio.js';
 
@@ -50,6 +51,7 @@ export function criarApp({ bd, sessao, cookieSeguro = false, hoje = () => hojeEm
   app.use('/api', rotasContas(bd));
   app.use('/api', rotasProjetos(bd));
   app.use('/api', rotasTarefas(bd, hoje, opcoesSessao.agora));
+  app.use('/api', rotasProgresso(bd, hoje));
   // Operações exclusivas do Administrador: 403 para qualquer outro perfil, também em pedidos diretos (EC-41).
   app.use('/api/admin', exigirPerfil('ADMIN'), rotasAdminProjetos(bd));
 

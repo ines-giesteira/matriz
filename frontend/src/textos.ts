@@ -19,6 +19,11 @@ export function formatarData(data: string | null): string {
   return `${dia}/${mes}/${ano}`;
 }
 
+/** Percentagem concluída com uma casa decimal (30,0%); 100% só quando tudo está concluído (A-09, RV-12). */
+export function formatarPercentagem(valor: number): string {
+  return valor === 100 ? '100%' : `${valor.toFixed(1).replace('.', ',')}%`;
+}
+
 export const NOME_PRIORIDADE: Record<Prioridade, string> = {
   HIGH: 'Alta',
   MEDIUM: 'Média',

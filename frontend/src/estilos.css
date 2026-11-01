@@ -273,6 +273,59 @@ button:disabled {
   font-size: 0.9rem;
 }
 
+/* Progresso do projeto (wireframe, elementos 5 a 7) */
+.progresso-grelha {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(90px, 1fr)) minmax(200px, 2fr) minmax(220px, 2.5fr);
+  gap: 12px;
+}
+
+.indicador {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+}
+
+.indicador-numero {
+  font-size: 1.6rem;
+}
+
+.indicador-percentagem,
+.indicador-atraso {
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.indicador-percentagem progress {
+  width: 100%;
+  height: 12px;
+}
+
+.indicador-atraso {
+  border-style: dashed;
+}
+
+.indicador-atraso ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+@media (max-width: 800px) {
+  .progresso-grelha {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .indicador-percentagem,
+  .indicador-atraso {
+    grid-column: 1 / -1;
+  }
+}
+
 /* Detalhe do projeto */
 .dados-projeto {
   display: grid;

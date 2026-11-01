@@ -53,6 +53,28 @@ export const transferirProjeto = (id: number, gestorId: number) =>
   pedido<ProjetoAdmin>(`/admin/projetos/${id}/gestor`, json('PUT', { gestorId }));
 export const listarGestoresElegiveis = () => pedido<UtilizadorResumo[]>('/utilizadores/gestores-elegiveis');
 
+// ---------------------------------------------------------------- Progresso (RF-16 a RF-18)
+
+export type TarefaEmAtraso = {
+  id: number;
+  titulo: string;
+  responsaveis: { id: number; nome: string; contaAtiva: boolean }[];
+  dataLimite: string;
+  estado: 'TODO' | 'IN_PROGRESS';
+};
+
+export type Progresso = {
+  projetoId: number;
+  dataReferencia: string;
+  total: number;
+  contagemPorEstado: Record<Estado, number>;
+  /** null quando o projeto não tem tarefas ("Sem tarefas", A-09). */
+  percentagemConcluida: number | null;
+  tarefasEmAtraso: { quantidade: number; tarefas: TarefaEmAtraso[] };
+};
+
+export const obterProgresso = (projetoId: number) => pedido<Progresso>(`/projetos/${projetoId}/progresso`);
+
 // ---------------------------------------------------------------- Membros (RF-06)
 
 /** Membro visto dentro do projeto, sem email (Q-13). */
