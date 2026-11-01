@@ -50,7 +50,7 @@ Não desenhadas; decorrem da matriz de permissões ([requirements.md](../require
 | Situação | O que muda no ecrã |
 |---|---|
 | **Membro do projeto** (não Gestor) | Não vê "Editar projeto", "Arquivar", "+ Nova tarefa" nem "Eliminar" (RF-05, RF-07, RF-09, RF-22, EC-05, EC-12). "Membros" mostra só os nomes dos membros, sem email e sem adicionar nem remover (RF-06, Q-13, CA-07.3). O responsável aparece como texto. Nas tarefas sem responsável aparece "Atribuir-me", e nas suas tarefas aparece "Largar" (RF-10, US-20, EC-34). Só muda o estado das tarefas de que é responsável (RF-11, CA-13.3, EC-04). "Editar" só aparece nas suas tarefas e só deixa alterar a descrição (RF-13, CA-14.2). Pode abrir qualquer tarefa para ler a descrição (RF-15, CA-17.2). |
-| **Administrador membro do projeto** | Igual ao Membro (Q-06, EC-30). |
+| **Administrador** | Não abre esta página: nunca é membro de um projeto e gere os membros no ecrã de administração de projetos (RV-32, EC-30, EC-54). |
 | **Projeto arquivado** | O projeto aparece marcado como "Arquivado". Todas as ações de alteração desaparecem, exceto "Remover" nos membros (RV-31); o Gestor vê "Desarquivar" no lugar de "Arquivar". O progresso e a lista continuam visíveis (D-09, A-05, EC-16, CA-08.1). |
 | **Projeto sem tarefas** | O bloco da percentagem mostra "Sem tarefas" (A-09, CA-18.5). |
 | **Quem não é membro** | Não chega a este ecrã: o acesso é recusado (EC-18, CA-18.4). |
@@ -72,7 +72,7 @@ Não desenhadas; decorrem da matriz de permissões ([requirements.md](../require
 - Depois de entrar, o utilizador vê a lista de projetos (CA-01.1), e ao escolher um projeto abre esta página.
 - O progresso e a lista de tarefas ficam na mesma página, para o Gestor ver o ponto de situação sem mudar de ecrã (R-02).
 - O responsável e o estado mudam-se diretamente na lista; "Editar" abre um formulário com os restantes campos.
-- O Administrador tem entradas próprias na navegação para gerir contas e transferir projetos (RF-02, RF-03, RF-30). Não aparecem aqui porque o ecrã é visto pelo Gestor.
+- O Administrador tem entradas próprias na navegação para gerir contas, transferir projetos e gerir membros (RF-02, RF-03, RF-30, RV-32). Não aparecem aqui porque o ecrã é visto pelo Gestor.
 - Antes de eliminar, aparece um pedido de confirmação (A-10, EC-10). Não está desenhado.
 
 ## 6. Questões levantadas por este wireframe

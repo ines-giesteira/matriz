@@ -442,14 +442,13 @@ describe('DELETE /projetos/{id}/tarefas/{tarefaId}', () => {
   });
 });
 
-// ---------------------------------------------------------------- Administrador membro
+// ---------------------------------------------------------------- Administrador (RV-32)
 
-describe('Administrador membro do projeto (Q-06)', () => {
-  it('tem as permissões de Membro: lê, mas não cria nem elimina tarefas', async () => {
-    bd.prepare('INSERT INTO membro_projeto (projeto_id, utilizador_id) VALUES (?, ?)').run(SITE(), id('helena'));
+describe('o Administrador nunca é membro (RV-32)', () => {
+  it('D-05: não lê, não cria nem elimina tarefas (404)', async () => {
     const helena = await como('helena');
-    expect((await helena.get(url(SITE()))).status).toBe(200);
-    expect((await helena.post(url(SITE())).send({ titulo: 'X' })).status).toBe(403);
-    expect((await helena.delete(url(SITE(), tarefa('Definir mapa do site')))).status).toBe(403);
+    expect((await helena.get(url(SITE()))).status).toBe(404);
+    expect((await helena.post(url(SITE())).send({ titulo: 'X' })).status).toBe(404);
+    expect((await helena.delete(url(SITE(), tarefa('Definir mapa do site')))).status).toBe(404);
   });
 });

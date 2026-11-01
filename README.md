@@ -20,8 +20,8 @@ Pressuposto R-02:
 
 ## Funcionalidades previstas para o MVP
 
-- **Contas e perfis:** Administrador, Gestor e Membro, com entrada por email e palavra-passe e possibilidade de desativar contas.
-- **Projetos:** o Administrador cria projetos e indica o Gestor, elimina projetos sem tarefas e transfere projetos entre Gestores. O Gestor edita, gere os membros, arquiva e desarquiva. Pesquisa de projetos pelo nome.
+- **Contas e perfis:** Administrador, Gestor e Membro, com entrada por email e palavra-passe e possibilidade de desativar contas. Uma conta desativada há mais de um ano é anonimizada automaticamente (RV-33).
+- **Projetos:** o Administrador cria projetos e indica o Gestor, elimina projetos sem tarefas, transfere projetos entre Gestores e gere os membros de qualquer projeto, mas nunca é membro (RV-32). O Gestor edita, gere os membros, arquiva e desarquiva. Quem não tem o perfil Gestor só é membro de um projeto ativo de cada vez (RV-31). Pesquisa de projetos pelo nome.
 - **Tarefas:** criar, editar e eliminar; vários responsáveis por tarefa (ou juntar-se a uma tarefa sem responsáveis); mudar o estado (Por fazer, Em curso, Concluída); filtrar por estado e prioridade; comentários com autor e data.
 - **Progresso:** painel inicial com os projetos do utilizador e as contagens por estado; em cada projeto, percentagem concluída e tarefas em atraso.
 
@@ -143,7 +143,7 @@ Para confirmar que o backend e a base de dados respondem, abre-se `http://localh
 - **Specification Pack (Aula 1):** concluído e revisto (RV-01 a RV-23).
 - **Architecture Pack (Aula 2):** concluído e revisto (RV-24 a RV-30). A arquitetura, o modelo de dados, o contrato OpenAPI e o wireframe continuam como proposta, por aprovar pela dona do produto (R-06).
 - **Implementação (Aula 3):** plano consolidado em [docs/implementation-plan.md](docs/implementation-plan.md); âmbito conciliado com a Ficha 3 (Q-14 a Q-22). As propostas técnicas do plano (P1 a P24) estão aprovadas.
-- **Questões:** todas decididas (Q-01 a Q-22).
+- **Questões:** todas decididas (Q-01 a Q-22). Revisões da dona do produto a 01/11/2026: RV-31 (um só projeto ativo sem o perfil Gestor), RV-32 (o Administrador nunca é membro e gere os membros) e RV-33 (anonimização das contas desativadas ao fim de um ano, a implementar no I3).
 - **Stack:** Node.js 26 e TypeScript, Express, React com Vite, SQLite através de `node:sqlite` (Q-14).
-- **Código:** incrementos I0 (estrutura, configuração, esquema, migrations, seed e testes), I1 (sessão e autorização base), I2 (projetos e administração de projetos), I4 (membros), I5 (tarefas, estado e filtros) e I6 (responsáveis e comentários) concluídos. O estado de cada incremento está em [docs/implementation-plan.md](docs/implementation-plan.md#8-estado-do-plano).
+- **Código:** incrementos I0 (estrutura, configuração, esquema, migrations, seed e testes), I1 (sessão e autorização base), I2 (projetos e administração de projetos), I4 (membros), I5 (tarefas, estado e filtros), I6 (responsáveis e comentários) e I7 (progresso e painel inicial) concluídos, com as regras de RV-31 e RV-32 aplicadas. O estado de cada incremento está em [docs/implementation-plan.md](docs/implementation-plan.md#8-estado-do-plano).
 - **Pendente:** decisões técnicas e requisitos de segurança por definir, em [docs/constraints.md](docs/constraints.md#4-decisões-técnicas-pendentes).

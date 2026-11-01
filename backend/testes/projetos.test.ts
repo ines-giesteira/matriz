@@ -70,7 +70,7 @@ describe('GET /projetos (lista do utilizador)', () => {
     });
   });
 
-  it('o Administrador só vê os projetos de que é membro (D-05)', async () => {
+  it('o Administrador nunca é membro e não tem lista de projetos (D-05, RV-32)', async () => {
     expect((await (await como('helena')).get('/api/projetos')).body).toEqual([]);
   });
 
@@ -138,7 +138,7 @@ describe('GET /projetos/{id}', () => {
     expect((await paulo.get('/api/projetos/abc')).status).toBe(404);
   });
 
-  it('o Administrador não vê o conteúdo de um projeto de que não é membro (A-02)', async () => {
+  it('o Administrador, que nunca é membro, não vê o conteúdo dos projetos (A-02, RV-32)', async () => {
     expect((await (await como('helena')).get(`/api/projetos/${idProjeto(SITE)}`)).status).toBe(404);
   });
 });

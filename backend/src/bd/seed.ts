@@ -5,7 +5,7 @@ import { emTransacao, type Bd } from './ligacao.js';
  * Dados de demonstração (docs/implementation-plan.md, I0). Todos os nomes e emails são fictícios.
  *
  * Permitem testar acessos distintos:
- * - Helena (Administrador) não é membro de nenhum projeto.
+ * - Helena (Administrador) nunca é membro de um projeto (RV-32).
  * - Ana gere "Lançamento do novo site" e "Relatório anual 2025" (arquivado), mas não pertence a "Migração do CRM".
  * - Paulo gere "Migração do CRM".
  * - Marta e João são membros, cada um com um só projeto ativo (RV-31); Rui tem a conta desativada.

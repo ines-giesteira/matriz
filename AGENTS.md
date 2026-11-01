@@ -15,7 +15,7 @@ Antes de qualquer tarefa, lê o `README.md` e o ficheiro indicado para o tipo de
 | Dados, entidades e regras de integridade | `docs/database.md` |
 | Endpoints, pedidos, respostas e códigos de erro | `openapi.yaml` |
 | Ecrãs, navegação e elementos da interface | `docs/ui/wireframe.md` |
-| Implementar um incremento: sequência, ficheiros, verificações e estado | `docs/implementation-plan.md` (I0 a I10, propostas P1 a P21) |
+| Implementar um incremento: sequência, ficheiros, verificações e estado | `docs/implementation-plan.md` (I0 a I10, propostas P1 a P24) |
 
 ## 2. Regras de trabalho
 

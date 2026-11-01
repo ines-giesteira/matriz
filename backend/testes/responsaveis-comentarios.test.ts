@@ -198,12 +198,11 @@ describe('juntar-se e sair de uma tarefa (US-20)', () => {
     expect(responsaveis(t)).toHaveLength(2);
   });
 
-  it('Q-06: um Administrador membro do projeto pode juntar-se como Membro', async () => {
-    bd.prepare('INSERT INTO membro_projeto (projeto_id, utilizador_id) VALUES (?, ?)').run(SITE(), id('helena'));
+  it('RV-32: o Administrador, que nunca é membro, não se junta a tarefas (404)', async () => {
     const resposta = await (await como('helena'))
       .post(resp(SITE(), tarefa('Escrever textos da página inicial')))
       .send({ utilizadorId: id('helena') });
-    expect(resposta.status).toBe(201);
+    expect(resposta.status).toBe(404);
   });
 
   it('EC-18: quem não é membro recebe 404, mesmo indicando-se a si próprio', async () => {

@@ -1346,7 +1346,7 @@ paths:
         US-18, US-19, RF-16, RF-17, RF-18.
 
         - Qualquer membro do projeto pode consultar, também num projeto arquivado (D-09).
-        - Quem não é membro recebe 404 (CA-18.4, EC-18); inclui o Administrador que não é membro (D-05).
+        - Quem não é membro recebe 404 (CA-18.4, EC-18); inclui o Administrador, que nunca é membro (D-05, RV-32).
         - Os valores são calculados no momento do pedido, sobre todas as tarefas, sem filtros (RF-34).
         - O dia de hoje é determinado no fuso Europe/Lisbon (RNF-02, A-08).
       responses:

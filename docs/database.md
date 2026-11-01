@@ -236,7 +236,7 @@ Regras que o diagrama não mostra e que têm de ser garantidas pelos módulos ou
 | `tarefa.projeto_id` | `RESTRICT` | A base de dados impede apagar um projeto com tarefas (regra 12, Q-19). |
 | `membro_projeto.projeto_id` | `CASCADE` | Apagar um projeto sem tarefas apaga os seus membros (regra 12). |
 | `atribuicao.tarefa_id`, `comentario.tarefa_id` | `CASCADE` | Apagar uma tarefa apaga as suas atribuições e comentários (regra 13). |
-| `sessao.utilizador_id` e restantes referências a `utilizador` | `RESTRICT` | As contas nunca são apagadas no MVP (D-02). |
+| `sessao.utilizador_id` e restantes referências a `utilizador` | `RESTRICT` | As contas não são apagadas: um ano depois da desativação são anonimizadas, e as referências mantêm-se (D-02, RV-33, regra 21). |
 
 **Migrations e seed:** o esquema é criado por ficheiros de migration numerados e aplicados por ordem; cada migration é aplicada uma só vez. O seed cria as contas e os projetos de demonstração só se a base de dados estiver vazia, para não apagar dados em cada arranque (Ficha 3, Exercício 2). Os ficheiros e comandos estão em [implementation-plan.md](implementation-plan.md).
 

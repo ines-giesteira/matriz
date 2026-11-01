@@ -75,7 +75,7 @@ Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou CA-07.3, CA-17.3 e CA-
 - **CA-06.1** — **Dado** um Gestor e um projeto seu não arquivado, **quando** altera o nome, a descrição ou as datas com valores válidos, **então** os novos valores ficam guardados e aparecem para todos os membros do projeto.
 
 ### US-07: Gerir membros
-- **CA-07.1** — **Dado** um Gestor a adicionar membros a um projeto seu, **quando** consulta os utilizadores disponíveis, **então** vê apenas utilizadores com conta ativa, identificados por nome e email (A-21).
+- **CA-07.1** — **Dado** um Gestor a adicionar membros a um projeto seu, **quando** consulta os utilizadores disponíveis, **então** vê apenas utilizadores com conta ativa que podem ser adicionados, identificados por nome e email: nunca Administradores e, sem o perfil Gestor, só quem não está em nenhum projeto ativo (A-21, RV-31, RV-32).
 - **CA-07.2** — **Dado** um Gestor e um utilizador ativo que não é membro do projeto, **quando** o adiciona, **então** o projeto passa a aparecer na lista de projetos desse utilizador.
 - **CA-07.3** — **Dado** um membro do projeto que não é o Gestor, **quando** consulta os membros do projeto, **então** vê o nome de cada membro, sem o email, e não pode adicionar nem remover membros (Q-13).
 
