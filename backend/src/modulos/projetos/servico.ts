@@ -44,7 +44,7 @@ const pedidoGestor = z.strictObject({ gestorId: z.number().int() });
 // ---------------------------------------------------------------- Regras de negócio (422)
 
 /** Comprimento em caracteres, como o length() do SQLite (conta pares substitutos como um carácter). */
-const comprimento = (texto: string): number => [...texto].length;
+export const comprimento = (texto: string): number => [...texto].length;
 
 /** Aplica as regras de RF-04 ao nome, à descrição e às datas. O nome guarda-se sem espaços nas pontas (P13). */
 function validarDados(dados: DadosProjeto): DadosProjeto {
@@ -126,7 +126,7 @@ export function listarParaAdmin(bd: Bd, pesquisa: string | undefined): ProjetoAd
 // ---------------------------------------------------------------- Operações sobre um projeto (membros e Gestor)
 
 /** Projeto visível pelo utilizador: quem não é membro recebe 404, sem se revelar se o projeto existe (D-10, EC-18). */
-function projetoDoMembro(bd: Bd, utilizador: UtilizadorAutenticado, id: number): LinhaProjeto {
+export function projetoDoMembro(bd: Bd, utilizador: UtilizadorAutenticado, id: number): LinhaProjeto {
   const projeto = repo.lerProjeto(bd, id);
   if (!projeto || !eMembroDoProjeto(bd, utilizador.id, id)) throw naoEncontrado();
   return projeto;
@@ -230,7 +230,7 @@ function projetoDoGestor(bd: Bd, utilizador: UtilizadorAutenticado, id: number):
   return projeto;
 }
 
-function exigirNaoArquivado(projeto: LinhaProjeto): void {
+export function exigirNaoArquivado(projeto: LinhaProjeto): void {
   if (projeto.arquivado) {
     throw new ErroHttp(409, 'PROJETO_ARQUIVADO', 'O projeto está arquivado e só pode ser consultado.'); // EC-16
   }

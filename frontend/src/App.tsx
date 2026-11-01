@@ -6,6 +6,7 @@ import { Entrada } from './paginas/Entrada';
 import { Painel } from './paginas/Painel';
 import { Projeto } from './paginas/Projeto';
 import { Projetos } from './paginas/Projetos';
+import { Tarefa } from './paginas/Tarefa';
 import { FornecedorSessao, useSessao } from './sessao/ContextoSessao';
 
 /** Só o Administrador abre a administração; os outros perfis voltam ao início (a API recusa na mesma, EC-41). */
@@ -26,6 +27,7 @@ export function App() {
           <Route path="/" element={protegida(<Painel />)} />
           <Route path="/projetos" element={protegida(<Projetos />)} />
           <Route path="/projetos/:projetoId" element={protegida(<Projeto />)} />
+          <Route path="/projetos/:projetoId/tarefas/:tarefaId" element={protegida(<Tarefa />)} />
           <Route
             path="/administracao/projetos"
             element={protegida(

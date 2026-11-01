@@ -6,6 +6,8 @@ import { exigirSessao } from './http/sessao.js';
 import { rotasContas, rotasSessao } from './modulos/contas/rotas.js';
 import { rotasAdminProjetos, rotasProjetos } from './modulos/projetos/rotas.js';
 import type { OpcoesSessao } from './modulos/contas/servico.js';
+import { rotasTarefas } from './modulos/tarefas/rotas.js';
+import { hojeEmLisboa, type Hoje } from './relogio.js';
 
 export type Dependencias = {
   bd: Bd;
@@ -13,6 +15,8 @@ export type Dependencias = {
   sessao?: Partial<OpcoesSessao>;
   /** Cookie com o atributo Secure (fora do desenvolvimento, P2). */
   cookieSeguro?: boolean;
+  /** Dia de hoje em Europe/Lisbon (A-08); os testes fixam-no. */
+  hoje?: Hoje;
 };
 
 const OITO_HORAS_MS = 8 * 60 * 60 * 1000;
@@ -21,7 +25,7 @@ const OITO_HORAS_MS = 8 * 60 * 60 * 1000;
  * Cria a aplicação Express. Recebe as dependências para os testes poderem usar uma base temporária.
  * Os módulos (contas, projetos, tarefas, progresso) são ligados aqui.
  */
-export function criarApp({ bd, sessao, cookieSeguro = false }: Dependencias): Express {
+export function criarApp({ bd, sessao, cookieSeguro = false, hoje = () => hojeEmLisboa() }: Dependencias): Express {
   const opcoesSessao: OpcoesSessao = {
     duracaoMs: sessao?.duracaoMs ?? OITO_HORAS_MS,
     agora: sessao?.agora ?? (() => new Date()),
@@ -45,6 +49,7 @@ export function criarApp({ bd, sessao, cookieSeguro = false }: Dependencias): Ex
 
   app.use('/api', rotasContas(bd));
   app.use('/api', rotasProjetos(bd));
+  app.use('/api', rotasTarefas(bd, hoje));
   // Operações exclusivas do Administrador: 403 para qualquer outro perfil, também em pedidos diretos (EC-41).
   app.use('/api/admin', exigirPerfil('ADMIN'), rotasAdminProjetos(bd));
 

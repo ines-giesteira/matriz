@@ -403,3 +403,70 @@ button:disabled {
   flex: 1 1 220px;
   min-width: 0;
 }
+
+/* Tarefas */
+.caixa {
+  margin: 16px 0;
+}
+
+.caixa h3 {
+  margin: 0 0 8px;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.filtros > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filtros label {
+  font-weight: 600;
+}
+
+.filtros select,
+.seletor-estado select,
+.formulario select {
+  font: inherit;
+  padding: 6px 8px;
+  border: 1px solid var(--borda);
+  border-radius: 4px;
+}
+
+.seletor-estado {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.etiqueta-atraso {
+  color: var(--erro);
+  border-color: var(--erro);
+  background: #fdeaea;
+}
+
+.escolha-responsaveis {
+  margin: 12px 0 0;
+  padding: 8px 12px;
+  border: 1px solid var(--borda);
+  border-radius: 4px;
+}
+
+.escolha-responsaveis legend {
+  font-weight: 600;
+}
+
+.formulario .opcao {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-weight: normal;
+}

@@ -1,5 +1,5 @@
 // Detalhe do projeto (wireframe, elementos 3 e 4): dados e, para o Gestor, editar, arquivar e desarquivar.
-// Inclui os membros (I4). As tarefas e o progresso chegam nos incrementos I5 e I7.
+// Inclui as tarefas (I5) e os membros (I4). A percentagem e os atrasos do projeto chegam no I7.
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { arquivarProjeto, editarProjeto, obterProjeto } from '../api/projetos';
@@ -7,6 +7,7 @@ import { mensagemDeErro, usarPedido } from '../api/usarPedido';
 import { Estrutura } from '../componentes/Estrutura';
 import { dadosDe, FormularioProjeto, valoresDe } from '../componentes/FormularioProjeto';
 import { MembrosProjeto } from '../componentes/MembrosProjeto';
+import { TarefasProjeto } from '../componentes/TarefasProjeto';
 import { formatarData } from '../textos';
 
 export function Projeto() {
@@ -102,6 +103,7 @@ export function Projeto() {
             <dd className="descricao">{projeto.descricao ?? '—'}</dd>
           </dl>
 
+          <TarefasProjeto projeto={projeto} />
           <MembrosProjeto projeto={projeto} />
         </>
       )}

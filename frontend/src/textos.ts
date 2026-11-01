@@ -9,6 +9,9 @@ export const NOME_ESTADO: Record<Estado, string> = {
   DONE: 'Concluída',
 };
 
+export const ESTADOS: Estado[] = ['TODO', 'IN_PROGRESS', 'DONE'];
+export const PRIORIDADES: Prioridade[] = ['HIGH', 'MEDIUM', 'LOW'];
+
 /** Data AAAA-MM-DD da API no formato português DD/MM/AAAA. */
 export function formatarData(data: string | null): string {
   if (!data) return '—';

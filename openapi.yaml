@@ -740,7 +740,9 @@ paths:
       summary: Listar as tarefas de um projeto, com filtros
       description: |
         US-17, US-23, RF-15, RF-34. Qualquer membro. Ordem de Q-12: por estado (TODO, IN_PROGRESS, DONE)
-        e, dentro de cada estado, por data limite crescente, sem data no fim. Os filtros combinam-se (CA-23.2).
+        e, dentro de cada estado, por data limite crescente, sem data no fim; empates por ordem alfabética do
+        título (P18). Os filtros combinam-se (CA-23.2). Um valor de filtro inexistente ou um parâmetro desconhecido
+        responde 400 (EC-48).
       parameters:
         - name: estado
           in: query
@@ -829,11 +831,26 @@ paths:
           description: |
             Título vazio ou só com espaços (EC-01, EC-02); texto acima do limite (EC-29);
             responsável que não é membro ativo do projeto ou repetido (EC-03, EC-22, EC-43).
+            Responsáveis (P17): `RESPONSAVEL_REPETIDO` (identificador repetido) e `RESPONSAVEL_INVALIDO`
+            (não é membro do projeto com conta ativa), ambos com `campo: responsavelIds`; ambos são 422,
+            apesar de `uniqueItems` no schema.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Erro'
               examples:
+                responsavelRepetido:
+                  summary: Responsável indicado mais de uma vez
+                  value:
+                    codigo: RESPONSAVEL_REPETIDO
+                    mensagem: O mesmo responsável foi indicado mais de uma vez.
+                    campo: responsavelIds
+                responsavelInvalido:
+                  summary: Responsável que não é membro ativo do projeto
+                  value:
+                    codigo: RESPONSAVEL_INVALIDO
+                    mensagem: O responsável tem de ser membro do projeto com conta ativa.
+                    campo: responsavelIds
                 tituloVazio:
                   summary: Título vazio ou só com espaços
                   value:
