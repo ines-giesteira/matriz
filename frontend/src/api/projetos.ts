@@ -87,3 +87,14 @@ export const adicionarMembro = (projetoId: number, utilizadorId: number) =>
   pedido<Membro[]>(`/projetos/${projetoId}/membros`, json('POST', { utilizadorId }));
 export const removerMembro = (projetoId: number, utilizadorId: number) =>
   pedido<void>(`/projetos/${projetoId}/membros/${utilizadorId}`, { method: 'DELETE' });
+
+// Membros geridos pelo Administrador, em qualquer projeto (RV-32, P24).
+export type MembroAdmin = Membro & { email: string };
+
+export const listarMembrosAdmin = (projetoId: number) => pedido<MembroAdmin[]>(`/admin/projetos/${projetoId}/membros`);
+export const listarCandidatosAdmin = (projetoId: number) =>
+  pedido<UtilizadorResumo[]>(`/admin/projetos/${projetoId}/candidatos-membros`);
+export const adicionarMembroAdmin = (projetoId: number, utilizadorId: number) =>
+  pedido<MembroAdmin[]>(`/admin/projetos/${projetoId}/membros`, json('POST', { utilizadorId }));
+export const removerMembroAdmin = (projetoId: number, utilizadorId: number) =>
+  pedido<void>(`/admin/projetos/${projetoId}/membros/${utilizadorId}`, { method: 'DELETE' });

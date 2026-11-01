@@ -91,7 +91,7 @@ Criadas pelo seed; todos os dados são fictícios. A palavra-passe de todas é o
 
 | Nome | Email | Perfil | Notas |
 |---|---|---|---|
-| Helena Matos | `helena.matos@matriz.test` | Administrador | Não é membro de nenhum projeto. |
+| Helena Matos | `helena.matos@matriz.test` | Administrador | Gere contas, projetos e membros; nunca é membro de um projeto (RV-32). |
 | Ana Silva | `ana.silva@matriz.test` | Gestor | Gere "Lançamento do novo site" e "Relatório anual 2025" (arquivado). Não pertence a "Migração do CRM". |
 | Paulo Reis | `paulo.reis@matriz.test` | Gestor | Gere "Migração do CRM". |
 | Marta Lopes | `marta.lopes@matriz.test` | Membro | Está em "Lançamento do novo site" e em "Relatório anual 2025" (arquivado). |
@@ -142,7 +142,7 @@ Para confirmar que o backend e a base de dados respondem, abre-se `http://localh
 
 - **Specification Pack (Aula 1):** concluído e revisto (RV-01 a RV-23).
 - **Architecture Pack (Aula 2):** concluído e revisto (RV-24 a RV-30). A arquitetura, o modelo de dados, o contrato OpenAPI e o wireframe continuam como proposta, por aprovar pela dona do produto (R-06).
-- **Implementação (Aula 3):** plano consolidado em [docs/implementation-plan.md](docs/implementation-plan.md); âmbito conciliado com a Ficha 3 (Q-14 a Q-22). As propostas técnicas do plano (P1 a P22) estão aprovadas.
+- **Implementação (Aula 3):** plano consolidado em [docs/implementation-plan.md](docs/implementation-plan.md); âmbito conciliado com a Ficha 3 (Q-14 a Q-22). As propostas técnicas do plano (P1 a P24) estão aprovadas.
 - **Questões:** todas decididas (Q-01 a Q-22).
 - **Stack:** Node.js 26 e TypeScript, Express, React com Vite, SQLite através de `node:sqlite` (Q-14).
 - **Código:** incrementos I0 (estrutura, configuração, esquema, migrations, seed e testes), I1 (sessão e autorização base), I2 (projetos e administração de projetos), I4 (membros), I5 (tarefas, estado e filtros) e I6 (responsáveis e comentários) concluídos. O estado de cada incremento está em [docs/implementation-plan.md](docs/implementation-plan.md#8-estado-do-plano).

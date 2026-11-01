@@ -1,11 +1,16 @@
-// Administração de projetos (US-05, US-10, US-21): o Administrador vê só o nome e o Gestor de cada projeto (A-02),
-// cria projetos e indica o Gestor, transfere projetos e elimina projetos sem tarefas, com confirmação (EC-10).
+// Administração de projetos (US-05, US-07, US-10, US-21): o Administrador vê o nome, o Gestor e os membros de cada
+// projeto, sem o seu conteúdo (A-02, RV-32). Cria projetos e indica o Gestor, transfere projetos, elimina projetos sem
+// tarefas, com confirmação (EC-10), e gere os membros de qualquer projeto (EC-54).
 import { useState } from 'react';
 import {
+  adicionarMembroAdmin,
   criarProjeto,
   eliminarProjeto,
+  listarCandidatosAdmin,
   listarGestoresElegiveis,
+  listarMembrosAdmin,
   listarProjetosAdmin,
+  removerMembroAdmin,
   transferirProjeto,
   type ProjetoAdmin,
   type UtilizadorResumo,
@@ -14,6 +19,7 @@ import { mensagemDeErro, usarPedido } from '../api/usarPedido';
 import { Confirmacao } from '../componentes/Confirmacao';
 import { Estrutura } from '../componentes/Estrutura';
 import { dadosDe, FormularioProjeto, valoresDe } from '../componentes/FormularioProjeto';
+import { GestaoMembros } from '../componentes/MembrosProjeto';
 import { Pesquisa } from '../componentes/Pesquisa';
 
 function EscolhaGestor({
@@ -51,6 +57,7 @@ function LinhaProjeto({
   const [aTransferir, setATransferir] = useState(false);
   const [destino, setDestino] = useState('');
   const [aEliminar, setAEliminar] = useState(false);
+  const [verMembros, setVerMembros] = useState(false);
   const [emCurso, setEmCurso] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -86,58 +93,88 @@ function LinhaProjeto({
   }
 
   return (
-    <tr>
-      <td data-rotulo="Projeto">
-        {projeto.nome} {projeto.arquivado && <span className="etiqueta">Arquivado</span>}
-      </td>
-      <td data-rotulo="Gestor">{projeto.gestor.nome}</td>
-      <td data-rotulo="Ações">
-        {aTransferir ? (
-          <div className="acoes">
-            <label className="so-leitor" htmlFor={`destino-${projeto.id}`}>
-              Novo Gestor de {projeto.nome}
-            </label>
-            <EscolhaGestor
-              id={`destino-${projeto.id}`}
-              gestores={gestores.filter((g) => g.id !== projeto.gestor.id)}
-              valor={destino}
-              aoMudar={setDestino}
+    <>
+      <tr>
+        <td data-rotulo="Projeto">
+          {projeto.nome} {projeto.arquivado && <span className="etiqueta">Arquivado</span>}
+        </td>
+        <td data-rotulo="Gestor">{projeto.gestor.nome}</td>
+        <td data-rotulo="Ações">
+          {aTransferir ? (
+            <div className="acoes">
+              <label className="so-leitor" htmlFor={`destino-${projeto.id}`}>
+                Novo Gestor de {projeto.nome}
+              </label>
+              <EscolhaGestor
+                id={`destino-${projeto.id}`}
+                gestores={gestores.filter((g) => g.id !== projeto.gestor.id)}
+                valor={destino}
+                aoMudar={setDestino}
+              />
+              <button type="button" className="botao-principal" onClick={transferir} disabled={emCurso}>
+                {emCurso ? 'A transferir…' : 'Confirmar'}
+              </button>
+              <button type="button" className="botao-secundario" onClick={() => setATransferir(false)} disabled={emCurso}>
+                Cancelar
+              </button>
+            </div>
+          ) : (
+            <div className="acoes">
+              <button
+                type="button"
+                className="botao-secundario"
+                onClick={() => setVerMembros((v) => !v)}
+                aria-expanded={verMembros}
+                aria-controls={`membros-${projeto.id}`}
+              >
+                {verMembros ? 'Fechar membros' : 'Membros'}
+              </button>
+              <button type="button" className="botao-secundario" onClick={() => (setATransferir(true), setErro(null))}>
+                Transferir
+              </button>
+              <button type="button" className="botao-perigo" onClick={() => (setAEliminar(true), setErro(null))}>
+                Eliminar
+              </button>
+            </div>
+          )}
+          {erro && !aEliminar && (
+            <p role="alert" className="erro erro-campo">
+              {erro}
+            </p>
+          )}
+          {aEliminar && (
+            <Confirmacao
+              titulo="Eliminar projeto"
+              mensagem={`Eliminar "${projeto.nome}"? Esta ação é definitiva. Só é possível eliminar projetos sem tarefas.`}
+              textoConfirmar="Eliminar"
+              aConfirmar={emCurso}
+              erro={erro}
+              aoConfirmar={eliminar}
+              aoCancelar={() => setAEliminar(false)}
             />
-            <button type="button" className="botao-principal" onClick={transferir} disabled={emCurso}>
-              {emCurso ? 'A transferir…' : 'Confirmar'}
-            </button>
-            <button type="button" className="botao-secundario" onClick={() => setATransferir(false)} disabled={emCurso}>
-              Cancelar
-            </button>
-          </div>
-        ) : (
-          <div className="acoes">
-            <button type="button" className="botao-secundario" onClick={() => (setATransferir(true), setErro(null))}>
-              Transferir
-            </button>
-            <button type="button" className="botao-perigo" onClick={() => (setAEliminar(true), setErro(null))}>
-              Eliminar
-            </button>
-          </div>
-        )}
-        {erro && !aEliminar && (
-          <p role="alert" className="erro erro-campo">
-            {erro}
-          </p>
-        )}
-        {aEliminar && (
-          <Confirmacao
-            titulo="Eliminar projeto"
-            mensagem={`Eliminar "${projeto.nome}"? Esta ação é definitiva. Só é possível eliminar projetos sem tarefas.`}
-            textoConfirmar="Eliminar"
-            aConfirmar={emCurso}
-            erro={erro}
-            aoConfirmar={eliminar}
-            aoCancelar={() => setAEliminar(false)}
-          />
-        )}
-      </td>
-    </tr>
+          )}
+        </td>
+      </tr>
+      {verMembros && (
+        <tr id={`membros-${projeto.id}`}>
+          <td colSpan={3}>
+            <GestaoMembros
+              chave={`${projeto.id}-${projeto.gestor.id}`}
+              projetoId={projeto.id}
+              gestorId={projeto.gestor.id}
+              arquivado={projeto.arquivado}
+              podeGerir
+              operacoes={{
+                listar: () => listarMembrosAdmin(projeto.id),
+                candidatos: () => listarCandidatosAdmin(projeto.id),
+                adicionar: (utilizadorId) => adicionarMembroAdmin(projeto.id, utilizadorId),
+                remover: (utilizadorId) => removerMembroAdmin(projeto.id, utilizadorId),
+              }}
+            />
+          </td>
+        </tr>
+      )}
+    </>
   );
 }
 

@@ -136,9 +136,22 @@ const NOUTRO_PROJETO_ATIVO = `EXISTS (
   SELECT 1 FROM membro_projeto mo JOIN projeto po ON po.id = mo.projeto_id
   WHERE mo.utilizador_id = u.id AND po.arquivado = 0 AND po.id <> ?)`;
 
+export type MembroAdmin = { id: number; nome: string; email: string; contaAtiva: boolean };
+
+/** Membros do projeto com email, só para o Administrador (RV-32, P24). */
+export function listarMembrosComEmail(bd: Bd, projetoId: number): MembroAdmin[] {
+  return bd
+    .prepare(
+      `SELECT u.id, u.nome, u.email, u.ativo FROM membro_projeto m JOIN utilizador u ON u.id = m.utilizador_id
+       WHERE m.projeto_id = ?`,
+    )
+    .all(projetoId)
+    .map((l) => ({ id: Number(l.id), nome: String(l.nome), email: String(l.email), contaAtiva: Number(l.ativo) === 1 }));
+}
+
 /**
  * Contas ativas que ainda não são membros do projeto, com nome e email (A-21, Q-11).
- * Quem não tem o perfil Gestor só aparece se não for membro de nenhum projeto ativo (RV-31).
+ * Nunca inclui Administradores (RV-32). Quem não tem o perfil Gestor só aparece se não for membro de nenhum projeto ativo (RV-31).
  */
 export function listarCandidatosMembros(bd: Bd, projetoId: number): Candidato[] {
   return bd
@@ -146,6 +159,7 @@ export function listarCandidatosMembros(bd: Bd, projetoId: number): Candidato[] 
       `SELECT u.id, u.nome, u.email FROM utilizador u
        WHERE u.ativo = 1
          AND NOT EXISTS (SELECT 1 FROM membro_projeto m WHERE m.projeto_id = ? AND m.utilizador_id = u.id)
+         AND NOT EXISTS (SELECT 1 FROM perfil_atribuido pa WHERE pa.utilizador_id = u.id AND pa.perfil = 'ADMIN')
          AND (${TEM_PERFIL_GESTOR} OR NOT ${NOUTRO_PROJETO_ATIVO})`,
     )
     .all(projetoId, projetoId)

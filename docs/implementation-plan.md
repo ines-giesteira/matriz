@@ -2,7 +2,7 @@
 
 Versão 0.1 · 29 de outubro de 2026 · Ficha Prática 03, Exercício 1
 
-> **Estado: plano aprovado pela dona do produto: decisões Q-14 a Q-22 e propostas técnicas P1 a P22 (secção 2).** Este plano transforma a documentação num conjunto de incrementos executáveis. Cada incremento indica os RF e as US que cobre, os componentes e ficheiros previstos, as dependências, os critérios de aceitação e a forma de verificação. O estado de cada incremento é atualizado ao longo da implementação (secção 8).
+> **Estado: plano aprovado pela dona do produto: decisões Q-14 a Q-22 e propostas técnicas P1 a P24 (secção 2).** Este plano transforma a documentação num conjunto de incrementos executáveis. Cada incremento indica os RF e as US que cobre, os componentes e ficheiros previstos, as dependências, os critérios de aceitação e a forma de verificação. O estado de cada incremento é atualizado ao longo da implementação (secção 8).
 
 **Fontes:** [requirements.md](requirements.md), [user-stories.md](user-stories.md), [constraints.md](constraints.md), [architecture.md](architecture.md), [database.md](database.md), [openapi.yaml](../openapi.yaml) e [ui/wireframe.md](ui/wireframe.md).
 
@@ -64,6 +64,8 @@ Detalhes que a documentação não fixava e de que a implementação precisa. Ap
 | P20 | Juntar-se a uma tarefa que já tem responsáveis dá 409 `TAREFA_COM_RESPONSAVEIS`. Os 409 que dependem do conteúdo do pedido (responsável repetido, tarefa com responsáveis) são verificados depois do formato (400); o 409 de projeto arquivado mantém-se antes (RV-25). Aprovado a 01/11/2026. | O contrato não tinha código para o EC-34. |
 | P21 | Um comentário acima de 2000 caracteres dá 422 `LIMITE_EXCEDIDO`, com `campo: conteudo` e `limite: 2000`. Aprovado a 01/11/2026. | O contrato não indicava o código. |
 | P22 | Código `MEMBRO_NOUTRO_PROJETO` para a regra de RV-31: 422, com `campo: utilizadorId`, ao adicionar um membro sem o perfil Gestor que já está noutro projeto ativo (EC-52); 409, com os nomes na mensagem, ao desarquivar um projeto com um membro nessa situação (EC-53). Aprovado a 01/11/2026. | RV-31 não tinha códigos de erro. |
+| P23 | Adicionar um Administrador como membro dá 422 `MEMBRO_ADMINISTRADOR`, com `campo: utilizadorId` (EC-30). Aprovado a 01/11/2026. | RV-32 não tinha código de erro. |
+| P24 | A gestão de membros pelo Administrador fica em rotas próprias, sob `/admin` (só o perfil ADMIN): `GET` e `POST /admin/projetos/{id}/membros`, `DELETE /admin/projetos/{id}/membros/{utilizadorId}` e `GET /admin/projetos/{id}/candidatos-membros`. Os membros vêm com nome, email e estado da conta. Aprovado a 01/11/2026. | As rotas `/projetos/{id}/...` só servem membros do projeto (404 para os outros, EC-18). |
 
 ## 3. Estrutura prevista
 
@@ -166,6 +168,7 @@ Cada incremento é vertical: base de dados, API, interface e testes. Para cada u
 - **API:** `GET` e `POST /utilizadores`, `PATCH /utilizadores/{id}`.
 - **Frontend:** ecrã de administração de contas.
 - **Aceitação:** CA-02.1, CA-02.2 (pelo seed), CA-03.1, CA-03.2, CA-04.1, CA-04.2; EC-23, EC-26, EC-27, EC-31, EC-33, EC-36, EC-38, EC-49.
+- **Regras acrescentadas (01/11/2026):** o perfil Administrador não se acumula com o perfil Gestor (RV-32); anonimização automática das contas desativadas há mais de um ano, com a data de desativação numa migration nova (RV-33).
 - **Verificação:** testes de API para cada regra; confirmar que a resposta nunca inclui a palavra-passe nem o hash.
 
 ### I4 — Membros

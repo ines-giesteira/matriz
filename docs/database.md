@@ -1,6 +1,6 @@
 # Matriz — Modelo de dados
 
-Versão 0.3 · 29 de outubro de 2026 · Ficha Prática 02, Exercício 2 · a 0.2 acrescentou a regra 15 (Q-12) e clarificou o email no diagrama (RV-30); a 0.3 aplica a conciliação com a Ficha 3: palavra-passe e sessões (Q-22), vários responsáveis (Q-20), comentários (Q-15), eliminação de projetos (Q-19), códigos técnicos (Q-21) e o mapeamento para SQLite (Q-14); a 0.4 (1 de novembro de 2026) aplica RV-31: um só projeto ativo para quem não tem o perfil Gestor (regra 19) e remoção de membros num projeto arquivado (regra 11).
+Versão 0.3 · 29 de outubro de 2026 · Ficha Prática 02, Exercício 2 · a 0.2 acrescentou a regra 15 (Q-12) e clarificou o email no diagrama (RV-30); a 0.3 aplica a conciliação com a Ficha 3: palavra-passe e sessões (Q-22), vários responsáveis (Q-20), comentários (Q-15), eliminação de projetos (Q-19), códigos técnicos (Q-21) e o mapeamento para SQLite (Q-14); a 0.4 (1 de novembro de 2026) aplica RV-31: um só projeto ativo para quem não tem o perfil Gestor (regra 19) e remoção de membros num projeto arquivado (regra 11); aplica RV-32: o Administrador nunca é membro (regra 20) e não acumula perfis; regista RV-33 (anonimização das contas desativadas, a implementar no I3).
 
 > **Estado: proposta, por aprovar pela dona do produto (R-06).** Modelo dos dados do MVP (RF-01 a RF-18, RF-22, RF-24, RF-30, RF-32 a RF-35), coerente com a arquitetura de [architecture.md](architecture.md): uma base de dados única (SQLite, Q-14), partilhada pelos módulos Contas, Projetos e Tarefas. As secções 1 a 4 são o modelo conceptual; a secção 5 mapeia-o para SQLite. Os pressupostos por aprovar estão na secção 6; as questões já decididas, na secção 7.
 
@@ -25,7 +25,7 @@ No MVP, uma conta tem nome, email e o hash da palavra-passe (Q-08, Q-22).
 | `utilizador_id` | identificador | Sim | Chave estrangeira para UTILIZADOR. Parte da chave primária. | — |
 | `perfil` | enumerado | Sim | `ADMIN` ou `GESTOR` (códigos técnicos, P7). Parte da chave primária. | R-08, D-04 |
 
-O perfil **Membro** não é guardado: todos os utilizadores o têm e não pode ser retirado (RV-02). Um utilizador pode ter 0, 1 ou 2 linhas nesta tabela (D-04).
+O perfil **Membro** não é guardado: todos os utilizadores, exceto os Administradores, o têm e não pode ser retirado (RV-02, RV-32). Um utilizador pode ter 0 ou 1 linha nesta tabela: o perfil Administrador não se acumula com o perfil Gestor (D-04, RV-32, a garantir no I3).
 
 ### SESSAO — sessões iniciadas (RF-01)
 
@@ -213,6 +213,8 @@ Regras que o diagrama não mostra e que têm de ser garantidas pelos módulos ou
 **Membros sem o perfil Gestor**
 
 19. Um utilizador sem o perfil Gestor tem, no máximo, uma linha em MEMBRO_PROJETO num projeto com `arquivado = falso`. É garantido pelo módulo Projetos, ao adicionar um membro (EC-52) e ao desarquivar (EC-53); não há restrição na base de dados, porque depende do perfil e do arquivo (R-07, RV-31).
+20. Um utilizador com o perfil Administrador nunca tem linhas em MEMBRO_PROJETO. É garantido pelo módulo Projetos ao adicionar membros (EC-30) e, no I3, ao atribuir perfis (RV-32).
+21. Um ano depois da desativação, a conta é anonimizada: o nome e o email são substituídos, e as linhas de ATRIBUICAO e COMENTARIO mantêm-se, mostradas como "Conta removida". Exige guardar a data de desativação (migration nova, no I3) (RV-33).
 
 ## 5. Mapeamento para SQLite (Q-14)
 

@@ -73,5 +73,23 @@ export function rotasAdminProjetos(bd: Bd): Router {
     resposta.json(servico.transferir(bd, idDoCaminho(pedido.params.projetoId), pedido.body));
   });
 
+  // Membros de qualquer projeto (RV-32, P24).
+  rotas.get('/projetos/:projetoId/membros', (pedido, resposta) => {
+    resposta.json(servico.listarMembrosAdmin(bd, idDoCaminho(pedido.params.projetoId)));
+  });
+
+  rotas.post('/projetos/:projetoId/membros', (pedido, resposta) => {
+    resposta.status(201).json(servico.adicionarMembroAdmin(bd, idDoCaminho(pedido.params.projetoId), pedido.body));
+  });
+
+  rotas.delete('/projetos/:projetoId/membros/:utilizadorId', (pedido, resposta) => {
+    servico.removerMembroAdmin(bd, idDoCaminho(pedido.params.projetoId), idDoCaminho(pedido.params.utilizadorId));
+    resposta.status(204).end();
+  });
+
+  rotas.get('/projetos/:projetoId/candidatos-membros', (pedido, resposta) => {
+    resposta.json(servico.listarCandidatosAdmin(bd, idDoCaminho(pedido.params.projetoId)));
+  });
+
   return rotas;
 }

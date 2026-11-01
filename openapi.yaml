@@ -481,6 +481,140 @@ paths:
                 mensagem: O Gestor tem de ter o perfil Gestor, conta ativa e não ser Administrador.
                 campo: gestorId
 
+  /admin/projetos/{projetoId}/membros:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+    get:
+      tags: [Administração de projetos]
+      operationId: listarMembrosAdmin
+      summary: Membros de um projeto, com nome e email (Administrador)
+      description: |
+        US-07, RF-06, RV-32, EC-54, P24. Qualquer projeto, ativo ou arquivado. Por ordem alfabética do nome (P16).
+        Não dá acesso às tarefas, aos comentários nem ao progresso (D-05).
+      responses:
+        '200':
+          description: Membros do projeto.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MembroAdmin'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+    post:
+      tags: [Administração de projetos]
+      operationId: adicionarMembroAdmin
+      summary: Adicionar um membro a um projeto (Administrador)
+      description: |
+        US-07, RF-06, RV-32, EC-54, P24. Mesmas regras que `adicionarMembro`: só contas ativas (Q-11), nunca um
+        Administrador (EC-30), um só projeto ativo para quem não tem o perfil Gestor (RV-31, EC-52) e não num projeto
+        arquivado (D-09).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [utilizadorId]
+              additionalProperties: false
+              properties:
+                utilizadorId:
+                  type: integer
+      responses:
+        '201':
+          description: Membro adicionado. Devolve a lista atualizada.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MembroAdmin'
+        '400':
+          $ref: '#/components/responses/PedidoInvalido'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          $ref: '#/components/responses/ProjetoArquivado'
+        '422':
+          description: |
+            Utilizador inexistente, desativado, já membro (EC-39), Administrador (EC-30) ou, sem o perfil Gestor, já membro
+            de outro projeto ativo (EC-52). Códigos (P15, P22, P23): `MEMBRO_INVALIDO`, `MEMBRO_REPETIDO`,
+            `MEMBRO_ADMINISTRADOR` e `MEMBRO_NOUTRO_PROJETO`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+              example:
+                codigo: MEMBRO_ADMINISTRADOR
+                mensagem: Um Administrador não pode ser membro de um projeto.
+                campo: utilizadorId
+
+  /admin/projetos/{projetoId}/membros/{utilizadorId}:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+      - $ref: '#/components/parameters/UtilizadorId'
+    delete:
+      tags: [Administração de projetos]
+      operationId: removerMembroAdmin
+      summary: Remover um membro de um projeto (Administrador)
+      description: |
+        US-07, RF-06, RV-32, EC-54, P24. Mesmas regras que `removerMembro`: remove também as atribuições nas tarefas
+        do projeto (EC-19); possível num projeto arquivado (RV-31); o Gestor não pode ser removido, substitui-se por
+        transferência (Q-05, EC-28). Remover quem não é membro responde 404.
+      responses:
+        '204':
+          description: Membro removido.
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          description: Tentativa de remover o Gestor do projeto (EC-28).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+              example:
+                codigo: GESTOR_NAO_REMOVIVEL
+                mensagem: O Gestor não pode ser removido. Transfira o projeto para outro Gestor.
+
+  /admin/projetos/{projetoId}/candidatos-membros:
+    parameters:
+      - $ref: '#/components/parameters/ProjetoId'
+    get:
+      tags: [Administração de projetos]
+      operationId: listarCandidatosMembrosAdmin
+      summary: Utilizadores que podem ser adicionados a um projeto (Administrador)
+      description: |
+        US-07, RF-06, RV-32, EC-54, P24. A mesma lista que `listarCandidatosMembros`: contas ativas, sem
+        Administradores e, de quem não tem o perfil Gestor, só quem não está em nenhum projeto ativo.
+      responses:
+        '200':
+          description: Candidatos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UtilizadorResumo'
+        '401':
+          $ref: '#/components/responses/NaoAutenticado'
+        '403':
+          $ref: '#/components/responses/SemPermissao'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+
   # ---------------------------------------------------------------- Projetos
   /projetos:
     get:
@@ -636,7 +770,7 @@ paths:
       operationId: adicionarMembro
       summary: Adicionar um membro (Gestor do projeto)
       description: |
-        US-07, RF-06. Só utilizadores com conta ativa (Q-11, EC-39).
+        US-07, RF-06. Só utilizadores com conta ativa (Q-11, EC-39). Um Administrador nunca é membro (RV-32, EC-30).
         Quem não tem o perfil Gestor só pode ser membro de um projeto ativo de cada vez; os projetos arquivados não contam (RV-31, EC-52).
       requestBody:
         required: true
@@ -670,8 +804,9 @@ paths:
           $ref: '#/components/responses/ProjetoArquivado'
         '422':
           description: |
-            Utilizador inexistente, desativado, já membro (EC-39) ou, sem o perfil Gestor, já membro de outro projeto ativo (EC-52).
-            Códigos (P15, P22): `MEMBRO_INVALIDO` (inexistente ou desativado), `MEMBRO_REPETIDO` (já é membro) e
+            Utilizador inexistente, desativado, já membro (EC-39), Administrador (EC-30) ou, sem o perfil Gestor, já membro
+            de outro projeto ativo (EC-52). Códigos (P15, P22, P23): `MEMBRO_INVALIDO` (inexistente ou desativado),
+            `MEMBRO_REPETIDO` (já é membro), `MEMBRO_ADMINISTRADOR` (tem o perfil Administrador) e
             `MEMBRO_NOUTRO_PROJETO` (já é membro de outro projeto ativo).
           content:
             application/json:
@@ -689,6 +824,12 @@ paths:
                   value:
                     codigo: MEMBRO_REPETIDO
                     mensagem: O utilizador já é membro do projeto.
+                    campo: utilizadorId
+                administrador:
+                  summary: Utilizador com o perfil Administrador
+                  value:
+                    codigo: MEMBRO_ADMINISTRADOR
+                    mensagem: Um Administrador não pode ser membro de um projeto.
                     campo: utilizadorId
                 noutroProjeto:
                   summary: Utilizador sem o perfil Gestor que já é membro de outro projeto ativo
@@ -736,8 +877,8 @@ paths:
       summary: Utilizadores que podem ser adicionados como membros (Gestor do projeto)
       description: |
         US-07, RF-06, A-21, CA-07.1. Utilizadores com conta ativa que ainda não são membros, com nome e email,
-        por ordem alfabética do nome (P16). Inclui Administradores (Q-06). Quem não tem o perfil Gestor só aparece se não
-        for membro de nenhum projeto ativo (RV-31, EC-52).
+        por ordem alfabética do nome (P16). Não inclui Administradores (RV-32, EC-30). Quem não tem o perfil Gestor só
+        aparece se não for membro de nenhum projeto ativo (RV-31, EC-52).
       responses:
         '200':
           description: Candidatos.
@@ -1398,6 +1539,21 @@ components:
           type: string
         email:
           type: string
+
+    MembroAdmin:
+      type: object
+      description: Membro de um projeto visto pelo Administrador, com email (RV-32, P24).
+      required: [id, nome, email, contaAtiva]
+      properties:
+        id:
+          type: integer
+        nome:
+          type: string
+        email:
+          type: string
+          format: email
+        contaAtiva:
+          type: boolean
 
     ResponsavelResumo:
       type: object

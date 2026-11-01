@@ -30,8 +30,12 @@ export function Estrutura({ children }: { children: ReactNode }) {
           <NavLink to="/" end className="marca">
             Matriz
           </NavLink>
-          <NavLink to="/projetos">Projetos</NavLink>
-          {eAdmin && <NavLink to="/administracao/projetos">Administração</NavLink>}
+          {/* O Administrador nunca é membro de projetos (RV-32): só vê a administração. */}
+          {eAdmin ? (
+            <NavLink to="/administracao/projetos">Administração</NavLink>
+          ) : (
+            <NavLink to="/projetos">Projetos</NavLink>
+          )}
         </nav>
         <span className="cabecalho-utilizador">
           {estado.utilizador.nome}

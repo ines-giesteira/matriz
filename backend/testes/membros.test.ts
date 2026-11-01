@@ -78,11 +78,8 @@ describe('GET /projetos/{id}/candidatos-membros', () => {
   it('CA-07.1: o Gestor vê os utilizadores ativos que ainda não são membros, com nome e email', async () => {
     const resposta = await (await como('ana')).get(`/api/projetos/${SITE()}/candidatos-membros`);
     expect(resposta.status).toBe(200);
-    // Rui está desativado e já é membro; Helena (Administradora) e Paulo podem ser adicionados (Q-06).
-    expect(resposta.body).toEqual([
-      { id: id('helena'), nome: 'Helena Matos', email: EMAILS.helena },
-      { id: id('paulo'), nome: 'Paulo Reis', email: EMAILS.paulo },
-    ]);
+    // Rui está desativado e já é membro; Helena é Administradora e nunca é membro (RV-32); Paulo pode ser adicionado.
+    expect(resposta.body).toEqual([{ id: id('paulo'), nome: 'Paulo Reis', email: EMAILS.paulo }]);
   });
 
   it('não inclui contas desativadas (Q-11)', async () => {
@@ -116,15 +113,17 @@ describe('POST /projetos/{id}/membros', () => {
     expect(consulta.body.souGestor).toBe(false);
   });
 
-  it('EC-30: um Administrador adicionado tem as permissões de Membro', async () => {
-    await (await como('ana')).post(`/api/projetos/${SITE()}/membros`).send({ utilizadorId: id('helena') });
+  it('EC-30: um Administrador não pode ser adicionado como membro (RV-32, P23)', async () => {
+    const resposta = await (await como('ana')).post(`/api/projetos/${SITE()}/membros`).send({ utilizadorId: id('helena') });
+    expect(resposta.status).toBe(422);
+    expect(resposta.body).toEqual({
+      codigo: 'MEMBRO_ADMINISTRADOR',
+      mensagem: 'Um Administrador não pode ser membro de um projeto.',
+      campo: 'utilizadorId',
+    });
     const helena = await como('helena');
-    expect((await helena.get('/api/projetos')).body.map((p: { nome: string }) => p.nome)).toEqual([
-      'Lançamento do novo site',
-    ]);
-    expect((await helena.get(`/api/projetos/${SITE()}`)).body.souGestor).toBe(false);
-    expect((await helena.patch(`/api/projetos/${SITE()}`).send({ nome: 'X' })).status).toBe(403);
-    expect((await helena.post(`/api/projetos/${SITE()}/membros`).send({ utilizadorId: id('paulo') })).status).toBe(403);
+    expect((await helena.get('/api/projetos')).body).toEqual([]);
+    expect((await helena.get(`/api/projetos/${SITE()}`)).status).toBe(404);
   });
 
   it('EC-39: um utilizador desativado não é adicionado', async () => {
@@ -246,11 +245,8 @@ describe('RV-31: quem não tem o perfil Gestor só é membro de um projeto ativo
 
   it('EC-52: os candidatos só incluem, sem o perfil Gestor, quem não está em nenhum projeto ativo', async () => {
     const resposta = await (await como('paulo')).get(`/api/projetos/${CRM()}/candidatos-membros`);
-    // João e Marta estão no projeto ativo da Ana; Rui está desativado; Ana tem o perfil Gestor; Helena não está em nenhum.
-    expect(resposta.body).toEqual([
-      { id: id('ana'), nome: 'Ana Silva', email: EMAILS.ana },
-      { id: id('helena'), nome: 'Helena Matos', email: EMAILS.helena },
-    ]);
+    // João e Marta estão no projeto ativo da Ana; Rui está desativado; Helena é Administradora (RV-32); Ana tem o perfil Gestor.
+    expect(resposta.body).toEqual([{ id: id('ana'), nome: 'Ana Silva', email: EMAILS.ana }]);
   });
 
   it('EC-52: os projetos arquivados não contam: a Marta, só no relatório arquivado, pode entrar noutro projeto', async () => {
@@ -266,11 +262,6 @@ describe('RV-31: quem não tem o perfil Gestor só é membro de um projeto ativo
     expect((await adicionar('paulo', CRM(), 'joao')).status).toBe(201);
     const lista = (await (await como('joao')).get('/api/projetos')).body.map((p: { nome: string }) => p.nome);
     expect(lista).toEqual(['Migração do CRM']);
-  });
-
-  it('a regra também se aplica a um Administrador sem o perfil Gestor (Q-06)', async () => {
-    expect((await adicionar('ana', SITE(), 'helena')).status).toBe(201);
-    expect((await adicionar('paulo', CRM(), 'helena')).body.codigo).toBe('MEMBRO_NOUTRO_PROJETO');
   });
 
   it('quem tem o perfil Gestor não tem limite', async () => {
@@ -298,5 +289,82 @@ describe('RV-31: quem não tem o perfil Gestor só é membro de um projeto ativo
     const ana = await como('ana');
     expect((await ana.put(`/api/projetos/${RELATORIO()}/arquivado`).send({ arquivado: true })).status).toBe(200);
     expect((await ana.put(`/api/projetos/${SITE()}/arquivado`).send({ arquivado: true })).status).toBe(200);
+  });
+});
+
+// ---------------------------------------------------------------- O Administrador gere os membros (RV-32, P24)
+
+describe('RV-32: o Administrador gere os membros de qualquer projeto', () => {
+  const base = (projetoId: number) => `/api/admin/projetos/${projetoId}`;
+
+  it('EC-54: vê os membros de qualquer projeto com nome e email, mas não as tarefas nem o progresso', async () => {
+    const helena = await como('helena');
+    const resposta = await helena.get(`${base(SITE())}/membros`);
+    expect(resposta.status).toBe(200);
+    expect(resposta.body).toEqual([
+      { id: id('ana'), nome: 'Ana Silva', email: EMAILS.ana, contaAtiva: true },
+      { id: id('joao'), nome: 'João Pires', email: EMAILS.joao, contaAtiva: true },
+      { id: id('marta'), nome: 'Marta Lopes', email: EMAILS.marta, contaAtiva: true },
+      { id: id('rui'), nome: 'Rui Costa', email: EMAILS.rui, contaAtiva: false },
+    ]);
+    expect((await helena.get(`/api/projetos/${SITE()}/tarefas`)).status).toBe(404);
+    expect((await helena.get(`/api/projetos/${SITE()}/progresso`)).status).toBe(404);
+    expect((await helena.get(`${base(RELATORIO())}/membros`)).status).toBe(200);
+    expect((await helena.get(`${base(9999)}/membros`)).status).toBe(404);
+  });
+
+  it('EC-54: vê os mesmos candidatos que o Gestor (sem Administradores, RV-31)', async () => {
+    const resposta = await (await como('helena')).get(`${base(CRM())}/candidatos-membros`);
+    expect(resposta.body).toEqual([{ id: id('ana'), nome: 'Ana Silva', email: EMAILS.ana }]);
+  });
+
+  it('EC-54: muda um Membro de projeto: remove-o de um e adiciona-o a outro, sem passar a membro', async () => {
+    const helena = await como('helena');
+    expect((await helena.post(`${base(CRM())}/membros`).send({ utilizadorId: id('joao') })).body.codigo).toBe(
+      'MEMBRO_NOUTRO_PROJETO',
+    );
+    expect((await helena.delete(`${base(SITE())}/membros/${id('joao')}`)).status).toBe(204);
+    const adicao = await helena.post(`${base(CRM())}/membros`).send({ utilizadorId: id('joao') });
+    expect(adicao.status).toBe(201);
+    expect(adicao.body.map((m: { nome: string }) => m.nome)).toEqual(['João Pires', 'Paulo Reis']);
+    const lista = (await (await como('joao')).get('/api/projetos')).body.map((p: { nome: string }) => p.nome);
+    expect(lista).toEqual(['Migração do CRM']);
+    expect((await helena.get('/api/projetos')).body).toEqual([]);
+  });
+
+  it('EC-54, EC-30, EC-39: as regras do Gestor aplicam-se: Administrador, conta desativada, repetido', async () => {
+    const helena = await como('helena');
+    const url = `${base(SITE())}/membros`;
+    expect((await helena.post(url).send({ utilizadorId: id('helena') })).body.codigo).toBe('MEMBRO_ADMINISTRADOR');
+    expect((await helena.post(url).send({ utilizadorId: id('marta') })).body.codigo).toBe('MEMBRO_REPETIDO');
+    expect((await helena.post(`${base(CRM())}/membros`).send({ utilizadorId: id('rui') })).body.codigo).toBe(
+      'MEMBRO_INVALIDO',
+    );
+    expect((await helena.post(url).send({ utilizadorId: '3' })).status).toBe(400);
+  });
+
+  it('EC-54, EC-28: o Gestor não pode ser removido; substitui-se por transferência', async () => {
+    const resposta = await (await como('helena')).delete(`${base(SITE())}/membros/${id('ana')}`);
+    expect(resposta.status).toBe(409);
+    expect(resposta.body).toEqual({
+      codigo: 'GESTOR_NAO_REMOVIVEL',
+      mensagem: 'O Gestor não pode ser removido. Transfira o projeto para outro Gestor.',
+    });
+  });
+
+  it('EC-54: num projeto arquivado, remove mas não adiciona', async () => {
+    const helena = await como('helena');
+    expect((await helena.post(`${base(RELATORIO())}/membros`).send({ utilizadorId: id('paulo') })).status).toBe(409);
+    expect((await helena.delete(`${base(RELATORIO())}/membros/${id('marta')}`)).status).toBe(204);
+    expect((await helena.delete(`${base(RELATORIO())}/membros/${id('marta')}`)).status).toBe(404);
+  });
+
+  it('EC-41: só o Administrador usa estas rotas; o Gestor recebe 403, mesmo no seu projeto', async () => {
+    const ana = await como('ana');
+    expect((await ana.get(`${base(SITE())}/membros`)).status).toBe(403);
+    expect((await ana.post(`${base(SITE())}/membros`).send({ utilizadorId: id('paulo') })).status).toBe(403);
+    expect((await ana.delete(`${base(SITE())}/membros/${id('joao')}`)).status).toBe(403);
+    expect((await ana.get(`${base(SITE())}/candidatos-membros`)).status).toBe(403);
+    expect((await request(app).get(`${base(SITE())}/membros`)).status).toBe(401);
   });
 });

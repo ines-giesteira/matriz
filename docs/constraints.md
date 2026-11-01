@@ -1,6 +1,6 @@
 # Matriz — Restrições, pressupostos e pendentes
 
-Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou Q-12, Q-13 e a revisão crítica do Architecture Pack (RV-24 a RV-30); a 1.4 acrescenta a conciliação com a Ficha 3 (Q-14 a Q-22); a 1.5 (1 de novembro de 2026) acrescenta RV-31, que altera R-07 e D-09.
+Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou Q-12, Q-13 e a revisão crítica do Architecture Pack (RV-24 a RV-30); a 1.4 acrescenta a conciliação com a Ficha 3 (Q-14 a Q-22); a 1.5 (1 de novembro de 2026) acrescenta RV-31, que altera R-07 e D-09, RV-32, sobre o papel do Administrador, e RV-33, sobre a remoção de contas desativadas.
 
 > **Origem da informação.** O cliente é fictício. A única informação confirmada é a frase original do cliente (C-00). Todos os outros pontos são pressupostos da dona do produto: estão aprovados para orientar o desenvolvimento, mas **não são requisitos confirmados pelo cliente**.
 >
@@ -58,10 +58,10 @@ Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou Q-12, Q-13 e a revisã
 | ID | Pressuposto | Estado |
 |---|---|---|
 | D-01 | O acesso é feito com conta individual; não há acesso anónimo. | Aprovado |
-| D-02 | As contas são desativadas em vez de apagadas. | Aprovado (complementado por RV-04, RV-18) |
+| D-02 | As contas são desativadas em vez de apagadas. | Aprovado (complementado por RV-04, RV-18; alterado por RV-33: um ano depois da desativação, a conta é anonimizada automaticamente) |
 | D-03 | "Gestor" é um perfil global; o Gestor gere os projetos de que é Gestor. | Aprovado (alterado por A-03 e Q-18) |
-| D-04 | Uma pessoa pode acumular perfis. | Aprovado |
-| D-05 | O Administrador só vê projetos de que é membro. | Aprovado (complementado por A-02) |
+| D-04 | Uma pessoa pode acumular perfis. | Aprovado (alterado por RV-32: o perfil Administrador não se acumula com o perfil Gestor nem com o perfil Membro) |
+| D-05 | O Administrador só vê projetos de que é membro. | Aprovado (complementado por A-02; alterado por RV-32: o Administrador nunca é membro; vê o nome, o Gestor e os membros de todos os projetos, sem o seu conteúdo) |
 | D-06 | O nome do projeto é obrigatório. | Aprovado |
 | D-07 | O Gestor pode editar os dados do projeto. | Aprovado |
 | D-08 | O Gestor adiciona e remove membros do projeto. | Aprovado |
@@ -119,7 +119,7 @@ Questões levantadas ao consolidar a documentação, já decididas pela dona do 
 | Q-03 | O que acontece quando um texto excede o limite de tamanho? | Não é guardado e é indicado o limite excedido. | RNF-03, EC-29 | Decidido |
 | Q-04 | Depois de uma transferência, o Gestor anterior continua como membro do projeto? | Sim, como membro sem permissões de Gestor; mantém as tarefas de que é responsável. | RF-30, EC-25 | Decidido |
 | Q-05 | O Gestor pode ser removido dos membros do seu próprio projeto? | Não; para deixar o projeto, este tem de ser transferido. | RF-06, EC-28 | Decidido |
-| Q-06 | Um utilizador só com o perfil Administrador pode ser adicionado como membro de um projeto? | Sim; nesse projeto tem as permissões de Membro. | RF-06, EC-30 | Decidido |
+| Q-06 | Um utilizador só com o perfil Administrador pode ser adicionado como membro de um projeto? | Sim; nesse projeto tem as permissões de Membro. | RF-06, EC-30 | Decidido (alterado por RV-32: não; o Administrador nunca é membro de um projeto) |
 | Q-07 | A-16 e A-17 abrangem também os projetos arquivados? | Sim, abrangem todos os projetos, ativos e arquivados. | RF-02, RF-03, EC-23, EC-26 | Decidido |
 | Q-08 | Que dados tem uma conta além de nome e email? | No MVP, apenas nome e email. Complementado por Q-22: a conta guarda também o hash da palavra-passe. | requirements.md, secção 2 | Decidido |
 | Q-09 | Numa transferência, o novo Gestor passa a membro do projeto, se ainda não o for? | Sim, na mesma operação da transferência, para cumprir A-01. Levantada no modelo de dados (Ficha 02). | RF-30, EC-37, database.md | Decidido |
@@ -151,10 +151,10 @@ Resultado da revisão independente da documentação (Exercício 6). A dona do p
 | ID | Problema | Decisão | Onde se aplica | Estado |
 |---|---|---|---|---|
 | RV-01 | O Administrador podia dar a si próprio o perfil Gestor e transferir para si qualquer projeto, anulando D-05 e A-02. | O Administrador não pode ser destino de uma transferência nem atribuir a si próprio o perfil Gestor. | RF-02, RF-30, EC-35, EC-36 | Decidido (alterado) |
-| RV-02 | "Membro" usado como perfil global e como papel no projeto, sem se saber o que o perfil dá. | Todos os utilizadores têm o perfil Membro, que não se retira; ser membro de um projeto depende só do Gestor. O membro pode atribuir-se uma tarefa sem responsável e largá-la; continua sem poder criar tarefas. | RF-02, RF-10, US-20, EC-34 | Decidido (alterado) |
+| RV-02 | "Membro" usado como perfil global e como papel no projeto, sem se saber o que o perfil dá. | Todos os utilizadores têm o perfil Membro, que não se retira; ser membro de um projeto depende só do Gestor. O membro pode atribuir-se uma tarefa sem responsável e largá-la; continua sem poder criar tarefas. | RF-02, RF-10, US-20, EC-34 | Decidido (alterado; alterado por RV-32: o Administrador não tem o perfil Membro) |
 | RV-03 | Várias User Stories sem critério de aceitação de sucesso. | Acrescentar pelo menos um CA de sucesso por US. | user-stories.md | Decidido |
-| RV-04 | Contas nunca apagadas fixam retenção indefinida de dados pessoais. | D-02 e RNF-07 ficam dependentes da decisão sobre retenção e requisitos legais. | RF-03, RNF-07, secção 3 | Decidido |
-| RV-05 | A coluna Administrador da matriz não refletia Q-06. | A coluna aplica-se aos projetos de que o Administrador não é membro. | requirements.md, secção 3 | Decidido |
+| RV-04 | Contas nunca apagadas fixam retenção indefinida de dados pessoais. | D-02 e RNF-07 ficam dependentes da decisão sobre retenção e requisitos legais. | RF-03, RNF-07, secção 3 | Decidido (prazo e anonimização decididos em RV-33) |
+| RV-05 | A coluna Administrador da matriz não refletia Q-06. | A coluna aplica-se aos projetos de que o Administrador não é membro. | requirements.md, secção 3 | Decidido (substituído por RV-32: o Administrador nunca é membro) |
 | RV-06 | CA-01.1 remetia para a matriz inteira. | A matriz é verificada pelos CA e EC de cada US; CA-01.1 fica restrito ao acesso. | CA-01.1 | Decidido |
 | RV-07 | RF-03 atribuía a D-02 uma regra sobre "histórico" que D-02 não diz. | Removida; aplica-se A-15. | RF-03 | Decidido |
 | RV-08 | "Tarefa ativa" indefinida e R-02 desalinhado de D-20. | Tarefa ativa = trabalho da equipa ainda não terminado. Verificação: a dona do produto confirma com o gestor do piloto que não há tarefas a ser geridas em Excel. | R-02, D-20, requirements.md secção 6 | Decidido (alterado) |
@@ -188,6 +188,8 @@ Resultado da revisão da coerência entre requisitos, arquitetura, dados, API e 
 | RV-29 | Não estava definido se um membro vê os outros membros do projeto. | Decidida em Q-13. | Q-13 | Decidido |
 | RV-30 | O diagrama ER não dizia que a unicidade do email ignora maiúsculas e minúsculas (Q-10). | Acrescentado ao comentário do atributo. | database.md, secção 3 | Decidido |
 | RV-31 | R-07 deixava qualquer pessoa estar em vários projetos ativos. | Decisão da dona do produto (01/11/2026): quem não tem o perfil Gestor só é membro de um projeto ativo de cada vez; os projetos arquivados não contam. Quem tem o perfil Gestor não tem limite. Para mudar de projeto, o Gestor do projeto atual remove a pessoa e o Gestor do outro projeto adiciona-a. A lista de candidatos só mostra, de quem não tem o perfil Gestor, quem não está em nenhum projeto ativo. Desarquivar é recusado se um membro sem o perfil Gestor estiver noutro projeto ativo; para o permitir, abre-se uma exceção a D-09: o Gestor pode remover membros de um projeto arquivado. | R-07, D-09, RF-06, EC-52, EC-53, P22 | Decidido (alterado) |
+| RV-32 | Q-06 deixava o Administrador ser membro de projetos, misturando a administração da plataforma com o trabalho nos projetos. | Decisão da dona do produto (01/11/2026): o Administrador só administra a plataforma e nunca é membro de um projeto; não tem o perfil Membro nem o perfil Gestor (os dois não se acumulam, a aplicar no I3). Além das contas, dos perfis, da criação, eliminação e transferência de projetos, adiciona e remove membros de qualquer projeto, com as regras do Gestor: só contas ativas (Q-11), um só projeto ativo para quem não tem o perfil Gestor (RV-31), o Gestor só se substitui por transferência (Q-05, RF-30) e, num projeto arquivado, remove mas não adiciona (D-09). Para isso vê os membros de cada projeto com nome e email; as tarefas, os comentários e o progresso continuam fora do seu acesso. | Q-06, RV-05, RV-02, D-04, D-05, RF-06, EC-30, EC-54, P23, P24 | Decidido (alterado) |
+| RV-33 | As contas desativadas ficavam guardadas para sempre (RV-04). | Decisão da dona do produto (01/11/2026): um ano depois da desativação, a conta é anonimizada automaticamente: o nome e o email são apagados, e os comentários e as atribuições mantêm-se com "Conta removida". A implementar no I3, com a data de desativação guardada numa migration nova. | D-02, RF-03, RNF-07, RV-04 | Decidido (alterado) |
 
 ## 3. Segurança e privacidade
 
@@ -195,11 +197,11 @@ Resultado da revisão da coerência entre requisitos, arquitetura, dados, API e 
 - Só utilizadores com conta individual ativa acedem à aplicação; não há acesso anónimo (RF-01, D-01).
 - Desativar uma conta, remover um membro ou retirar um perfil produz efeito no pedido seguinte, incluindo em sessões abertas (RV-09).
 - Pessoas externas à empresa não têm acesso (G-03).
-- Cada utilizador só vê os projetos a que pertence (D-10). O Administrador não vê o conteúdo de projetos de que não é membro; para criar, eliminar e transferir, vê apenas o nome e o Gestor (D-05, A-02, Q-18, Q-19).
+- Cada utilizador só vê os projetos a que pertence (D-10). O Administrador nunca é membro e não vê o conteúdo dos projetos; para criar, eliminar, transferir e gerir membros, vê o nome, o Gestor e os membros (nome e email) de cada projeto (D-05, A-02, Q-18, Q-19, RV-32).
 - O Administrador não pode atribuir a si próprio o perfil Gestor nem ser destino de uma transferência (RV-01).
 - As ações permitidas a cada perfil estão na matriz de permissões de [requirements.md](requirements.md#3-matriz-de-permissões).
 - Tem de existir sempre pelo menos 1 Administrador ativo (A-18).
-- **Dados pessoais conhecidos:** nome e email dos utilizadores. O email é único (RV-18) e fica visível aos Gestores ao adicionarem membros (A-21).
+- **Dados pessoais conhecidos:** nome e email dos utilizadores. O email é único (RV-18) e fica visível aos Gestores ao adicionarem membros (A-21) e ao Administrador ao gerir membros (RV-32). Um ano depois da desativação, o nome e o email são apagados (RV-33).
 - **Autenticação (Q-22):** email e palavra-passe; a palavra-passe é guardada só como hash, nunca em claro. A sessão fica no servidor e o cookie é httpOnly. A identidade do utilizador, o autor dos comentários e o Gestor indicado são sempre validados no backend, nunca aceites como prova enviada pelo cliente.
 - **Configuração:** as credenciais e os segredos ficam em variáveis de ambiente, fora do repositório; o repositório tem só um ficheiro de exemplo com valores fictícios. As contas de demonstração usam dados fictícios.
 
@@ -209,7 +211,7 @@ Resultado da revisão da coerência entre requisitos, arquitetura, dados, API e 
 
 **Por definir:**
 - Regras para as palavras-passe (comprimento, mudança pelo próprio utilizador) e duração da sessão: aprovadas em P2 e P3, [implementation-plan.md](implementation-plan.md#2-propostas-técnicas-aprovadas).
-- Requisitos legais de proteção de dados pessoais aplicáveis, incluindo o prazo de retenção das contas e uma eventual anonimização (RV-04).
+- Requisitos legais de proteção de dados pessoais aplicáveis. O prazo de retenção das contas desativadas e a anonimização estão decididos em RV-33; falta confirmar que cumprem os requisitos legais (RV-04).
 - Registo de acessos ou de auditoria: é necessário?
 - Cópias de segurança.
 

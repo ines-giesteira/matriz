@@ -1,22 +1,49 @@
-// Membros do projeto (US-07, RF-06; wireframe, elemento 4 e secção 3).
-// Qualquer membro vê os nomes (Q-13). O Gestor adiciona utilizadores ativos (nome e email, A-21) e remove membros,
-// exceto ele próprio (Q-05). Num projeto arquivado só pode remover (D-09, RV-31). Quem não tem o perfil Gestor
-// só aparece nos candidatos se não estiver em nenhum projeto ativo (RV-31); a API filtra a lista.
+// Membros de um projeto (US-07, RF-06; wireframe, elemento 4 e secção 3).
+// `GestaoMembros` é usada no detalhe do projeto (Gestor e membros) e na administração de projetos (Administrador, RV-32).
+// Quem gere adiciona utilizadores ativos (nome e email, A-21) e remove membros, exceto o Gestor (Q-05), que só se
+// substitui por transferência. Num projeto arquivado só se remove (D-09, RV-31). A API filtra os candidatos:
+// nunca Administradores (RV-32) e, sem o perfil Gestor, só quem não está em nenhum projeto ativo (RV-31).
 import { useState, type FormEvent } from 'react';
-import { adicionarMembro, listarCandidatosMembros, listarMembros, removerMembro, type Projeto } from '../api/projetos';
+import {
+  adicionarMembro,
+  listarCandidatosMembros,
+  listarMembros,
+  removerMembro,
+  type Membro,
+  type Projeto,
+  type UtilizadorResumo,
+} from '../api/projetos';
 import { mensagemDeErro, usarPedido } from '../api/usarPedido';
 
-export function MembrosProjeto({ projeto }: { projeto: Projeto }) {
-  const podeAdicionar = projeto.souGestor && !projeto.arquivado;
-  const podeRemover = projeto.souGestor;
-  const membros = usarPedido(() => listarMembros(projeto.id), [projeto.id]);
-  const candidatos = usarPedido(
-    () => (podeAdicionar ? listarCandidatosMembros(projeto.id) : Promise.resolve([])),
-    [projeto.id, podeAdicionar],
-  );
+/** Membro como cada perfil o vê: o Administrador recebe também o email (P24). */
+export type MembroVisivel = Membro & { email?: string };
+
+export type OperacoesMembros = {
+  listar: () => Promise<MembroVisivel[]>;
+  candidatos: () => Promise<UtilizadorResumo[]>;
+  adicionar: (utilizadorId: number) => Promise<unknown>;
+  remover: (utilizadorId: number) => Promise<unknown>;
+};
+
+type Propriedades = {
+  /** Identifica o projeto e o seu Gestor: quando muda, as listas voltam a ser pedidas. */
+  chave: string;
+  projetoId: number;
+  gestorId: number;
+  arquivado: boolean;
+  podeGerir: boolean;
+  operacoes: OperacoesMembros;
+};
+
+export function GestaoMembros({ chave, projetoId, gestorId, arquivado, podeGerir, operacoes }: Propriedades) {
+  const podeAdicionar = podeGerir && !arquivado;
+  const membros = usarPedido(operacoes.listar, [chave]);
+  const candidatos = usarPedido(() => (podeAdicionar ? operacoes.candidatos() : Promise.resolve([])), [chave, podeAdicionar]);
   const [escolhido, setEscolhido] = useState('');
   const [emCurso, setEmCurso] = useState<number | 'adicionar' | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const idTitulo = `titulo-membros-${projetoId}`;
+  const idSelecao = `novo-membro-${projetoId}`;
 
   async function executar(acao: number | 'adicionar', operacao: () => Promise<unknown>) {
     if (emCurso !== null) return; // EC-51: sem pedidos repetidos
@@ -40,14 +67,14 @@ export function MembrosProjeto({ projeto }: { projeto: Projeto }) {
       return;
     }
     void executar('adicionar', async () => {
-      await adicionarMembro(projeto.id, Number(escolhido));
+      await operacoes.adicionar(Number(escolhido));
       setEscolhido('');
     });
   }
 
   return (
-    <section className="seccao" aria-labelledby="titulo-membros">
-      <h2 id="titulo-membros">Membros</h2>
+    <section className="seccao" aria-labelledby={idTitulo}>
+      <h2 id={idTitulo}>Membros</h2>
 
       {erro && (
         <p role="alert" className="erro">
@@ -67,14 +94,15 @@ export function MembrosProjeto({ projeto }: { projeto: Projeto }) {
             <li key={m.id}>
               <span>
                 {m.nome}
-                {m.id === projeto.gestor.id && <span className="texto-suave"> · Gestor</span>}
+                {m.email && <span className="texto-suave"> ({m.email})</span>}
+                {m.id === gestorId && <span className="texto-suave"> · Gestor</span>}
                 {!m.contaAtiva && <span className="texto-suave"> (conta desativada)</span>}
               </span>
-              {podeRemover && m.id !== projeto.gestor.id && (
+              {podeGerir && m.id !== gestorId && (
                 <button
                   type="button"
                   className="botao-secundario"
-                  onClick={() => executar(m.id, () => removerMembro(projeto.id, m.id))}
+                  onClick={() => executar(m.id, () => operacoes.remover(m.id))}
                   disabled={emCurso !== null}
                   aria-label={`Remover ${m.nome}`}
                 >
@@ -88,10 +116,10 @@ export function MembrosProjeto({ projeto }: { projeto: Projeto }) {
 
       {podeAdicionar && (
         <form className="adicionar-membro" onSubmit={aoAdicionar}>
-          <label htmlFor="novo-membro">Adicionar membro</label>
+          <label htmlFor={idSelecao}>Adicionar membro</label>
           <div className="acoes">
             <select
-              id="novo-membro"
+              id={idSelecao}
               value={escolhido}
               onChange={(e) => setEscolhido(e.target.value)}
               disabled={candidatos.estado.tipo !== 'ok' || candidatos.estado.dados.length === 0}
@@ -116,5 +144,25 @@ export function MembrosProjeto({ projeto }: { projeto: Projeto }) {
         </form>
       )}
     </section>
+  );
+}
+
+/** Membros no detalhe do projeto: qualquer membro vê os nomes (Q-13); só o Gestor gere (RF-06). */
+export function MembrosProjeto({ projeto }: { projeto: Projeto }) {
+  const id = projeto.id;
+  return (
+    <GestaoMembros
+      chave={`${id}`}
+      projetoId={id}
+      gestorId={projeto.gestor.id}
+      arquivado={projeto.arquivado}
+      podeGerir={projeto.souGestor}
+      operacoes={{
+        listar: () => listarMembros(id),
+        candidatos: () => listarCandidatosMembros(id),
+        adicionar: (utilizadorId) => adicionarMembro(id, utilizadorId),
+        remover: (utilizadorId) => removerMembro(id, utilizadorId),
+      }}
+    />
   );
 }

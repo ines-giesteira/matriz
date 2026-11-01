@@ -1,6 +1,6 @@
 # Matriz — Requisitos
 
-Versão 1.4 · 29 de outubro de 2026 · consolida o "Âmbito funcional e MVP" v0.1, o "Backlog inicial do MVP" v0.1 (versões de trabalho anteriores, não incluídas no repositório), as decisões da dona do produto, as revisões críticas (RV-xx) e as decisões Q-09 a Q-22. A versão 1.3 acrescentou a ordem das listas (Q-12) e a visibilidade dos membros (Q-13); a 1.4 aplica a conciliação com a Ficha 3 (Q-15 a Q-22): comentários, pesquisa, filtros, painel inicial, criação e eliminação de projetos pelo Administrador, vários responsáveis e autenticação; a 1.5 (1 de novembro de 2026) aplica RV-31: um só projeto ativo para quem não tem o perfil Gestor e remoção de membros num projeto arquivado.
+Versão 1.4 · 29 de outubro de 2026 · consolida o "Âmbito funcional e MVP" v0.1, o "Backlog inicial do MVP" v0.1 (versões de trabalho anteriores, não incluídas no repositório), as decisões da dona do produto, as revisões críticas (RV-xx) e as decisões Q-09 a Q-22. A versão 1.3 acrescentou a ordem das listas (Q-12) e a visibilidade dos membros (Q-13); a 1.4 aplica a conciliação com a Ficha 3 (Q-15 a Q-22): comentários, pesquisa, filtros, painel inicial, criação e eliminação de projetos pelo Administrador, vários responsáveis e autenticação; a 1.5 (1 de novembro de 2026) aplica RV-31 (um só projeto ativo para quem não tem o perfil Gestor e remoção de membros num projeto arquivado), RV-32 (o Administrador nunca é membro e gere os membros de qualquer projeto) e RV-33 (remoção das contas desativadas ao fim de um ano).
 
 > **Origem da informação.** O cliente é fictício. A única informação confirmada é a frase original do cliente:
 >
@@ -22,12 +22,12 @@ Versão 1.4 · 29 de outubro de 2026 · consolida o "Âmbito funcional e MVP" v0
 
 | Perfil | Descrição | Origem |
 |---|---|---|
-| Administrador | Gere contas e perfis de utilizador. Cria projetos e indica o seu Gestor, elimina projetos sem tarefas e transfere projetos entre Gestores. Não acede ao conteúdo de projetos de que não é membro. Não pode atribuir a si próprio o perfil Gestor nem ser Gestor de um projeto. | R-08, D-05, D-22, A-02, RV-01, Q-18, Q-19 |
+| Administrador | Só administra a plataforma: gere contas e perfis de utilizador; cria projetos e indica o seu Gestor, elimina projetos sem tarefas e transfere projetos entre Gestores; adiciona e remove membros de qualquer projeto. Nunca é membro de um projeto e não acede ao seu conteúdo (tarefas, comentários, progresso). Não tem o perfil Gestor nem o perfil Membro. | R-08, D-05, D-22, A-02, RV-01, Q-18, Q-19, RV-32 |
 | Gestor | Perfil global. Gere os projetos de que é Gestor (indicado pelo Administrador ao criar o projeto ou numa transferência). É membro dos seus projetos e pode ser responsável por tarefas. | R-08, D-03 (alterada por A-03 e Q-18), A-01 |
-| Membro | Perfil base: todos os utilizadores o têm e não pode ser retirado. Ser membro de um projeto depende só de o Gestor o adicionar. Num projeto de que é membro, atualiza o estado e a descrição das tarefas de que é responsável, pode juntar-se a tarefas sem responsáveis e comenta tarefas. | R-08, D-14, RV-02, Q-15, Q-20 |
+| Membro | Perfil base: todos os utilizadores, exceto os Administradores (RV-32), o têm e não pode ser retirado. Ser membro de um projeto depende só de o Gestor o adicionar. Num projeto de que é membro, atualiza o estado e a descrição das tarefas de que é responsável, pode juntar-se a tarefas sem responsáveis e comenta tarefas. | R-08, D-14, RV-02, Q-15, Q-20 |
 
 **Regras gerais:**
-- Uma pessoa pode acumular perfis; as permissões somam-se (D-04).
+- Uma pessoa pode acumular os perfis Gestor e Membro; as permissões somam-se (D-04). O perfil Administrador não se acumula com nenhum outro (RV-32).
 - No MVP, uma conta tem nome, email e palavra-passe; a palavra-passe é guardada só como hash (A-21, Q-08, Q-22). O email é único, sem distinguir maiúsculas de minúsculas (RV-18, Q-10).
 - A primeira conta é criada pela dona do produto e fica com o perfil Administrador (RV-11).
 - **Papéis num projeto:** *Gestor do projeto*; *membro do projeto* (inclui o Gestor do projeto, A-01); *responsáveis* de uma tarefa (zero, um ou vários membros do projeto, Q-20).
@@ -39,7 +39,7 @@ Resume as permissões de cada perfil. É verificada pelos critérios de aceitaç
 **Leitura:**
 - ✅ permitido · ❌ não permitido.
 - A coluna **Gestor** aplica-se aos projetos de que o utilizador é Gestor. A coluna **Membro** aplica-se aos projetos de que o utilizador é membro.
-- A coluna **Administrador** aplica-se aos projetos de que o Administrador **não** é membro. Num projeto de que é membro, tem as permissões da coluna Membro (Q-06, RV-05).
+- O Administrador nunca é membro de um projeto; a coluna **Administrador** aplica-se a todos os projetos (RV-32).
 - Quem acumula perfis tem também as permissões desses perfis (D-04).
 - Num projeto arquivado só são permitidas a consulta, o desarquivamento, a transferência, a eliminação de um projeto sem tarefas e a remoção de membros (D-09, A-04, A-05, Q-19, RV-31).
 
@@ -61,9 +61,9 @@ Resume as permissões de cada perfil. É verificada pelos critérios de aceitaç
 | Eliminar projeto sem tarefas | ✅ | ❌ | ❌ | RF-32 |
 | Transferir um projeto para outro Gestor | ✅ | ❌ | ❌ | RF-30 |
 | Editar os dados do projeto | ❌ | ✅ | ❌ | RF-05 |
-| Ver utilizadores ativos (nome e email) para adicionar membros | ❌ | ✅ | ❌ | RF-06 |
-| Adicionar e remover membros | ❌ | ✅ | ❌ | RF-06 |
-| Ver os membros do projeto (só o nome) | ❌ | ✅ | ✅ | RF-06 |
+| Ver utilizadores ativos (nome e email) para adicionar membros | ✅ | ✅ | ❌ | RF-06, RV-32 |
+| Adicionar e remover membros | ✅ | ✅ | ❌ | RF-06, RV-32 |
+| Ver os membros do projeto | ✅ (nome e email) | ✅ (só o nome) | ✅ (só o nome) | RF-06, RV-32 |
 | Arquivar e desarquivar | ❌ | ✅ | ❌ | RF-07 |
 | Ver a lista dos projetos a que pertence e o painel inicial | ❌ | ✅ | ✅ | RF-08, RF-35 |
 | Pesquisar projetos pelo nome | ✅ (na lista para criar, eliminar e transferir) | ✅ | ✅ | RF-33 |
@@ -107,15 +107,15 @@ Os estados e as prioridades aparecem na interface em português. Na API e na bas
 **RF-02 — Criar contas e gerir perfis.** O Administrador cria contas e atribui ou altera o perfil de cada utilizador (R-08).
 - A primeira conta é criada pela dona do produto e fica com o perfil Administrador (RV-11).
 - Ao criar uma conta, o Administrador define a palavra-passe inicial (Q-22).
-- Todas as contas têm o perfil Membro, que não pode ser retirado (RV-02).
-- Um utilizador pode ter vários perfis (D-04).
+- Todas as contas, exceto as de Administrador, têm o perfil Membro, que não pode ser retirado (RV-02, RV-32).
+- Um utilizador pode ter os perfis Gestor e Membro; o perfil Administrador não se acumula com nenhum outro (D-04, RV-32).
 - O email de cada conta é único (RV-18). A comparação ignora maiúsculas e minúsculas (Q-10).
 - O Administrador não pode atribuir a si próprio o perfil Gestor (RV-01).
 - Só se pode retirar o perfil Gestor a quem já não é Gestor de nenhum projeto, ativo ou arquivado. Os projetos têm de ser transferidos antes (A-17, Q-07).
 - Tem de existir sempre pelo menos 1 Administrador ativo (A-18).
 
 **RF-03 — Desativar e reativar contas.** O Administrador desativa contas; uma conta desativada deixa de ter acesso.
-- As contas não são apagadas no MVP (D-02). O prazo de retenção dos dados pessoais e uma eventual anonimização dependem da decisão sobre requisitos legais, ainda por definir (RV-04).
+- Um ano depois da desativação, a conta é anonimizada automaticamente: o nome e o email são apagados, e os comentários e as atribuições mantêm-se com "Conta removida" (D-02, RV-04, RV-33).
 - A desativação é reversível: o Administrador pode reativar uma conta (RV-18).
 - As tarefas atribuídas mantêm a atribuição com o aviso "conta desativada" (A-15).
 - Um utilizador desativado não pode ser escolhido como responsável (A-15).
@@ -136,14 +136,14 @@ Os estados e as prioridades aparecem na interface em português. Na API e na bas
 - Aplicam-se as regras de RF-04 para o nome, a descrição e as datas.
 - Não é possível num projeto arquivado (D-09).
 
-**RF-06 — Gerir membros.** O Gestor adiciona e remove membros do projeto (R-07, D-08).
+**RF-06 — Gerir membros.** O Gestor adiciona e remove membros do projeto (R-07, D-08). O Administrador pode fazer o mesmo em qualquer projeto, com as mesmas regras (RV-32).
 - Para adicionar membros, o Gestor vê a lista de utilizadores ativos que ainda não são membros, com nome e email (A-21). Só se adicionam utilizadores com conta ativa (Q-11). Quem não tem o perfil Gestor só aparece na lista se não estiver em nenhum projeto ativo (RV-31).
 - Remover um membro remove as suas atribuições como responsável nas tarefas desse projeto; as tarefas mantêm os outros responsáveis (A-14, Q-20).
 - Quem tem o perfil Gestor pode estar em vários projetos. Quem não tem o perfil Gestor só é membro de um projeto ativo de cada vez; os projetos arquivados não contam (R-07, RV-31, EC-52). Para mudar de projeto, o Gestor do projeto atual remove a pessoa e o Gestor do outro projeto adiciona-a.
 - Num projeto arquivado, o Gestor pode remover membros, mas não adicionar (D-09, RV-31).
 - Desarquivar um projeto é recusado se algum dos seus membros sem o perfil Gestor estiver noutro projeto ativo (RV-31, EC-53).
 - O Gestor do projeto não pode ser removido dos membros; para deixar o projeto, este tem de ser transferido (Q-05).
-- Um utilizador só com o perfil Administrador pode ser adicionado como membro; nesse projeto tem as permissões de Membro (Q-06).
+- Um Administrador nunca é membro de um projeto: não aparece na lista para adicionar e a adição é recusada (Q-06, RV-32, EC-30).
 - Qualquer membro do projeto vê os membros desse projeto, identificados só pelo nome, sem email (Q-13).
 
 **RF-07 — Arquivar e desarquivar.** O Gestor arquiva um projeto (D-09). Um projeto com tarefas nunca é apagado (R-12, Q-19).
@@ -154,7 +154,7 @@ Os estados e as prioridades aparecem na interface em português. Na API e na bas
 
 **RF-08 — Lista de projetos.** Cada utilizador vê a lista dos projetos a que pertence (D-10).
 - Os projetos arquivados aparecem na lista, marcados como "Arquivado", depois dos ativos (A-06).
-- O Administrador só vê projetos de que é membro (D-05). As exceções são a criação, a eliminação e a transferência, em RF-04, RF-32 e RF-30, onde vê só o nome e o Gestor (A-02).
+- O Administrador nunca é membro de um projeto e não tem esta lista (D-05, RV-32). Para criar, eliminar, transferir e gerir membros, em RF-04, RF-32, RF-30 e RF-06, vê o nome, o Gestor e os membros de todos os projetos (A-02, RV-32).
 
 **RF-32 — Eliminar projeto.** O Administrador elimina um projeto criado por engano (Q-19).
 - Só é possível eliminar um projeto sem tarefas (Q-19).
@@ -262,7 +262,7 @@ Os estados e as prioridades aparecem na interface em português. Na API e na bas
 | RNF-04 | O acesso cumpre a matriz de permissões da secção 3, também em pedidos diretos à API. Os requisitos de segurança e privacidade estão em [constraints.md](constraints.md#3-segurança-e-privacidade). | D-01, D-05, D-10, A-02, Q-22 |
 | RNF-05 | A aplicação é web, de uso interno e serve uma só empresa. | G-01, G-02 |
 | RNF-06 | O piloto tem 10 a 20 utilizadores. O volume de projetos e tarefas está por definir. | R-04 |
-| RNF-07 | Conservação de dados: os projetos com tarefas nunca são apagados, e um projeto sem tarefas só é eliminado pelo Administrador (Q-19); as contas não são apagadas no MVP, com o prazo de retenção dependente da decisão sobre requisitos legais (RV-04); as tarefas eliminadas são removidas de forma definitiva, com as suas atribuições e comentários. | R-12, D-02, A-10, RV-04, Q-19 |
+| RNF-07 | Conservação de dados: os projetos com tarefas nunca são apagados, e um projeto sem tarefas só é eliminado pelo Administrador (Q-19); as contas desativadas são anonimizadas automaticamente um ano depois da desativação (RV-04, RV-33); as tarefas eliminadas são removidas de forma definitiva, com as suas atribuições e comentários. | R-12, D-02, A-10, RV-04, Q-19, RV-33 |
 | RNF-08 | Desempenho, disponibilidade e acessibilidade: por definir. | — |
 | RNF-09 | Os dados persistem: continuam disponíveis depois de recarregar a interface e de reiniciar o backend. | Q-14 |
 

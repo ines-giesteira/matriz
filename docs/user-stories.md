@@ -1,6 +1,6 @@
 # Matriz — User Stories e critérios de aceitação
 
-Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou CA-07.3, CA-17.3 e CA-19.5 (Q-12, Q-13); a 1.4 aplica a conciliação com a Ficha 3 (Q-15 a Q-22): adapta US-05, US-12, US-17 e US-20 e acrescenta US-21 a US-25, CA-01.4, CA-01.5, CA-05.3 e EC-40 a EC-51; a 1.5 (1 de novembro de 2026) acrescenta EC-52 e EC-53 (RV-31).
+Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou CA-07.3, CA-17.3 e CA-19.5 (Q-12, Q-13); a 1.4 aplica a conciliação com a Ficha 3 (Q-15 a Q-22): adapta US-05, US-12, US-17 e US-20 e acrescenta US-21 a US-25, CA-01.4, CA-01.5, CA-05.3 e EC-40 a EC-51; a 1.5 (1 de novembro de 2026) acrescenta EC-52 e EC-53 (RV-31) e EC-54, e altera EC-30 (RV-32).
 
 > **Origem da informação.** O cliente é fictício. Todas as regras são pressupostos da dona do produto.
 >
@@ -210,7 +210,7 @@ Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou CA-07.3, CA-17.3 e CA-
 ### Casos acrescentados na consolidação
 - **EC-28 · Remover o Gestor dos membros (US-07)** — **Dado** um Gestor a gerir os membros de um projeto seu, **quando** tenta remover-se a si próprio, **então** a remoção é recusada e é indicado que o projeto tem de ser transferido (Q-05).
 - **EC-29 · Texto acima do limite (US-05, US-06, US-11, US-14, US-15, US-24)** — **Dado** qualquer utilizador a criar ou editar um projeto, uma tarefa ou um comentário, **quando** tenta guardar um título com mais de 200 caracteres, um nome de projeto com mais de 100, uma descrição com mais de 5000 ou um comentário acima do limite de RNF-03, **então** os dados não são guardados e é indicado o limite excedido (A-20, Q-03, RV-16).
-- **EC-30 · Administrador como membro (US-07, US-09)** — **Dado** um utilizador só com o perfil Administrador, **quando** um Gestor o adiciona a um projeto, **então** esse projeto passa a aparecer na sua lista e nele tem apenas as permissões de Membro (Q-06).
+- **EC-30 · Administrador como membro (US-07, US-09)** — **Dado** um utilizador com o perfil Administrador, **quando** um Gestor ou um Administrador o tenta adicionar a um projeto, **então** a adição é recusada e o Administrador não aparece na lista para adicionar (Q-06, alterado por RV-32).
 
 ### Casos acrescentados na revisão crítica
 - **EC-31 · Sessão aberta após perda de acesso (US-04, US-03, US-07)** — **Dado** um utilizador com sessão aberta, **quando** a sua conta é desativada, é removido de um projeto ou perde um perfil, **então** no pedido seguinte já não consegue executar as ações que perdeu (RV-09).
@@ -240,3 +240,4 @@ Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou CA-07.3, CA-17.3 e CA-
 - **EC-51 · Submissão repetida (US-05, US-11, US-24)** — **Dado** um utilizador a criar um projeto, uma tarefa ou um comentário, **quando** carrega várias vezes em guardar enquanto o pedido está em curso, **então** é criado um só registo.
 - **EC-52 · Membro já noutro projeto ativo (US-07)** — **Dado** um utilizador sem o perfil Gestor que já é membro de um projeto ativo, **quando** o Gestor de outro projeto ativo o tenta adicionar, **então** a adição é recusada e o utilizador não aparece na lista de candidatos; se só estiver em projetos arquivados, pode ser adicionado (RV-31).
 - **EC-53 · Desarquivar com um membro noutro projeto ativo (US-08)** — **Dado** um projeto arquivado com um membro sem o perfil Gestor que entretanto entrou noutro projeto ativo, **quando** o Gestor tenta desarquivar, **então** o desarquivamento é recusado com a indicação de quem está noutro projeto; depois de o Gestor remover esse membro do projeto arquivado, o desarquivamento é aceite (RV-31).
+- **EC-54 · Administrador a gerir membros (US-07)** — **Dado** um Administrador no ecrã de administração de projetos, **quando** adiciona ou remove membros de um projeto, **então** aplicam-se as regras do Gestor: só contas ativas, um só projeto ativo para quem não tem o perfil Gestor, o Gestor não pode ser removido (substitui-se por transferência) e, num projeto arquivado, só pode remover; o Administrador vê os membros com nome e email, mas não as tarefas nem o progresso (RV-32).
