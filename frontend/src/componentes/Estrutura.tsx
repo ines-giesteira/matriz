@@ -32,7 +32,10 @@ export function Estrutura({ children }: { children: ReactNode }) {
           </NavLink>
           {/* O Administrador nunca é membro de projetos (RV-32): só vê a administração. */}
           {eAdmin ? (
-            <NavLink to="/administracao/projetos">Administração</NavLink>
+            <>
+              <NavLink to="/administracao/projetos">Projetos</NavLink>
+              <NavLink to="/administracao/contas">Contas</NavLink>
+            </>
           ) : (
             <NavLink to="/projetos">Projetos</NavLink>
           )}

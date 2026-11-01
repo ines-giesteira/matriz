@@ -5,6 +5,7 @@ import { eGestorDoProjeto, eMembroDoProjeto } from '../../autorizacao/index.js';
 import { emTransacao, type Bd } from '../../bd/ligacao.js';
 import { ErroHttp, naoEncontrado, semPermissao, validarFormato } from '../../http/erros.js';
 import { lerConta, lerPerfis } from '../contas/repositorio.js';
+import type { ConsultaProjetos } from '../contas/gestao.js';
 import type { UtilizadorAutenticado } from '../contas/servico.js';
 import * as repo from './repositorio.js';
 import type { ContagemPorEstado, DadosProjeto, GestorResumo, LinhaProjeto } from './repositorio.js';
@@ -318,6 +319,14 @@ export function removerMembro(bd: Bd, utilizador: UtilizadorAutenticado, id: num
     utilizadorId,
     'O Gestor não pode ser removido. Peça ao Administrador para transferir o projeto.',
   );
+}
+
+/** Respostas do módulo de projetos que as regras das contas precisam (EC-23, EC-26, EC-55). */
+export function consultaProjetos(bd: Bd): ConsultaProjetos {
+  return {
+    eGestorDeAlgumProjeto: (utilizadorId) => repo.eGestorDeAlgumProjeto(bd, utilizadorId),
+    eMembroDeAlgumProjeto: (utilizadorId) => repo.eMembroDeAlgumProjeto(bd, utilizadorId),
+  };
 }
 
 // ---------------------------------------------------------------- Membros pelo Administrador (RV-32, P24)

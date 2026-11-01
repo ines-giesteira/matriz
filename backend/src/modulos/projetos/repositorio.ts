@@ -104,6 +104,16 @@ export function definirGestor(bd: Bd, id: number, gestorId: number): void {
   bd.prepare('UPDATE projeto SET gestor_id = ? WHERE id = ?').run(gestorId, id);
 }
 
+/** É Gestor de algum projeto, ativo ou arquivado (A-16, A-17, Q-07). */
+export function eGestorDeAlgumProjeto(bd: Bd, utilizadorId: number): boolean {
+  return bd.prepare('SELECT 1 AS ok FROM projeto WHERE gestor_id = ?').get(utilizadorId) !== undefined;
+}
+
+/** É membro de algum projeto, ativo ou arquivado (RV-32, RV-34). */
+export function eMembroDeAlgumProjeto(bd: Bd, utilizadorId: number): boolean {
+  return bd.prepare('SELECT 1 AS ok FROM membro_projeto WHERE utilizador_id = ?').get(utilizadorId) !== undefined;
+}
+
 /** Acrescenta um membro, se ainda não o for. */
 export function garantirMembro(bd: Bd, projetoId: number, utilizadorId: number): void {
   bd.prepare('INSERT OR IGNORE INTO membro_projeto (projeto_id, utilizador_id) VALUES (?, ?)').run(projetoId, utilizadorId);

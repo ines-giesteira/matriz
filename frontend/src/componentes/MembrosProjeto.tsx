@@ -14,6 +14,7 @@ import {
   type UtilizadorResumo,
 } from '../api/projetos';
 import { mensagemDeErro, usarPedido } from '../api/usarPedido';
+import { AvisoConta } from './AvisoConta';
 
 /** Membro como cada perfil o vê: o Administrador recebe também o email (P24). */
 export type MembroVisivel = Membro & { email?: string };
@@ -96,7 +97,7 @@ export function GestaoMembros({ chave, projetoId, gestorId, arquivado, podeGerir
                 {m.nome}
                 {m.email && <span className="texto-suave"> ({m.email})</span>}
                 {m.id === gestorId && <span className="texto-suave"> · Gestor</span>}
-                {!m.contaAtiva && <span className="texto-suave"> (conta desativada)</span>}
+                <AvisoConta pessoa={m} />
               </span>
               {podeGerir && m.id !== gestorId && (
                 <button

@@ -50,7 +50,8 @@ export function Painel() {
       {eAdministrador ? (
         <p>
           Como Administrador, gere os projetos e os seus membros em{' '}
-          <Link to="/administracao/projetos">Administração de projetos</Link>.
+          <Link to="/administracao/projetos">Administração de projetos</Link> e as contas em{' '}
+          <Link to="/administracao/contas">Administração de contas</Link>.
         </p>
       ) : (
         <ProjetosDoUtilizador />

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router';
 import { RotaProtegida } from './componentes/RotaProtegida';
+import { AdminContas } from './paginas/AdminContas';
 import { AdminProjetos } from './paginas/AdminProjetos';
 import { Entrada } from './paginas/Entrada';
 import { Painel } from './paginas/Painel';
@@ -28,6 +29,14 @@ export function App() {
           <Route path="/projetos" element={protegida(<Projetos />)} />
           <Route path="/projetos/:projetoId" element={protegida(<Projeto />)} />
           <Route path="/projetos/:projetoId/tarefas/:tarefaId" element={protegida(<Tarefa />)} />
+          <Route
+            path="/administracao/contas"
+            element={protegida(
+              <SoAdministrador>
+                <AdminContas />
+              </SoAdministrador>,
+            )}
+          />
           <Route
             path="/administracao/projetos"
             element={protegida(

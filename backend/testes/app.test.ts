@@ -19,7 +19,7 @@ describe('API base', () => {
   it('GET /api/saude confirma o servidor e a base de dados', async () => {
     const resposta = await request(criarApp({ bd })).get('/api/saude');
     expect(resposta.status).toBe(200);
-    expect(resposta.body).toEqual({ estado: 'ok', baseDeDados: 'ok', migrations: 1 });
+    expect(resposta.body).toEqual({ estado: 'ok', baseDeDados: 'ok', migrations: 2 });
   });
 
   it('um caminho inexistente responde 401 sem sessão e 404 com sessão (RV-25)', async () => {

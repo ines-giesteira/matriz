@@ -190,7 +190,9 @@ paths:
       tags: [Contas]
       operationId: listarUtilizadores
       summary: Listar todas as contas (Administrador)
-      description: US-02 a US-04. Só o Administrador.
+      description: |
+        US-02 a US-04. Só o Administrador. Ativas primeiro, depois desativadas e no fim as anonimizadas
+        (`removida`), cada grupo por ordem alfabética do nome (P26, RV-34).
       responses:
         '200':
           description: Contas, ativas e desativadas.
@@ -209,8 +211,9 @@ paths:
       operationId: criarUtilizador
       summary: Criar uma conta (Administrador)
       description: |
-        US-02, RF-02. A conta fica ativa e com o perfil Membro, que não se guarda (RV-02).
-        A palavra-passe inicial é guardada só como hash e nunca é devolvida (Q-22, EC-49).
+        US-02, RF-02. A conta fica ativa e, se não for Administrador, com o perfil Membro, que não se guarda (RV-02, RV-32).
+        A palavra-passe inicial é guardada só como hash e nunca é devolvida (Q-22, EC-49). O nome e o email guardam-se
+        sem espaços no início e no fim (P26). Os perfis Administrador e Gestor não se acumulam (RV-32).
       requestBody:
         required: true
         content:
@@ -237,8 +240,9 @@ paths:
           $ref: '#/components/responses/SemPermissao'
         '422':
           description: |
-            Nome ou email vazios; email repetido, sem distinguir maiúsculas (EC-33, EC-38);
-            palavra-passe fora das regras.
+            Códigos (P25): `NOME_OBRIGATORIO`, `EMAIL_OBRIGATORIO`, `EMAIL_INVALIDO`, `EMAIL_REPETIDO` (sem distinguir
+            maiúsculas, EC-33, EC-38), `PALAVRA_PASSE_CURTA` (menos de 8 caracteres, P3) e `PERFIS_INCOMPATIVEIS`
+            (Administrador e Gestor, RV-32).
           content:
             application/json:
               schema:
@@ -256,7 +260,9 @@ paths:
       operationId: alterarUtilizador
       summary: Alterar perfis ou ativar e desativar uma conta (Administrador)
       description: |
-        US-03, US-04, RF-02, RF-03. Desativar uma conta apaga as suas sessões (RV-09, EC-31).
+        US-03, US-04, RF-02, RF-03. Desativar uma conta apaga as suas sessões (RV-09, EC-31) e regista a data da
+        desativação; um ano depois, a conta é anonimizada automaticamente (RV-33, EC-56, P27, P28). Reativar antes
+        disso cancela a anonimização (RV-34). Uma conta anonimizada não pode ser alterada.
       requestBody:
         required: true
         content:
@@ -282,8 +288,11 @@ paths:
           $ref: '#/components/responses/NaoEncontrado'
         '422':
           description: |
-            Administrador a atribuir a si próprio o perfil Gestor (EC-36); retirar o perfil Gestor ou
-            desativar quem ainda gere projetos (EC-23, EC-26); deixar de haver um Administrador ativo (EC-27).
+            Códigos (P25): `GESTOR_PROPRIO` (Administrador a atribuir a si próprio o perfil Gestor, EC-36),
+            `PERFIS_INCOMPATIVEIS` (Administrador e Gestor, RV-32), `GESTOR_COM_PROJETOS` (retirar o perfil Gestor ou
+            desativar quem ainda gere projetos, EC-23, EC-26), `ULTIMO_ADMINISTRADOR` (deixar de haver um Administrador
+            ativo, EC-27), `ADMINISTRADOR_COM_PROJETOS` (perfil Administrador a quem é membro de projetos, EC-55) e
+            `CONTA_REMOVIDA` (conta anonimizada, RV-34).
           content:
             application/json:
               schema:
@@ -1482,7 +1491,7 @@ components:
     Conta:
       type: object
       description: Conta vista pelo Administrador. Nunca inclui a palavra-passe nem o seu hash (EC-49).
-      required: [id, nome, email, perfis, ativo]
+      required: [id, nome, email, perfis, ativo, removida]
       properties:
         id:
           type: integer
@@ -1496,6 +1505,9 @@ components:
             $ref: '#/components/schemas/Perfil'
         ativo:
           type: boolean
+        removida:
+          type: boolean
+          description: Conta anonimizada um ano depois da desativação; aparece como "Conta removida" e não se altera (RV-33, RV-34, P28).
 
     NovaConta:
       type: object

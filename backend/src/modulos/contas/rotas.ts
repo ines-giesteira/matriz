@@ -4,6 +4,9 @@ import { z } from 'zod';
 import type { Bd } from '../../bd/ligacao.js';
 import { identificadorDoPedido, limparCookie, NOME_COOKIE, opcoesCookie, utilizadorDe } from '../../http/sessao.js';
 import { exigirPerfil } from '../../autorizacao/index.js';
+import { idDoCaminho } from '../../http/erros.js';
+import * as gestao from './gestao.js';
+import type { ConsultaProjetos } from './gestao.js';
 import { listarGestoresElegiveis } from './repositorio.js';
 import { entrar, sair, type OpcoesSessao } from './servico.js';
 
@@ -42,9 +45,24 @@ export function rotasSessao(bd: Bd, opcoes: OpcoesSessao, cookieSeguro: boolean,
   return rotas;
 }
 
-/** Rotas de contas usadas a partir do I2 (as restantes chegam no I3). Montadas depois de exigirSessao. */
-export function rotasContas(bd: Bd): Router {
+/** Rotas de contas, só para o Administrador (RF-02, RF-03, EC-41). Montadas depois de exigirSessao. */
+export function rotasContas(bd: Bd, projetos: ConsultaProjetos, agora: () => Date): Router {
   const rotas = Router();
+  const soAdministrador = exigirPerfil('ADMIN');
+
+  rotas.get('/utilizadores', soAdministrador, (_pedido, resposta) => {
+    resposta.json(gestao.listar(bd));
+  });
+
+  rotas.post('/utilizadores', soAdministrador, (pedido, resposta) => {
+    resposta.status(201).json(gestao.criar(bd, pedido.body));
+  });
+
+  rotas.patch('/utilizadores/:utilizadorId', soAdministrador, (pedido, resposta) => {
+    resposta.json(
+      gestao.alterar(bd, projetos, agora, utilizadorDe(pedido), idDoCaminho(pedido.params.utilizadorId as string | undefined), pedido.body),
+    );
+  });
 
   rotas.get('/utilizadores/gestores-elegiveis', exigirPerfil('ADMIN'), (_pedido, resposta) => {
     resposta.json(listarGestoresElegiveis(bd));

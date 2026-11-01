@@ -6,6 +6,7 @@ import type { Projeto } from '../api/projetos';
 import { adicionarComentario, listarComentarios, type Comentario } from '../api/tarefas';
 import { mensagemDeErro, usarPedido } from '../api/usarPedido';
 import { formatarDataHora } from '../textos';
+import { AvisoConta } from './AvisoConta';
 
 export const LIMITE_COMENTARIO = 2000; // P4
 
@@ -61,7 +62,7 @@ export function ComentariosTarefa({ projeto, tarefaId }: { projeto: Projeto; tar
             <li key={c.id}>
               <p className="comentario-cabecalho">
                 <strong>{c.autor.nome}</strong>
-                {!c.autor.contaAtiva && <span className="texto-suave"> (conta desativada)</span>}
+                <AvisoConta pessoa={c.autor} />
                 <span className="texto-suave">
                   {' · '}
                   <time dateTime={c.criadoEm}>{formatarDataHora(c.criadoEm)}</time>

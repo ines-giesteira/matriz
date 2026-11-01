@@ -117,11 +117,13 @@ export function semear(bd: Bd, palavraPasse: string): boolean {
   emTransacao(bd, () => {
     const ids = new Map<string, number>();
     const inserirUtilizador = bd.prepare(
-      'INSERT INTO utilizador (nome, email, palavra_passe_hash, ativo) VALUES (?, ?, ?, ?)',
+      'INSERT INTO utilizador (nome, email, palavra_passe_hash, ativo, desativado_em) VALUES (?, ?, ?, ?, ?)',
     );
     const inserirPerfil = bd.prepare('INSERT INTO perfil_atribuido (utilizador_id, perfil) VALUES (?, ?)');
     for (const u of UTILIZADORES) {
-      const { lastInsertRowid } = inserirUtilizador.run(u.nome, u.email, hash, u.ativo ? 1 : 0);
+      // Uma conta desativada conta o ano de RV-33 a partir da criação dos dados (P27).
+      const desativadoEm = u.ativo ? null : new Date().toISOString();
+      const { lastInsertRowid } = inserirUtilizador.run(u.nome, u.email, hash, u.ativo ? 1 : 0, desativadoEm);
       const id = Number(lastInsertRowid);
       ids.set(u.chave, id);
       for (const perfil of u.perfis) inserirPerfil.run(id, perfil);

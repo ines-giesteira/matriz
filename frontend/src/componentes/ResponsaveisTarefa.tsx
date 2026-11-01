@@ -5,6 +5,7 @@ import { useState, type FormEvent } from 'react';
 import { listarMembros, type Projeto } from '../api/projetos';
 import { adicionarResponsavel, removerResponsavel, type Tarefa } from '../api/tarefas';
 import { mensagemDeErro, usarPedido } from '../api/usarPedido';
+import { AvisoConta } from './AvisoConta';
 
 type Props = { projeto: Projeto; tarefa: Tarefa; utilizadorId: number; aoMudar: (tarefa: Tarefa) => void };
 
@@ -64,7 +65,7 @@ export function ResponsaveisTarefa({ projeto, tarefa, utilizadorId, aoMudar }: P
             <li key={r.id}>
               <span>
                 {r.nome}
-                {!r.contaAtiva && <span className="texto-suave"> (conta desativada)</span>}
+                <AvisoConta pessoa={r} />
               </span>
               {ativo && (eGestor || r.id === utilizadorId) && (
                 <button

@@ -413,6 +413,12 @@ button:disabled {
   clip: rect(0 0 0 0);
 }
 
+/* Administração de contas: conta anonimizada (RV-33) */
+.linha-removida {
+  color: var(--texto-suave);
+  background: var(--fundo-suave);
+}
+
 /* Secções do detalhe do projeto e membros */
 .seccao {
   margin-top: 32px;

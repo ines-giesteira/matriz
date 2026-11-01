@@ -11,6 +11,7 @@ import { ESTADOS, formatarData, NOME_ESTADO, NOME_PRIORIDADE, PRIORIDADES, type 
 import { FormularioTarefa, valoresVazios } from './FormularioTarefa';
 import { ProgressoProjeto } from './ProgressoProjeto';
 import { SeletorEstado } from './SeletorEstado';
+import { AvisoConta } from './AvisoConta';
 
 export function NomesResponsaveis({ tarefa }: { tarefa: Tarefa }) {
   if (tarefa.responsaveis.length === 0) return <span className="texto-suave">Sem responsáveis</span>;
@@ -20,7 +21,7 @@ export function NomesResponsaveis({ tarefa }: { tarefa: Tarefa }) {
         <span key={r.id}>
           {i > 0 && ', '}
           {r.nome}
-          {!r.contaAtiva && <span className="texto-suave"> (conta desativada)</span>}
+          <AvisoConta pessoa={r} />
         </span>
       ))}
     </>

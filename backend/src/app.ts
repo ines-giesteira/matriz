@@ -5,6 +5,7 @@ import { ErroHttp } from './http/erros.js';
 import { exigirSessao } from './http/sessao.js';
 import { rotasContas, rotasSessao } from './modulos/contas/rotas.js';
 import { rotasAdminProjetos, rotasProjetos } from './modulos/projetos/rotas.js';
+import { consultaProjetos } from './modulos/projetos/servico.js';
 import type { OpcoesSessao } from './modulos/contas/servico.js';
 import { rotasProgresso } from './modulos/progresso/rotas.js';
 import { rotasTarefas } from './modulos/tarefas/rotas.js';
@@ -48,7 +49,7 @@ export function criarApp({ bd, sessao, cookieSeguro = false, hoje = () => hojeEm
   // Tudo o resto em /api exige uma sessão válida (CA-01.2). Ordem de verificação: 401 antes de 404 (RV-25).
   app.use('/api', comSessao);
 
-  app.use('/api', rotasContas(bd));
+  app.use('/api', rotasContas(bd, consultaProjetos(bd), opcoesSessao.agora));
   app.use('/api', rotasProjetos(bd));
   app.use('/api', rotasTarefas(bd, hoje, opcoesSessao.agora));
   app.use('/api', rotasProgresso(bd, hoje));

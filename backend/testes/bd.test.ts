@@ -42,9 +42,9 @@ describe('migrations', () => {
   });
 
   it('são aplicadas uma só vez, mesmo correndo várias vezes', () => {
-    expect(aplicarMigrations(bd)).toEqual(['001_esquema_inicial.sql']);
+    expect(aplicarMigrations(bd)).toEqual(['001_esquema_inicial.sql', '002_desativacao_e_anonimizacao.sql']);
     expect(aplicarMigrations(bd)).toEqual([]);
-    expect(contar(bd, 'SELECT COUNT(*) AS n FROM migracao_aplicada')).toBe(1);
+    expect(contar(bd, 'SELECT COUNT(*) AS n FROM migracao_aplicada')).toBe(2);
   });
 
   it('ativam as chaves estrangeiras', () => {

@@ -113,6 +113,7 @@ Os estados e as prioridades aparecem na interface em português. Na API e na bas
 - O Administrador não pode atribuir a si próprio o perfil Gestor (RV-01).
 - Só se pode retirar o perfil Gestor a quem já não é Gestor de nenhum projeto, ativo ou arquivado. Os projetos têm de ser transferidos antes (A-17, Q-07).
 - Tem de existir sempre pelo menos 1 Administrador ativo (A-18).
+- Atribuir o perfil Administrador a quem é membro de projetos é recusado até a pessoa ser removida de todos (RV-32, RV-34, EC-55).
 
 **RF-03 — Desativar e reativar contas.** O Administrador desativa contas; uma conta desativada deixa de ter acesso.
 - Um ano depois da desativação, a conta é anonimizada automaticamente: o nome e o email são apagados, e os comentários e as atribuições mantêm-se com "Conta removida" (D-02, RV-04, RV-33).
@@ -121,6 +122,7 @@ Os estados e as prioridades aparecem na interface em português. Na API e na bas
 - Um utilizador desativado não pode ser escolhido como responsável (A-15).
 - Para desativar um Gestor, o Administrador tem de transferir primeiro todos os projetos desse Gestor, ativos e arquivados (A-16, Q-07).
 - Tem de existir sempre pelo menos 1 Administrador ativo (A-18).
+- Reativar uma conta antes de passar um ano cancela a anonimização; numa nova desativação, o prazo recomeça. Uma conta anonimizada continua membro dos seus projetos, aparece como "Conta removida" e não pode ser reativada (RV-34, EC-56).
 
 ### Projetos
 

@@ -12,6 +12,9 @@ export const NOME_ESTADO: Record<Estado, string> = {
 export const ESTADOS: Estado[] = ['TODO', 'IN_PROGRESS', 'DONE'];
 export const PRIORIDADES: Prioridade[] = ['HIGH', 'MEDIUM', 'LOW'];
 
+/** Nome que a API dá a uma conta anonimizada um ano depois da desativação (RV-33, P27). */
+export const NOME_CONTA_REMOVIDA = 'Conta removida';
+
 /** Data AAAA-MM-DD da API no formato português DD/MM/AAAA. */
 export function formatarData(data: string | null): string {
   if (!data) return '—';

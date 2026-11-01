@@ -4,11 +4,15 @@ import { criarApp } from './app.js';
 import { lerConfig } from './config.js';
 import { abrirBd } from './bd/ligacao.js';
 import { aplicarMigrations } from './bd/migrar.js';
+import { agendarAnonimizacao } from './modulos/contas/anonimizacao.js';
 
 const config = lerConfig();
 const bd = abrirBd(config.caminhoBd);
 const aplicadas = aplicarMigrations(bd);
 if (aplicadas.length > 0) console.log(`Migrations aplicadas: ${aplicadas.join(', ')}`);
+
+// Anonimiza as contas desativadas há mais de um ano, agora e depois uma vez por dia (RV-33, P28).
+const pararAnonimizacao = agendarAnonimizacao(bd);
 
 const app = criarApp({
   bd,
@@ -20,6 +24,7 @@ const servidor = app.listen(config.porta, () => {
 });
 
 function terminar(): void {
+  pararAnonimizacao();
   servidor.close(() => {
     bd.close();
     process.exit(0);
