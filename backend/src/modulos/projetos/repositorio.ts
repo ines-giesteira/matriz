@@ -130,16 +130,47 @@ export function listarMembros(bd: Bd, projetoId: number): Membro[] {
     .map((l) => ({ id: Number(l.id), nome: String(l.nome), contaAtiva: Number(l.ativo) === 1 }));
 }
 
-/** Contas ativas que ainda não são membros do projeto, com nome e email (A-21, Q-11). */
+// Condições SQL da regra de RV-31 sobre o utilizador `u`: tem o perfil Gestor; é membro de um projeto ativo diferente de `?`.
+const TEM_PERFIL_GESTOR = `EXISTS (SELECT 1 FROM perfil_atribuido pa WHERE pa.utilizador_id = u.id AND pa.perfil = 'GESTOR')`;
+const NOUTRO_PROJETO_ATIVO = `EXISTS (
+  SELECT 1 FROM membro_projeto mo JOIN projeto po ON po.id = mo.projeto_id
+  WHERE mo.utilizador_id = u.id AND po.arquivado = 0 AND po.id <> ?)`;
+
+/**
+ * Contas ativas que ainda não são membros do projeto, com nome e email (A-21, Q-11).
+ * Quem não tem o perfil Gestor só aparece se não for membro de nenhum projeto ativo (RV-31).
+ */
 export function listarCandidatosMembros(bd: Bd, projetoId: number): Candidato[] {
   return bd
     .prepare(
       `SELECT u.id, u.nome, u.email FROM utilizador u
        WHERE u.ativo = 1
-         AND NOT EXISTS (SELECT 1 FROM membro_projeto m WHERE m.projeto_id = ? AND m.utilizador_id = u.id)`,
+         AND NOT EXISTS (SELECT 1 FROM membro_projeto m WHERE m.projeto_id = ? AND m.utilizador_id = u.id)
+         AND (${TEM_PERFIL_GESTOR} OR NOT ${NOUTRO_PROJETO_ATIVO})`,
     )
-    .all(projetoId)
+    .all(projetoId, projetoId)
     .map((l) => ({ id: Number(l.id), nome: String(l.nome), email: String(l.email) }));
+}
+
+/** O utilizador não tem o perfil Gestor e já é membro de um projeto ativo diferente deste (RV-31, EC-52). */
+export function limitadoANoutroProjeto(bd: Bd, utilizadorId: number, projetoId: number): boolean {
+  return (
+    bd
+      .prepare(`SELECT 1 AS ok FROM utilizador u WHERE u.id = ? AND NOT ${TEM_PERFIL_GESTOR} AND ${NOUTRO_PROJETO_ATIVO}`)
+      .get(utilizadorId, projetoId) !== undefined
+  );
+}
+
+/** Membros deste projeto sem o perfil Gestor que já são membros de outro projeto ativo (RV-31, EC-53), por nome. */
+export function membrosNoutroProjetoAtivo(bd: Bd, projetoId: number): string[] {
+  return bd
+    .prepare(
+      `SELECT u.nome FROM membro_projeto m JOIN utilizador u ON u.id = m.utilizador_id
+       WHERE m.projeto_id = ? AND NOT ${TEM_PERFIL_GESTOR} AND ${NOUTRO_PROJETO_ATIVO}`,
+    )
+    .all(projetoId, projetoId)
+    .map((l) => String(l.nome))
+    .sort((a, b) => a.localeCompare(b, 'pt'));
 }
 
 export function inserirMembro(bd: Bd, projetoId: number, utilizadorId: number): void {

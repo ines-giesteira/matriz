@@ -8,7 +8,7 @@ import { emTransacao, type Bd } from './ligacao.js';
  * - Helena (Administrador) não é membro de nenhum projeto.
  * - Ana gere "Lançamento do novo site" e "Relatório anual 2025" (arquivado), mas não pertence a "Migração do CRM".
  * - Paulo gere "Migração do CRM".
- * - Marta e João são membros; Rui tem a conta desativada.
+ * - Marta e João são membros, cada um com um só projeto ativo (RV-31); Rui tem a conta desativada.
  * - "Lançamento do novo site" tem as 10 tarefas do CA-18.1 e do wireframe (docs/ui/).
  */
 
@@ -82,9 +82,9 @@ const PROJETOS: {
     dataFim: null,
     arquivado: false,
     gestor: 'paulo',
-    membros: ['paulo', 'joao'],
+    membros: ['paulo'],
     tarefas: [
-      { titulo: 'Exportar contactos do sistema antigo', prioridade: 'MEDIUM', dataLimite: '2026-11-20', estado: 'TODO', responsaveis: ['joao'] },
+      { titulo: 'Exportar contactos do sistema antigo', prioridade: 'MEDIUM', dataLimite: '2026-11-20', estado: 'TODO', responsaveis: ['paulo'] },
       { titulo: 'Validar campos obrigatórios', prioridade: 'HIGH', dataLimite: null, estado: 'IN_PROGRESS', responsaveis: ['paulo'] },
     ],
   },

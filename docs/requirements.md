@@ -1,6 +1,6 @@
 # Matriz — Requisitos
 
-Versão 1.4 · 29 de outubro de 2026 · consolida o "Âmbito funcional e MVP" v0.1, o "Backlog inicial do MVP" v0.1 (versões de trabalho anteriores, não incluídas no repositório), as decisões da dona do produto, as revisões críticas (RV-xx) e as decisões Q-09 a Q-22. A versão 1.3 acrescentou a ordem das listas (Q-12) e a visibilidade dos membros (Q-13); a 1.4 aplica a conciliação com a Ficha 3 (Q-15 a Q-22): comentários, pesquisa, filtros, painel inicial, criação e eliminação de projetos pelo Administrador, vários responsáveis e autenticação.
+Versão 1.4 · 29 de outubro de 2026 · consolida o "Âmbito funcional e MVP" v0.1, o "Backlog inicial do MVP" v0.1 (versões de trabalho anteriores, não incluídas no repositório), as decisões da dona do produto, as revisões críticas (RV-xx) e as decisões Q-09 a Q-22. A versão 1.3 acrescentou a ordem das listas (Q-12) e a visibilidade dos membros (Q-13); a 1.4 aplica a conciliação com a Ficha 3 (Q-15 a Q-22): comentários, pesquisa, filtros, painel inicial, criação e eliminação de projetos pelo Administrador, vários responsáveis e autenticação; a 1.5 (1 de novembro de 2026) aplica RV-31: um só projeto ativo para quem não tem o perfil Gestor e remoção de membros num projeto arquivado.
 
 > **Origem da informação.** O cliente é fictício. A única informação confirmada é a frase original do cliente:
 >
@@ -41,7 +41,7 @@ Resume as permissões de cada perfil. É verificada pelos critérios de aceitaç
 - A coluna **Gestor** aplica-se aos projetos de que o utilizador é Gestor. A coluna **Membro** aplica-se aos projetos de que o utilizador é membro.
 - A coluna **Administrador** aplica-se aos projetos de que o Administrador **não** é membro. Num projeto de que é membro, tem as permissões da coluna Membro (Q-06, RV-05).
 - Quem acumula perfis tem também as permissões desses perfis (D-04).
-- Num projeto arquivado só são permitidas a consulta, o desarquivamento, a transferência e a eliminação de um projeto sem tarefas (D-09, A-04, A-05, Q-19).
+- Num projeto arquivado só são permitidas a consulta, o desarquivamento, a transferência, a eliminação de um projeto sem tarefas e a remoção de membros (D-09, A-04, A-05, Q-19, RV-31).
 
 ### Contas e perfis
 
@@ -137,9 +137,11 @@ Os estados e as prioridades aparecem na interface em português. Na API e na bas
 - Não é possível num projeto arquivado (D-09).
 
 **RF-06 — Gerir membros.** O Gestor adiciona e remove membros do projeto (R-07, D-08).
-- Para adicionar membros, o Gestor vê a lista de utilizadores ativos, com nome e email (A-21). Só se adicionam utilizadores com conta ativa (Q-11).
+- Para adicionar membros, o Gestor vê a lista de utilizadores ativos que ainda não são membros, com nome e email (A-21). Só se adicionam utilizadores com conta ativa (Q-11). Quem não tem o perfil Gestor só aparece na lista se não estiver em nenhum projeto ativo (RV-31).
 - Remover um membro remove as suas atribuições como responsável nas tarefas desse projeto; as tarefas mantêm os outros responsáveis (A-14, Q-20).
-- Uma pessoa pode estar em vários projetos (R-07).
+- Quem tem o perfil Gestor pode estar em vários projetos. Quem não tem o perfil Gestor só é membro de um projeto ativo de cada vez; os projetos arquivados não contam (R-07, RV-31, EC-52). Para mudar de projeto, o Gestor do projeto atual remove a pessoa e o Gestor do outro projeto adiciona-a.
+- Num projeto arquivado, o Gestor pode remover membros, mas não adicionar (D-09, RV-31).
+- Desarquivar um projeto é recusado se algum dos seus membros sem o perfil Gestor estiver noutro projeto ativo (RV-31, EC-53).
 - O Gestor do projeto não pode ser removido dos membros; para deixar o projeto, este tem de ser transferido (Q-05).
 - Um utilizador só com o perfil Administrador pode ser adicionado como membro; nesse projeto tem as permissões de Membro (Q-06).
 - Qualquer membro do projeto vê os membros desse projeto, identificados só pelo nome, sem email (Q-13).
@@ -288,7 +290,7 @@ A coluna **Justificação** é uma proposta, por aprovar pela dona do produto: l
 
 | ID | Funcionalidade | Prioridade | Justificação (por aprovar) |
 |---|---|---|---|
-| RF-19 | Vista "As minhas tarefas", com as tarefas do utilizador em todos os projetos | Should | Útil a quem está em vários projetos (R-07); no MVP, cada membro já vê as suas tarefas projeto a projeto (RF-15). |
+| RF-19 | Vista "As minhas tarefas", com as tarefas do utilizador em todos os projetos | Should | Útil a quem está em vários projetos, ou seja, a quem tem o perfil Gestor (R-07, RV-31); no MVP, cada membro já vê as suas tarefas projeto a projeto (RF-15). |
 | RF-20 | Visão geral do Gestor, com todos os indicadores dos seus projetos (percentagem e atrasos incluídos) | Should | Apoia o objetivo de acabar com os pedidos de ponto de situação (R-02); no MVP, o painel inicial já mostra as contagens por estado (RF-35) e o resto vê-se projeto a projeto (RF-16 a RF-18). |
 | RF-21 | Filtrar tarefas por responsável e data limite, e escolher a ordenação | Should | Ganha valor quando há muitas tarefas; o volume do piloto está por definir (RNF-06). Os filtros por estado e prioridade passaram para o MVP (RF-34, Q-16). |
 | RF-23 | Histórico de alterações de cada tarefa | Could | Não é pedido por R-03; relaciona-se com o registo de auditoria, ainda por decidir (constraints.md, secção 3). |

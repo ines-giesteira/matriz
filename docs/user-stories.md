@@ -1,6 +1,6 @@
 # Matriz — User Stories e critérios de aceitação
 
-Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou CA-07.3, CA-17.3 e CA-19.5 (Q-12, Q-13); a 1.4 aplica a conciliação com a Ficha 3 (Q-15 a Q-22): adapta US-05, US-12, US-17 e US-20 e acrescenta US-21 a US-25, CA-01.4, CA-01.5, CA-05.3 e EC-40 a EC-51.
+Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou CA-07.3, CA-17.3 e CA-19.5 (Q-12, Q-13); a 1.4 aplica a conciliação com a Ficha 3 (Q-15 a Q-22): adapta US-05, US-12, US-17 e US-20 e acrescenta US-21 a US-25, CA-01.4, CA-01.5, CA-05.3 e EC-40 a EC-51; a 1.5 (1 de novembro de 2026) acrescenta EC-52 e EC-53 (RV-31).
 
 > **Origem da informação.** O cliente é fictício. Todas as regras são pressupostos da dona do produto.
 >
@@ -238,3 +238,5 @@ Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou CA-07.3, CA-17.3 e CA-
 - **EC-49 · Palavra-passe guardada só como hash (US-02)** — **Dada** uma conta criada, **quando** se consultam os dados guardados ou devolvidos pela API, **então** a palavra-passe não aparece em claro em nenhum deles (Q-22).
 - **EC-50 · Erro ao guardar não perde os dados (US-05, US-06, US-11, US-15, US-24)** — **Dado** um utilizador a preencher um formulário, **quando** a API recusa o pedido ou falha, **então** a interface mostra o erro, não mostra mensagem de sucesso e mantém os dados introduzidos.
 - **EC-51 · Submissão repetida (US-05, US-11, US-24)** — **Dado** um utilizador a criar um projeto, uma tarefa ou um comentário, **quando** carrega várias vezes em guardar enquanto o pedido está em curso, **então** é criado um só registo.
+- **EC-52 · Membro já noutro projeto ativo (US-07)** — **Dado** um utilizador sem o perfil Gestor que já é membro de um projeto ativo, **quando** o Gestor de outro projeto ativo o tenta adicionar, **então** a adição é recusada e o utilizador não aparece na lista de candidatos; se só estiver em projetos arquivados, pode ser adicionado (RV-31).
+- **EC-53 · Desarquivar com um membro noutro projeto ativo (US-08)** — **Dado** um projeto arquivado com um membro sem o perfil Gestor que entretanto entrou noutro projeto ativo, **quando** o Gestor tenta desarquivar, **então** o desarquivamento é recusado com a indicação de quem está noutro projeto; depois de o Gestor remover esse membro do projeto arquivado, o desarquivamento é aceite (RV-31).

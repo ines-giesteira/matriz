@@ -158,12 +158,24 @@ export function editar(bd: Bd, utilizador: UtilizadorAutenticado, id: number, co
   return obter(bd, utilizador, id);
 }
 
-/** Arquivar ou desarquivar: só o Gestor; idempotente; as tarefas mantêm o estado (RF-07, A-05, A-13). */
+/**
+ * Arquivar ou desarquivar: só o Gestor; idempotente; as tarefas mantêm o estado (RF-07, A-05, A-13).
+ * Desarquivar é recusado se um membro sem o perfil Gestor já estiver noutro projeto ativo (RV-31, EC-53, P22).
+ */
 export function definirArquivo(bd: Bd, utilizador: UtilizadorAutenticado, id: number, corpo: unknown): Projeto {
-  projetoDoMembro(bd, utilizador, id);
+  const projeto = projetoDoMembro(bd, utilizador, id);
   if (!eGestorDoProjeto(bd, utilizador.id, id)) throw semPermissao();
   const { arquivado } = validarFormato(pedidoArquivo, corpo);
-  repo.definirArquivado(bd, id, arquivado);
+  emTransacao(bd, () => {
+    if (projeto.arquivado && !arquivado) {
+      const nomes = repo.membrosNoutroProjetoAtivo(bd, id);
+      if (nomes.length > 0) {
+        const quem = nomes.length === 1 ? `${nomes[0]} já é membro` : `${nomes.join(', ')} já são membros`;
+        throw new ErroHttp(409, 'MEMBRO_NOUTRO_PROJETO', `Não é possível desarquivar: ${quem} de outro projeto ativo.`);
+      }
+    }
+    repo.definirArquivado(bd, id, arquivado);
+  });
   return obter(bd, utilizador, id);
 }
 
@@ -242,7 +254,10 @@ export function listarMembros(bd: Bd, utilizador: UtilizadorAutenticado, id: num
   return repo.listarMembros(bd, id).sort(porNome);
 }
 
-/** Utilizadores ativos que ainda não são membros, com nome e email, só para o Gestor (A-21, CA-07.1). */
+/**
+ * Utilizadores ativos que ainda não são membros, com nome e email, só para o Gestor (A-21, CA-07.1).
+ * Sem o perfil Gestor, só quem não é membro de nenhum projeto ativo (RV-31).
+ */
 export function listarCandidatos(bd: Bd, utilizador: UtilizadorAutenticado, id: number): repo.Candidato[] {
   projetoDoGestor(bd, utilizador, id);
   return repo.listarCandidatosMembros(bd, id).sort(porNome);
@@ -260,15 +275,26 @@ export function adicionarMembro(bd: Bd, utilizador: UtilizadorAutenticado, id: n
   if (eMembroDoProjeto(bd, utilizadorId, id)) {
     throw new ErroHttp(422, 'MEMBRO_REPETIDO', 'O utilizador já é membro do projeto.', 'utilizadorId');
   }
+  if (repo.limitadoANoutroProjeto(bd, utilizadorId, id)) {
+    // RV-31, EC-52, P22: sem o perfil Gestor, só um projeto ativo de cada vez
+    throw new ErroHttp(
+      422,
+      'MEMBRO_NOUTRO_PROJETO',
+      'O utilizador já é membro de outro projeto ativo. O Gestor desse projeto tem de o remover primeiro.',
+      'utilizadorId',
+    );
+  }
   repo.inserirMembro(bd, id, utilizadorId);
   return repo.listarMembros(bd, id).sort(porNome);
 }
 
-/** Remover um membro e as suas atribuições no projeto (A-14, Q-20, EC-19). O Gestor não pode ser removido (Q-05, EC-28). */
+/**
+ * Remover um membro e as suas atribuições no projeto (A-14, Q-20, EC-19). O Gestor não pode ser removido (Q-05, EC-28).
+ * Também é possível num projeto arquivado (exceção a D-09, RV-31).
+ */
 export function removerMembro(bd: Bd, utilizador: UtilizadorAutenticado, id: number, utilizadorId: number): void {
   const projeto = projetoDoGestor(bd, utilizador, id);
   if (!eMembroDoProjeto(bd, utilizadorId, id)) throw naoEncontrado();
-  exigirNaoArquivado(projeto);
   if (utilizadorId === projeto.gestor.id) {
     throw new ErroHttp(
       409,

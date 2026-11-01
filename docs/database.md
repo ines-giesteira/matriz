@@ -1,6 +1,6 @@
 # Matriz — Modelo de dados
 
-Versão 0.3 · 29 de outubro de 2026 · Ficha Prática 02, Exercício 2 · a 0.2 acrescentou a regra 15 (Q-12) e clarificou o email no diagrama (RV-30); a 0.3 aplica a conciliação com a Ficha 3: palavra-passe e sessões (Q-22), vários responsáveis (Q-20), comentários (Q-15), eliminação de projetos (Q-19), códigos técnicos (Q-21) e o mapeamento para SQLite (Q-14).
+Versão 0.3 · 29 de outubro de 2026 · Ficha Prática 02, Exercício 2 · a 0.2 acrescentou a regra 15 (Q-12) e clarificou o email no diagrama (RV-30); a 0.3 aplica a conciliação com a Ficha 3: palavra-passe e sessões (Q-22), vários responsáveis (Q-20), comentários (Q-15), eliminação de projetos (Q-19), códigos técnicos (Q-21) e o mapeamento para SQLite (Q-14); a 0.4 (1 de novembro de 2026) aplica RV-31: um só projeto ativo para quem não tem o perfil Gestor (regra 19) e remoção de membros num projeto arquivado (regra 11).
 
 > **Estado: proposta, por aprovar pela dona do produto (R-06).** Modelo dos dados do MVP (RF-01 a RF-18, RF-22, RF-24, RF-30, RF-32 a RF-35), coerente com a arquitetura de [architecture.md](architecture.md): uma base de dados única (SQLite, Q-14), partilhada pelos módulos Contas, Projetos e Tarefas. As secções 1 a 4 são o modelo conceptual; a secção 5 mapeia-o para SQLite. Os pressupostos por aprovar estão na secção 6; as questões já decididas, na secção 7.
 
@@ -100,7 +100,7 @@ Os responsáveis passaram para ATRIBUICAO (Q-20). Eliminar uma tarefa apaga a li
 | UTILIZADOR **tem** SESSAO | 1 : 0..N | Um utilizador pode ter várias sessões abertas (por exemplo, em dois navegadores). | Q-22 |
 | UTILIZADOR **gere** PROJETO | 1 : 0..N | Cada projeto tem exatamente 1 Gestor; um Gestor pode gerir vários projetos. | D-03, A-03 |
 | PROJETO **tem** MEMBRO_PROJETO | 1 : 1..N | Um projeto tem sempre pelo menos 1 membro: o seu Gestor. | A-01, Q-05 |
-| UTILIZADOR **participa em** MEMBRO_PROJETO | 1 : 0..N | Uma pessoa pode estar em vários projetos. | R-07 |
+| UTILIZADOR **participa em** MEMBRO_PROJETO | 1 : 0..N | Quem tem o perfil Gestor pode estar em vários projetos; quem não o tem está, no máximo, em 1 projeto ativo (regra 19). | R-07, RV-31 |
 | PROJETO **contém** TAREFA | 1 : 0..N | Cada tarefa pertence a exatamente 1 projeto. | R-07 |
 | TAREFA **tem** ATRIBUICAO | 1 : 0..N | Uma tarefa tem zero, um ou vários responsáveis. | Q-20 |
 | UTILIZADOR **é responsável em** ATRIBUICAO | 1 : 0..N | Um utilizador pode ser responsável por várias tarefas. | Q-20 |
@@ -195,7 +195,7 @@ Regras que o diagrama não mostra e que têm de ser garantidas pelos módulos ou
 
 **Projetos arquivados**
 
-11. Com `arquivado = verdadeiro`, os dados do projeto, dos seus membros, das suas tarefas, atribuições e comentários não mudam. As únicas exceções são desarquivar, transferir e eliminar um projeto sem tarefas (D-09, A-04, A-05, Q-19, EC-16).
+11. Com `arquivado = verdadeiro`, os dados do projeto, dos seus membros, das suas tarefas, atribuições e comentários não mudam. As únicas exceções são desarquivar, transferir, eliminar um projeto sem tarefas e remover membros, que apaga as suas atribuições nesse projeto (regra 4) (D-09, A-04, A-05, Q-19, RV-31, EC-16).
 
 **Eliminações**
 
@@ -209,6 +209,10 @@ Regras que o diagrama não mostra e que têm de ser garantidas pelos módulos ou
 16. A ordem da lista de projetos (ativos primeiro, depois arquivados) vem de `arquivado` (A-06).
 17. A ordem da lista de tarefas e da lista em atraso vem de `estado` e `data_limite` (Q-12); não exige atributos novos.
 18. A ordem dos comentários vem de `criado_em` e, em caso de empate, de `id` (RF-24).
+
+**Membros sem o perfil Gestor**
+
+19. Um utilizador sem o perfil Gestor tem, no máximo, uma linha em MEMBRO_PROJETO num projeto com `arquivado = falso`. É garantido pelo módulo Projetos, ao adicionar um membro (EC-52) e ao desarquivar (EC-53); não há restrição na base de dados, porque depende do perfil e do arquivo (R-07, RV-31).
 
 ## 5. Mapeamento para SQLite (Q-14)
 

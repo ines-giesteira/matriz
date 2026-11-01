@@ -2,7 +2,7 @@
 
 Versão 0.1 · 29 de outubro de 2026 · Ficha Prática 03, Exercício 1
 
-> **Estado: plano aprovado pela dona do produto: decisões Q-14 a Q-22 e propostas técnicas P1 a P21 (secção 2).** Este plano transforma a documentação num conjunto de incrementos executáveis. Cada incremento indica os RF e as US que cobre, os componentes e ficheiros previstos, as dependências, os critérios de aceitação e a forma de verificação. O estado de cada incremento é atualizado ao longo da implementação (secção 8).
+> **Estado: plano aprovado pela dona do produto: decisões Q-14 a Q-22 e propostas técnicas P1 a P22 (secção 2).** Este plano transforma a documentação num conjunto de incrementos executáveis. Cada incremento indica os RF e as US que cobre, os componentes e ficheiros previstos, as dependências, os critérios de aceitação e a forma de verificação. O estado de cada incremento é atualizado ao longo da implementação (secção 8).
 
 **Fontes:** [requirements.md](requirements.md), [user-stories.md](user-stories.md), [constraints.md](constraints.md), [architecture.md](architecture.md), [database.md](database.md), [openapi.yaml](../openapi.yaml) e [ui/wireframe.md](ui/wireframe.md).
 
@@ -63,6 +63,7 @@ Detalhes que a documentação não fixava e de que a implementação precisa. Ap
 | P19 | O relógio de negócio (`relogio.ts`) passa do I7 para o I5, porque o campo `emAtraso` da tarefa já precisa dele. Aprovado a 01/11/2026. | Dependência do contrato. |
 | P20 | Juntar-se a uma tarefa que já tem responsáveis dá 409 `TAREFA_COM_RESPONSAVEIS`. Os 409 que dependem do conteúdo do pedido (responsável repetido, tarefa com responsáveis) são verificados depois do formato (400); o 409 de projeto arquivado mantém-se antes (RV-25). Aprovado a 01/11/2026. | O contrato não tinha código para o EC-34. |
 | P21 | Um comentário acima de 2000 caracteres dá 422 `LIMITE_EXCEDIDO`, com `campo: conteudo` e `limite: 2000`. Aprovado a 01/11/2026. | O contrato não indicava o código. |
+| P22 | Código `MEMBRO_NOUTRO_PROJETO` para a regra de RV-31: 422, com `campo: utilizadorId`, ao adicionar um membro sem o perfil Gestor que já está noutro projeto ativo (EC-52); 409, com os nomes na mensagem, ao desarquivar um projeto com um membro nessa situação (EC-53). Aprovado a 01/11/2026. | RV-31 não tinha códigos de erro. |
 
 ## 3. Estrutura prevista
 

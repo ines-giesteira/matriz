@@ -1,16 +1,18 @@
 // Membros do projeto (US-07, RF-06; wireframe, elemento 4 e secção 3).
 // Qualquer membro vê os nomes (Q-13). O Gestor adiciona utilizadores ativos (nome e email, A-21) e remove membros,
-// exceto ele próprio (Q-05). Num projeto arquivado, as ações desaparecem (EC-16).
+// exceto ele próprio (Q-05). Num projeto arquivado só pode remover (D-09, RV-31). Quem não tem o perfil Gestor
+// só aparece nos candidatos se não estiver em nenhum projeto ativo (RV-31); a API filtra a lista.
 import { useState, type FormEvent } from 'react';
 import { adicionarMembro, listarCandidatosMembros, listarMembros, removerMembro, type Projeto } from '../api/projetos';
 import { mensagemDeErro, usarPedido } from '../api/usarPedido';
 
 export function MembrosProjeto({ projeto }: { projeto: Projeto }) {
-  const podeGerir = projeto.souGestor && !projeto.arquivado;
+  const podeAdicionar = projeto.souGestor && !projeto.arquivado;
+  const podeRemover = projeto.souGestor;
   const membros = usarPedido(() => listarMembros(projeto.id), [projeto.id]);
   const candidatos = usarPedido(
-    () => (podeGerir ? listarCandidatosMembros(projeto.id) : Promise.resolve([])),
-    [projeto.id, podeGerir],
+    () => (podeAdicionar ? listarCandidatosMembros(projeto.id) : Promise.resolve([])),
+    [projeto.id, podeAdicionar],
   );
   const [escolhido, setEscolhido] = useState('');
   const [emCurso, setEmCurso] = useState<number | 'adicionar' | null>(null);
@@ -68,7 +70,7 @@ export function MembrosProjeto({ projeto }: { projeto: Projeto }) {
                 {m.id === projeto.gestor.id && <span className="texto-suave"> · Gestor</span>}
                 {!m.contaAtiva && <span className="texto-suave"> (conta desativada)</span>}
               </span>
-              {podeGerir && m.id !== projeto.gestor.id && (
+              {podeRemover && m.id !== projeto.gestor.id && (
                 <button
                   type="button"
                   className="botao-secundario"
@@ -84,7 +86,7 @@ export function MembrosProjeto({ projeto }: { projeto: Projeto }) {
         </ul>
       )}
 
-      {podeGerir && (
+      {podeAdicionar && (
         <form className="adicionar-membro" onSubmit={aoAdicionar}>
           <label htmlFor="novo-membro">Adicionar membro</label>
           <div className="acoes">

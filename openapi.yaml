@@ -565,7 +565,10 @@ paths:
       tags: [Projetos]
       operationId: arquivarProjeto
       summary: Arquivar ou desarquivar um projeto (Gestor do projeto)
-      description: US-08, RF-07, A-05, A-13. Idempotente.
+      description: |
+        US-08, RF-07, A-05, A-13. Idempotente.
+        Desarquivar é recusado (409 `MEMBRO_NOUTRO_PROJETO`, P22) se algum membro sem o perfil Gestor estiver noutro
+        projeto ativo; a mensagem indica quem (RV-31, EC-53). O Gestor pode remover esse membro do projeto arquivado e voltar a tentar.
       requestBody:
         required: true
         content:
@@ -594,6 +597,15 @@ paths:
           $ref: '#/components/responses/SemPermissao'
         '404':
           $ref: '#/components/responses/NaoEncontrado'
+        '409':
+          description: Ao desarquivar, um membro sem o perfil Gestor já está noutro projeto ativo (RV-31, EC-53, P22).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+              example:
+                codigo: MEMBRO_NOUTRO_PROJETO
+                mensagem: 'Não é possível desarquivar: Marta Lopes já é membro de outro projeto ativo.'
 
   # ---------------------------------------------------------------- Membros
   /projetos/{projetoId}/membros:
@@ -623,7 +635,9 @@ paths:
       tags: [Membros]
       operationId: adicionarMembro
       summary: Adicionar um membro (Gestor do projeto)
-      description: US-07, RF-06. Só utilizadores com conta ativa (Q-11, EC-39).
+      description: |
+        US-07, RF-06. Só utilizadores com conta ativa (Q-11, EC-39).
+        Quem não tem o perfil Gestor só pode ser membro de um projeto ativo de cada vez; os projetos arquivados não contam (RV-31, EC-52).
       requestBody:
         required: true
         content:
@@ -656,8 +670,9 @@ paths:
           $ref: '#/components/responses/ProjetoArquivado'
         '422':
           description: |
-            Utilizador inexistente, desativado ou já membro (EC-39). Códigos (P15): `MEMBRO_INVALIDO`
-            (inexistente ou desativado) e `MEMBRO_REPETIDO` (já é membro).
+            Utilizador inexistente, desativado, já membro (EC-39) ou, sem o perfil Gestor, já membro de outro projeto ativo (EC-52).
+            Códigos (P15, P22): `MEMBRO_INVALIDO` (inexistente ou desativado), `MEMBRO_REPETIDO` (já é membro) e
+            `MEMBRO_NOUTRO_PROJETO` (já é membro de outro projeto ativo).
           content:
             application/json:
               schema:
@@ -675,6 +690,12 @@ paths:
                     codigo: MEMBRO_REPETIDO
                     mensagem: O utilizador já é membro do projeto.
                     campo: utilizadorId
+                noutroProjeto:
+                  summary: Utilizador sem o perfil Gestor que já é membro de outro projeto ativo
+                  value:
+                    codigo: MEMBRO_NOUTRO_PROJETO
+                    mensagem: O utilizador já é membro de outro projeto ativo. O Gestor desse projeto tem de o remover primeiro.
+                    campo: utilizadorId
 
   /projetos/{projetoId}/membros/{utilizadorId}:
     parameters:
@@ -684,7 +705,9 @@ paths:
       tags: [Membros]
       operationId: removerMembro
       summary: Remover um membro (Gestor do projeto)
-      description: US-07, RF-06. Remove também as suas atribuições nas tarefas do projeto (A-14, Q-20, EC-19). Remover quem não é membro responde 404.
+      description: |
+        US-07, RF-06. Remove também as suas atribuições nas tarefas do projeto (A-14, Q-20, EC-19). Remover quem não é membro responde 404.
+        Também é possível num projeto arquivado (exceção a D-09, RV-31).
       responses:
         '204':
           description: Membro removido.
@@ -695,7 +718,7 @@ paths:
         '404':
           $ref: '#/components/responses/NaoEncontrado'
         '409':
-          description: Projeto arquivado (EC-16) ou tentativa de remover o Gestor do projeto (EC-28).
+          description: Tentativa de remover o Gestor do projeto (EC-28).
           content:
             application/json:
               schema:
@@ -713,7 +736,8 @@ paths:
       summary: Utilizadores que podem ser adicionados como membros (Gestor do projeto)
       description: |
         US-07, RF-06, A-21, CA-07.1. Utilizadores com conta ativa que ainda não são membros, com nome e email,
-        por ordem alfabética do nome (P16). Inclui Administradores (Q-06).
+        por ordem alfabética do nome (P16). Inclui Administradores (Q-06). Quem não tem o perfil Gestor só aparece se não
+        for membro de nenhum projeto ativo (RV-31, EC-52).
       responses:
         '200':
           description: Candidatos.

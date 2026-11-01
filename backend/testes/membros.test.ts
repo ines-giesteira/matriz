@@ -1,6 +1,6 @@
 // Testes do incremento I4: membros dos projetos (RF-06, US-07).
 // Seed: "Lançamento do novo site" (Gestora Ana; membros Ana, Marta, João e Rui, desativado),
-// "Migração do CRM" (Gestor Paulo; membros Paulo e João), "Relatório anual 2025" (arquivado; Ana e Marta).
+// "Migração do CRM" (Gestor Paulo; só ele), "Relatório anual 2025" (arquivado; Ana e Marta).
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { criarApp } from '../src/app.js';
@@ -135,7 +135,7 @@ describe('POST /projetos/{id}/membros', () => {
       mensagem: 'Só se podem adicionar utilizadores com conta ativa.',
       campo: 'utilizadorId',
     });
-    expect((await (await como('paulo')).get(`/api/projetos/${CRM()}/membros`)).body).toHaveLength(2);
+    expect((await (await como('paulo')).get(`/api/projetos/${CRM()}/membros`)).body).toHaveLength(1);
   });
 
   it('P15: utilizador inexistente dá MEMBRO_INVALIDO; quem já é membro dá MEMBRO_REPETIDO', async () => {
@@ -178,7 +178,7 @@ describe('DELETE /projetos/{id}/membros/{utilizadorId}', () => {
 
     expect((await (await como('ana')).delete(`/api/projetos/${SITE()}/membros/${id('joao')}`)).status).toBe(204);
     expect((await joao.get(`/api/projetos/${SITE()}`)).status).toBe(404);
-    expect((await joao.get('/api/projetos')).body.map((p: { nome: string }) => p.nome)).toEqual(['Migração do CRM']);
+    expect((await joao.get('/api/projetos')).body).toEqual([]);
   });
 
   it('EC-19: remove as atribuições do membro nesse projeto; as tarefas mantêm os outros responsáveis', async () => {
@@ -213,9 +213,90 @@ describe('DELETE /projetos/{id}/membros/{utilizadorId}', () => {
     expect((await (await como('ana')).get(`/api/projetos/${SITE()}/membros`)).body).toHaveLength(4);
   });
 
-  it('EC-16: num projeto arquivado, a remoção é recusada com 409', async () => {
+  it('RV-31: num projeto arquivado, o Gestor pode remover um membro, que perde as atribuições nesse projeto (EC-19)', async () => {
+    const relatorio = tarefa('Compilar indicadores'); // Marta
     const resposta = await (await como('ana')).delete(`/api/projetos/${RELATORIO()}/membros/${id('marta')}`);
-    expect(resposta.status).toBe(409);
-    expect(resposta.body.codigo).toBe('PROJETO_ARQUIVADO');
+    expect(resposta.status).toBe(204);
+    expect(responsaveis(relatorio)).toEqual([]);
+    const lista = (await (await como('marta')).get('/api/projetos')).body.map((p: { nome: string }) => p.nome);
+    expect(lista).toEqual(['Lançamento do novo site']);
+  });
+
+  it('RV-31: num projeto arquivado, o Gestor continua a não poder ser removido (EC-28)', async () => {
+    expect((await (await como('ana')).delete(`/api/projetos/${RELATORIO()}/membros/${id('ana')}`)).status).toBe(409);
+  });
+});
+
+// ---------------------------------------------------------------- Um só projeto ativo sem o perfil Gestor (RV-31)
+
+describe('RV-31: quem não tem o perfil Gestor só é membro de um projeto ativo', () => {
+  const adicionar = async (gestor: 'ana' | 'paulo', projetoId: number, pessoa: Pessoa) =>
+    (await como(gestor)).post(`/api/projetos/${projetoId}/membros`).send({ utilizadorId: id(pessoa) });
+
+  it('EC-52: adicionar um Membro que já está noutro projeto ativo é recusado com 422 (P22)', async () => {
+    const resposta = await adicionar('paulo', CRM(), 'joao');
+    expect(resposta.status).toBe(422);
+    expect(resposta.body).toEqual({
+      codigo: 'MEMBRO_NOUTRO_PROJETO',
+      mensagem: 'O utilizador já é membro de outro projeto ativo. O Gestor desse projeto tem de o remover primeiro.',
+      campo: 'utilizadorId',
+    });
+    expect((await (await como('paulo')).get(`/api/projetos/${CRM()}/membros`)).body).toHaveLength(1);
+  });
+
+  it('EC-52: os candidatos só incluem, sem o perfil Gestor, quem não está em nenhum projeto ativo', async () => {
+    const resposta = await (await como('paulo')).get(`/api/projetos/${CRM()}/candidatos-membros`);
+    // João e Marta estão no projeto ativo da Ana; Rui está desativado; Ana tem o perfil Gestor; Helena não está em nenhum.
+    expect(resposta.body).toEqual([
+      { id: id('ana'), nome: 'Ana Silva', email: EMAILS.ana },
+      { id: id('helena'), nome: 'Helena Matos', email: EMAILS.helena },
+    ]);
+  });
+
+  it('EC-52: os projetos arquivados não contam: a Marta, só no relatório arquivado, pode entrar noutro projeto', async () => {
+    expect((await (await como('ana')).delete(`/api/projetos/${SITE()}/membros/${id('marta')}`)).status).toBe(204);
+    const candidatos = (await (await como('paulo')).get(`/api/projetos/${CRM()}/candidatos-membros`)).body;
+    expect(candidatos.map((c: { id: number }) => c.id)).toContain(id('marta'));
+    expect((await adicionar('paulo', CRM(), 'marta')).status).toBe(201);
+  });
+
+  it('mudar de projeto: o Gestor atual remove e o Gestor do outro projeto adiciona', async () => {
+    expect((await adicionar('paulo', CRM(), 'joao')).status).toBe(422);
+    expect((await (await como('ana')).delete(`/api/projetos/${SITE()}/membros/${id('joao')}`)).status).toBe(204);
+    expect((await adicionar('paulo', CRM(), 'joao')).status).toBe(201);
+    const lista = (await (await como('joao')).get('/api/projetos')).body.map((p: { nome: string }) => p.nome);
+    expect(lista).toEqual(['Migração do CRM']);
+  });
+
+  it('a regra também se aplica a um Administrador sem o perfil Gestor (Q-06)', async () => {
+    expect((await adicionar('ana', SITE(), 'helena')).status).toBe(201);
+    expect((await adicionar('paulo', CRM(), 'helena')).body.codigo).toBe('MEMBRO_NOUTRO_PROJETO');
+  });
+
+  it('quem tem o perfil Gestor não tem limite', async () => {
+    expect((await adicionar('ana', SITE(), 'paulo')).status).toBe(201);
+    expect((await adicionar('paulo', CRM(), 'ana')).status).toBe(201);
+  });
+
+  it('EC-53: desarquivar é recusado com 409 se um membro estiver noutro projeto ativo; depois de o remover, é aceite', async () => {
+    const ana = await como('ana');
+    const recusa = await ana.put(`/api/projetos/${RELATORIO()}/arquivado`).send({ arquivado: false });
+    expect(recusa.status).toBe(409);
+    expect(recusa.body).toEqual({
+      codigo: 'MEMBRO_NOUTRO_PROJETO',
+      mensagem: 'Não é possível desarquivar: Marta Lopes já é membro de outro projeto ativo.',
+    });
+    expect(Number(bd.prepare('SELECT arquivado FROM projeto WHERE id = ?').get(RELATORIO())?.arquivado)).toBe(1);
+
+    expect((await ana.delete(`/api/projetos/${RELATORIO()}/membros/${id('marta')}`)).status).toBe(204);
+    const aceite = await ana.put(`/api/projetos/${RELATORIO()}/arquivado`).send({ arquivado: false });
+    expect(aceite.status).toBe(200);
+    expect(aceite.body.arquivado).toBe(false);
+  });
+
+  it('EC-53: arquivar, ou repetir o arquivo, não é afetado pela regra', async () => {
+    const ana = await como('ana');
+    expect((await ana.put(`/api/projetos/${RELATORIO()}/arquivado`).send({ arquivado: true })).status).toBe(200);
+    expect((await ana.put(`/api/projetos/${SITE()}/arquivado`).send({ arquivado: true })).status).toBe(200);
   });
 });

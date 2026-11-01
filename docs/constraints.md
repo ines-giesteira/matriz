@@ -1,6 +1,6 @@
 # Matriz — Restrições, pressupostos e pendentes
 
-Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou Q-12, Q-13 e a revisão crítica do Architecture Pack (RV-24 a RV-30); a 1.4 acrescenta a conciliação com a Ficha 3 (Q-14 a Q-22).
+Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou Q-12, Q-13 e a revisão crítica do Architecture Pack (RV-24 a RV-30); a 1.4 acrescenta a conciliação com a Ficha 3 (Q-14 a Q-22); a 1.5 (1 de novembro de 2026) acrescenta RV-31, que altera R-07 e D-09.
 
 > **Origem da informação.** O cliente é fictício. A única informação confirmada é a frase original do cliente (C-00). Todos os outros pontos são pressupostos da dona do produto: estão aprovados para orientar o desenvolvimento, mas **não são requisitos confirmados pelo cliente**.
 >
@@ -37,7 +37,7 @@ Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou Q-12, Q-13 e a revisã
 | R-04 | Utilizadores iniciais: uma equipa piloto de 10 a 20 pessoas. | Aprovado |
 | R-05 | Prazo: 3 meses para o piloto. | Aprovado |
 | R-06 | Aprovação: um responsável único do lado do cliente (a dona do produto). | Aprovado |
-| R-07 | Um projeto tem uma equipa (os seus membros); uma pessoa pode estar em vários projetos; não há tarefas fora de projetos. | Aprovado |
+| R-07 | Um projeto tem uma equipa (os seus membros); uma pessoa pode estar em vários projetos; não há tarefas fora de projetos. | Aprovado (alterado por RV-31: quem não tem o perfil Gestor só é membro de um projeto ativo de cada vez) |
 | R-08 | Perfis: Administrador (gere utilizadores), Gestor de projeto (cria projetos e atribui tarefas), Membro (atualiza as suas tarefas). | Aprovado (complementado por RV-02; alterado por Q-18: quem cria projetos é o Administrador) |
 | R-09 | Progresso por projeto: número de tarefas em cada estado, percentagem concluída e tarefas em atraso. | Aprovado |
 | R-10 | Tarefa: título (obrigatório), descrição, responsável, prioridade, data limite, estado. | Aprovado (complementado por A-19, A-20; alterado por Q-20: vários responsáveis) |
@@ -65,7 +65,7 @@ Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou Q-12, Q-13 e a revisã
 | D-06 | O nome do projeto é obrigatório. | Aprovado |
 | D-07 | O Gestor pode editar os dados do projeto. | Aprovado |
 | D-08 | O Gestor adiciona e remove membros do projeto. | Aprovado |
-| D-09 | Um projeto arquivado fica só de consulta; é o Gestor quem arquiva. | Aprovado (complementado por A-04, A-05) |
+| D-09 | Um projeto arquivado fica só de consulta; é o Gestor quem arquiva. | Aprovado (complementado por A-04, A-05; alterado por RV-31: o Gestor pode remover membros de um projeto arquivado) |
 | D-10 | Cada utilizador só vê os projetos a que pertence. | Aprovado |
 | D-11 | Só o Gestor cria tarefas. | Aprovado |
 | D-12 | O responsável tem de ser membro do projeto. | Aprovado (complementado por A-15, RV-02, Q-20) |
@@ -187,6 +187,7 @@ Resultado da revisão da coerência entre requisitos, arquitetura, dados, API e 
 | RV-28 | O wireframe não mostrava como abrir uma tarefa para ler a descrição (CA-17.2). | O título da tarefa é um link para o detalhe. | docs/ui/ | Decidido |
 | RV-29 | Não estava definido se um membro vê os outros membros do projeto. | Decidida em Q-13. | Q-13 | Decidido |
 | RV-30 | O diagrama ER não dizia que a unicidade do email ignora maiúsculas e minúsculas (Q-10). | Acrescentado ao comentário do atributo. | database.md, secção 3 | Decidido |
+| RV-31 | R-07 deixava qualquer pessoa estar em vários projetos ativos. | Decisão da dona do produto (01/11/2026): quem não tem o perfil Gestor só é membro de um projeto ativo de cada vez; os projetos arquivados não contam. Quem tem o perfil Gestor não tem limite. Para mudar de projeto, o Gestor do projeto atual remove a pessoa e o Gestor do outro projeto adiciona-a. A lista de candidatos só mostra, de quem não tem o perfil Gestor, quem não está em nenhum projeto ativo. Desarquivar é recusado se um membro sem o perfil Gestor estiver noutro projeto ativo; para o permitir, abre-se uma exceção a D-09: o Gestor pode remover membros de um projeto arquivado. | R-07, D-09, RF-06, EC-52, EC-53, P22 | Decidido (alterado) |
 
 ## 3. Segurança e privacidade
 

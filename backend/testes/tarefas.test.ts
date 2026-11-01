@@ -148,9 +148,11 @@ describe('GET /projetos/{id}/tarefas', () => {
   });
 
   it('EC-18: uma tarefa de outro projeto não é encontrada, mesmo mudando o identificador do projeto', async () => {
-    const joao = await como('joao'); // membro dos dois projetos
-    expect((await joao.get(url(SITE(), tarefa('Validar campos obrigatórios')))).status).toBe(404);
-    expect((await joao.get(url(CRM(), tarefa('Validar campos obrigatórios')))).status).toBe(200);
+    // O Paulo (perfil Gestor) passa a membro dos dois projetos (RV-31).
+    expect((await (await como('ana')).post(`/api/projetos/${SITE()}/membros`).send({ utilizadorId: id('paulo') })).status).toBe(201);
+    const paulo = await como('paulo');
+    expect((await paulo.get(url(SITE(), tarefa('Validar campos obrigatórios')))).status).toBe(404);
+    expect((await paulo.get(url(CRM(), tarefa('Validar campos obrigatórios')))).status).toBe(200);
   });
 });
 

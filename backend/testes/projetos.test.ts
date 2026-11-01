@@ -75,10 +75,14 @@ describe('GET /projetos (lista do utilizador)', () => {
   });
 
   it('CA-22.1 e CA-22.2: a pesquisa não distingue maiúsculas', async () => {
-    const joao = await como('joao');
-    expect(nomes((await joao.get('/api/projetos?nome=site')).body)).toEqual([SITE]);
-    expect(nomes((await joao.get('/api/projetos?nome=SITE')).body)).toEqual([SITE]);
-    expect(nomes((await joao.get('/api/projetos?nome=MIGRAÇÃO')).body)).toEqual([CRM]);
+    // Só quem tem o perfil Gestor pode estar em dois projetos ativos (RV-31): a Ana junta o Paulo ao seu projeto.
+    const ana = await como('ana');
+    const paraPaulo = { utilizadorId: idUtilizador('paulo.reis@matriz.test') };
+    expect((await ana.post(`/api/projetos/${idProjeto(SITE)}/membros`).send(paraPaulo)).status).toBe(201);
+    const paulo = await como('paulo');
+    expect(nomes((await paulo.get('/api/projetos?nome=site')).body)).toEqual([SITE]);
+    expect(nomes((await paulo.get('/api/projetos?nome=SITE')).body)).toEqual([SITE]);
+    expect(nomes((await paulo.get('/api/projetos?nome=MIGRAÇÃO')).body)).toEqual([CRM]);
   });
 
   it('CA-22.3: a pesquisa não devolve projetos de que não é membro', async () => {
@@ -242,6 +246,8 @@ describe('PUT /projetos/{id}/arquivado', () => {
   it('CA-08.2: o Gestor desarquiva e volta a poder editar', async () => {
     const ana = await como('ana');
     const id = idProjeto(RELATORIO);
+    // A Marta já está noutro projeto ativo; sai primeiro do relatório (RV-31, EC-53).
+    expect((await ana.delete(`/api/projetos/${id}/membros/${idUtilizador('marta.lopes@matriz.test')}`)).status).toBe(204);
     expect((await ana.put(`/api/projetos/${id}/arquivado`).send({ arquivado: false })).body.arquivado).toBe(false);
     expect((await ana.patch(`/api/projetos/${id}`).send({ descricao: 'Reaberto' })).status).toBe(200);
   });

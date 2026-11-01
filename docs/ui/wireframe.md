@@ -51,7 +51,7 @@ Não desenhadas; decorrem da matriz de permissões ([requirements.md](../require
 |---|---|
 | **Membro do projeto** (não Gestor) | Não vê "Editar projeto", "Arquivar", "+ Nova tarefa" nem "Eliminar" (RF-05, RF-07, RF-09, RF-22, EC-05, EC-12). "Membros" mostra só os nomes dos membros, sem email e sem adicionar nem remover (RF-06, Q-13, CA-07.3). O responsável aparece como texto. Nas tarefas sem responsável aparece "Atribuir-me", e nas suas tarefas aparece "Largar" (RF-10, US-20, EC-34). Só muda o estado das tarefas de que é responsável (RF-11, CA-13.3, EC-04). "Editar" só aparece nas suas tarefas e só deixa alterar a descrição (RF-13, CA-14.2). Pode abrir qualquer tarefa para ler a descrição (RF-15, CA-17.2). |
 | **Administrador membro do projeto** | Igual ao Membro (Q-06, EC-30). |
-| **Projeto arquivado** | O projeto aparece marcado como "Arquivado". Todas as ações de alteração desaparecem; o Gestor vê "Desarquivar" no lugar de "Arquivar". O progresso e a lista continuam visíveis (D-09, A-05, EC-16, CA-08.1). |
+| **Projeto arquivado** | O projeto aparece marcado como "Arquivado". Todas as ações de alteração desaparecem, exceto "Remover" nos membros (RV-31); o Gestor vê "Desarquivar" no lugar de "Arquivar". O progresso e a lista continuam visíveis (D-09, A-05, EC-16, CA-08.1). |
 | **Projeto sem tarefas** | O bloco da percentagem mostra "Sem tarefas" (A-09, CA-18.5). |
 | **Quem não é membro** | Não chega a este ecrã: o acesso é recusado (EC-18, CA-18.4). |
 
