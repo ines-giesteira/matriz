@@ -2,7 +2,7 @@
 
 Versão 0.1 · 29 de outubro de 2026 · Ficha Prática 03, Exercício 1
 
-> **Estado: plano aprovado pela dona do produto: decisões Q-14 a Q-22 e propostas técnicas P1 a P19 (secção 2).** Este plano transforma a documentação num conjunto de incrementos executáveis. Cada incremento indica os RF e as US que cobre, os componentes e ficheiros previstos, as dependências, os critérios de aceitação e a forma de verificação. O estado de cada incremento é atualizado ao longo da implementação (secção 8).
+> **Estado: plano aprovado pela dona do produto: decisões Q-14 a Q-22 e propostas técnicas P1 a P21 (secção 2).** Este plano transforma a documentação num conjunto de incrementos executáveis. Cada incremento indica os RF e as US que cobre, os componentes e ficheiros previstos, as dependências, os critérios de aceitação e a forma de verificação. O estado de cada incremento é atualizado ao longo da implementação (secção 8).
 
 **Fontes:** [requirements.md](requirements.md), [user-stories.md](user-stories.md), [constraints.md](constraints.md), [architecture.md](architecture.md), [database.md](database.md), [openapi.yaml](../openapi.yaml) e [ui/wireframe.md](ui/wireframe.md).
 
@@ -61,6 +61,8 @@ Detalhes que a documentação não fixava e de que a implementação precisa. Ap
 | P17 | Ao criar uma tarefa, responsáveis repetidos dão 422 `RESPONSAVEL_REPETIDO` e responsáveis que não são membros ativos dão 422 `RESPONSAVEL_INVALIDO`, ambos com `campo: responsavelIds` (e não 400 por `uniqueItems`). Aprovado a 01/11/2026. | O schema e a descrição do 422 do contrato não coincidiam. |
 | P18 | Na lista de tarefas, as tarefas com o mesmo estado e a mesma data limite ficam por ordem alfabética do título. Aprovado a 01/11/2026. | Q-12 não definia o desempate. |
 | P19 | O relógio de negócio (`relogio.ts`) passa do I7 para o I5, porque o campo `emAtraso` da tarefa já precisa dele. Aprovado a 01/11/2026. | Dependência do contrato. |
+| P20 | Juntar-se a uma tarefa que já tem responsáveis dá 409 `TAREFA_COM_RESPONSAVEIS`. Os 409 que dependem do conteúdo do pedido (responsável repetido, tarefa com responsáveis) são verificados depois do formato (400); o 409 de projeto arquivado mantém-se antes (RV-25). Aprovado a 01/11/2026. | O contrato não tinha código para o EC-34. |
+| P21 | Um comentário acima de 2000 caracteres dá 422 `LIMITE_EXCEDIDO`, com `campo: conteudo` e `limite: 2000`. Aprovado a 01/11/2026. | O contrato não indicava o código. |
 
 ## 3. Estrutura prevista
 
@@ -247,7 +249,7 @@ Cada incremento é vertical: base de dados, API, interface e testes. Para cada u
 | I3 | Por fazer | |
 | I4 | Concluído (31/10/2026) | `GET` e `POST /projetos/{id}/membros`, `DELETE /projetos/{id}/membros/{utilizadorId}` e `GET /projetos/{id}/candidatos-membros`. Remover um membro apaga as suas atribuições no projeto (EC-19, antecipado do I6). Interface: secção "Membros" no detalhe do projeto. 19 testes novos (103 no total). Percurso manual: a Ana adiciona o Paulo ao "Lançamento do novo site", o Paulo vê-o na sua lista, a Ana remove-o e não consegue remover-se a si própria. Propostas P15 e P16. |
 | I5 | Concluído (01/11/2026) | `GET` e `POST /projetos/{id}/tarefas` (filtros e ordem de Q-12), `GET`, `PATCH` e `DELETE /projetos/{id}/tarefas/{tarefaId}`, `PUT .../estado`; `emAtraso` calculado com `relogio.ts` (P19). Interface: no detalhe do projeto, contagens por estado, filtros, lista com mudança de estado e criação de tarefas; página de detalhe da tarefa com edição, estado e eliminação com confirmação. As contagens vêm, até ao I7, de um pedido à lista sem filtros. 40 testes novos (143 no total). Percurso manual: a Ana cria uma tarefa com a Marta como responsável e as contagens sobem sem recarregar; a Marta, com o filtro "Em curso", conclui uma tarefa sua, que sai da lista; a Ana recebe 409 ao eliminar uma tarefa iniciada; a tarefa e a descrição editada pela Marta mantêm-se após reiniciar o backend. Propostas P17 a P19. |
-| I6 | Por fazer | |
+| I6 | Concluído (01/11/2026) | `POST` e `DELETE .../responsaveis` (o Gestor adiciona e remove; os outros membros juntam-se a tarefas sem responsáveis e saem das suas) e `GET` e `POST .../comentarios` (autor da sessão e data do servidor). Interface: secções "Responsáveis" e "Comentários" no detalhe da tarefa. 25 testes novos (168 no total). Percurso manual: a Ana adiciona e remove o João numa tarefa; a Marta junta-se a uma tarefa sem responsáveis, vê recusado um comentário só com espaços, comenta e recebe 409 ao juntar-se a uma tarefa com responsáveis; o responsável e o comentário mantêm-se após reiniciar o backend; a Marta sai da tarefa e perde o seletor de estado. Propostas P20 e P21. |
 | I7 | Por fazer | |
 | I8 | Por fazer | |
 | I9 | Por fazer | |

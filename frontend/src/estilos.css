@@ -470,3 +470,28 @@ button:disabled {
   margin-top: 4px;
   font-weight: normal;
 }
+
+/* Comentários */
+.lista-comentarios {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
+  max-width: 720px;
+}
+
+.lista-comentarios li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--fundo-suave);
+}
+
+.lista-comentarios p {
+  margin: 0;
+}
+
+.comentario-cabecalho {
+  margin-bottom: 4px !important;
+}
+
+.formulario-comentario {
+  max-width: 720px;
+}

@@ -219,3 +219,120 @@ export function eliminar(bd: Bd, utilizador: UtilizadorAutenticado, projetoId: n
   }
   emTransacao(bd, () => repo.apagarTarefa(bd, tarefaId));
 }
+
+// ---------------------------------------------------------------- Responsáveis (RF-10, US-12, US-20)
+
+const pedidoUtilizador = z.strictObject({ utilizadorId: z.number().int() });
+
+/**
+ * Adicionar um responsável (Gestor) ou juntar-se a uma tarefa (outro membro).
+ * O Gestor adiciona qualquer membro com conta ativa, incluindo ele próprio (CA-12.1, CA-12.4).
+ * Outro membro só se adiciona a si próprio e só numa tarefa sem responsáveis (CA-20.1, EC-34).
+ * Os 409 que dependem do conteúdo do pedido são verificados depois do formato (P20).
+ */
+export function adicionarResponsavel(
+  bd: Bd,
+  hoje: Hoje,
+  utilizador: UtilizadorAutenticado,
+  projetoId: number,
+  tarefaId: number,
+  corpo: unknown,
+): Tarefa {
+  const projeto = projetoDoMembro(bd, utilizador, projetoId);
+  const tarefa = tarefaDoProjeto(bd, projeto, tarefaId);
+  const eGestor = eGestorDoProjeto(bd, utilizador.id, projetoId);
+  const indicado = corpo !== null && typeof corpo === 'object' ? (corpo as { utilizadorId?: unknown }).utilizadorId : undefined;
+  if (!eGestor && typeof indicado === 'number' && indicado !== utilizador.id) throw semPermissao();
+  exigirNaoArquivado(projeto);
+  const { utilizadorId } = validarFormato(pedidoUtilizador, corpo);
+  if (!eGestor && utilizadorId !== utilizador.id) throw semPermissao();
+
+  if (tarefa.responsaveis.some((r) => r.id === utilizadorId)) {
+    throw new ErroHttp(409, 'RESPONSAVEL_REPETIDO', 'Este utilizador já é responsável pela tarefa.'); // EC-43
+  }
+  if (!eGestor && tarefa.responsaveis.length > 0) {
+    throw new ErroHttp(
+      409,
+      'TAREFA_COM_RESPONSAVEIS',
+      'Só se pode juntar a uma tarefa sem responsáveis. Peça ao Gestor do projeto para o adicionar.',
+    ); // EC-34, P20
+  }
+  if (!repo.membrosAtivos(bd, projetoId, [utilizadorId]).has(utilizadorId)) {
+    throw new ErroHttp(
+      422,
+      'RESPONSAVEL_INVALIDO',
+      'O responsável tem de ser membro do projeto com conta ativa.',
+      'utilizadorId',
+    ); // EC-03, EC-22
+  }
+  repo.inserirAtribuicao(bd, tarefaId, utilizadorId);
+  return obter(bd, hoje, utilizador, projetoId, tarefaId);
+}
+
+/**
+ * Remover um responsável (Gestor, também com a conta desativada, EC-21) ou sair de uma tarefa (o próprio, CA-20.2).
+ * Os outros responsáveis mantêm-se (CA-12.3).
+ */
+export function removerResponsavel(
+  bd: Bd,
+  hoje: Hoje,
+  utilizador: UtilizadorAutenticado,
+  projetoId: number,
+  tarefaId: number,
+  utilizadorId: number,
+): Tarefa {
+  const projeto = projetoDoMembro(bd, utilizador, projetoId);
+  const tarefa = tarefaDoProjeto(bd, projeto, tarefaId);
+  if (!eGestorDoProjeto(bd, utilizador.id, projetoId) && utilizadorId !== utilizador.id) throw semPermissao();
+  if (!tarefa.responsaveis.some((r) => r.id === utilizadorId)) throw naoEncontrado();
+  exigirNaoArquivado(projeto);
+  repo.apagarAtribuicao(bd, tarefaId, utilizadorId);
+  return obter(bd, hoje, utilizador, projetoId, tarefaId);
+}
+
+// ---------------------------------------------------------------- Comentários (RF-24, US-24)
+
+export const LIMITE_COMENTARIO = 2000; // P4
+
+// O autor e a data não são aceites do cliente: um campo a mais dá 400 (EC-45).
+const novoComentario = z.strictObject({ conteudo: z.string() });
+
+/** Comentários de uma tarefa, para qualquer membro, também num projeto arquivado (D-09, CA-24.2). */
+export function listarComentarios(
+  bd: Bd,
+  utilizador: UtilizadorAutenticado,
+  projetoId: number,
+  tarefaId: number,
+): repo.Comentario[] {
+  const projeto = projetoDoMembro(bd, utilizador, projetoId); // EC-46
+  tarefaDoProjeto(bd, projeto, tarefaId);
+  return repo.listarComentarios(bd, tarefaId);
+}
+
+/** Adicionar um comentário: o autor vem da sessão e a data do relógio do servidor (Q-15, Q-22, CA-24.1). */
+export function adicionarComentario(
+  bd: Bd,
+  agora: () => Date,
+  utilizador: UtilizadorAutenticado,
+  projetoId: number,
+  tarefaId: number,
+  corpo: unknown,
+): repo.Comentario {
+  const projeto = projetoDoMembro(bd, utilizador, projetoId); // EC-46
+  tarefaDoProjeto(bd, projeto, tarefaId);
+  exigirNaoArquivado(projeto); // D-09
+  const { conteudo } = validarFormato(novoComentario, corpo);
+  if (conteudo.trim() === '') {
+    throw new ErroHttp(422, 'CONTEUDO_OBRIGATORIO', 'O comentário não pode estar vazio.', 'conteudo'); // EC-44
+  }
+  if (comprimento(conteudo) > LIMITE_COMENTARIO) {
+    throw new ErroHttp(
+      422,
+      'LIMITE_EXCEDIDO',
+      `O comentário não pode ter mais de ${LIMITE_COMENTARIO} caracteres.`,
+      'conteudo',
+      LIMITE_COMENTARIO,
+    ); // EC-29, P21
+  }
+  return repo.inserirComentario(bd, tarefaId, utilizador.id, conteudo, agora().toISOString());
+}

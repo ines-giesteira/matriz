@@ -1,4 +1,4 @@
-// Rotas das tarefas (openapi.yaml: Tarefas).
+// Rotas das tarefas, dos responsáveis e dos comentários (openapi.yaml: Tarefas, Responsáveis, Comentários).
 import { Router } from 'express';
 import type { Bd } from '../../bd/ligacao.js';
 import { idDoCaminho } from '../../http/erros.js';
@@ -6,7 +6,7 @@ import { utilizadorDe } from '../../http/sessao.js';
 import type { Hoje } from '../../relogio.js';
 import * as servico from './servico.js';
 
-export function rotasTarefas(bd: Bd, hoje: Hoje): Router {
+export function rotasTarefas(bd: Bd, hoje: Hoje, agora: () => Date): Router {
   const rotas = Router();
   const base = '/projetos/:projetoId/tarefas';
 
@@ -55,6 +55,55 @@ export function rotasTarefas(bd: Bd, hoje: Hoje): Router {
         pedido.body,
       ),
     );
+  });
+
+  rotas.post(`${base}/:tarefaId/responsaveis`, (pedido, resposta) => {
+    resposta
+      .status(201)
+      .json(
+        servico.adicionarResponsavel(
+          bd,
+          hoje,
+          utilizadorDe(pedido),
+          idDoCaminho(pedido.params.projetoId),
+          idDoCaminho(pedido.params.tarefaId),
+          pedido.body,
+        ),
+      );
+  });
+
+  rotas.delete(`${base}/:tarefaId/responsaveis/:utilizadorId`, (pedido, resposta) => {
+    resposta.json(
+      servico.removerResponsavel(
+        bd,
+        hoje,
+        utilizadorDe(pedido),
+        idDoCaminho(pedido.params.projetoId),
+        idDoCaminho(pedido.params.tarefaId),
+        idDoCaminho(pedido.params.utilizadorId),
+      ),
+    );
+  });
+
+  rotas.get(`${base}/:tarefaId/comentarios`, (pedido, resposta) => {
+    resposta.json(
+      servico.listarComentarios(bd, utilizadorDe(pedido), idDoCaminho(pedido.params.projetoId), idDoCaminho(pedido.params.tarefaId)),
+    );
+  });
+
+  rotas.post(`${base}/:tarefaId/comentarios`, (pedido, resposta) => {
+    resposta
+      .status(201)
+      .json(
+        servico.adicionarComentario(
+          bd,
+          agora,
+          utilizadorDe(pedido),
+          idDoCaminho(pedido.params.projetoId),
+          idDoCaminho(pedido.params.tarefaId),
+          pedido.body,
+        ),
+      );
   });
 
   return rotas;

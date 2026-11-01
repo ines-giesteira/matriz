@@ -1036,7 +1036,9 @@ paths:
         '409':
           description: |
             Projeto arquivado (EC-16); utilizador já é responsável (EC-43);
-            membro a juntar-se a uma tarefa que já tem responsáveis (EC-34).
+            membro a juntar-se a uma tarefa que já tem responsáveis (EC-34, código `TAREFA_COM_RESPONSAVEIS`, P20).
+            O 409 de projeto arquivado é verificado antes do formato do pedido; os outros dois, que dependem do
+            conteúdo do pedido, depois (P20).
           content:
             application/json:
               schema:
@@ -1155,7 +1157,9 @@ paths:
         '409':
           $ref: '#/components/responses/ProjetoArquivado'
         '422':
-          description: Conteúdo vazio, só com espaços ou acima do limite (EC-44, EC-29).
+          description: |
+            Conteúdo vazio ou só com espaços (`CONTEUDO_OBRIGATORIO`, EC-44); acima de 2000 caracteres
+            (`LIMITE_EXCEDIDO`, com `campo: conteudo` e `limite: 2000`; EC-29, P4, P21).
           content:
             application/json:
               schema:

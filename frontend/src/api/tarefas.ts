@@ -49,3 +49,16 @@ export const eliminarTarefa = (projetoId: number, tarefaId: number) =>
 /** Quem pode mudar o estado: o Gestor do projeto e os responsáveis da tarefa (RF-11). */
 export const podeMudarEstado = (tarefa: Tarefa, utilizadorId: number, souGestor: boolean) =>
   souGestor || tarefa.responsaveis.some((r) => r.id === utilizadorId);
+
+// ---------------------------------------------------------------- Responsáveis e comentários (RF-10, RF-24)
+
+export type Comentario = { id: number; autor: Membro; conteudo: string; criadoEm: string };
+
+export const adicionarResponsavel = (projetoId: number, tarefaId: number, utilizadorId: number) =>
+  pedido<Tarefa>(`${base(projetoId)}/${tarefaId}/responsaveis`, json('POST', { utilizadorId }));
+export const removerResponsavel = (projetoId: number, tarefaId: number, utilizadorId: number) =>
+  pedido<Tarefa>(`${base(projetoId)}/${tarefaId}/responsaveis/${utilizadorId}`, { method: 'DELETE' });
+export const listarComentarios = (projetoId: number, tarefaId: number) =>
+  pedido<Comentario[]>(`${base(projetoId)}/${tarefaId}/comentarios`);
+export const adicionarComentario = (projetoId: number, tarefaId: number, conteudo: string) =>
+  pedido<Comentario>(`${base(projetoId)}/${tarefaId}/comentarios`, json('POST', { conteudo }));

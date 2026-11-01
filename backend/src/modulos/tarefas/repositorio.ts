@@ -118,6 +118,48 @@ export function apagarTarefa(bd: Bd, tarefaId: number): void {
   bd.prepare('DELETE FROM tarefa WHERE id = ?').run(tarefaId);
 }
 
+// ---------------------------------------------------------------- Responsáveis (RF-10)
+
+export function inserirAtribuicao(bd: Bd, tarefaId: number, utilizadorId: number): void {
+  bd.prepare('INSERT INTO atribuicao (tarefa_id, utilizador_id) VALUES (?, ?)').run(tarefaId, utilizadorId);
+}
+
+export function apagarAtribuicao(bd: Bd, tarefaId: number, utilizadorId: number): void {
+  bd.prepare('DELETE FROM atribuicao WHERE tarefa_id = ? AND utilizador_id = ?').run(tarefaId, utilizadorId);
+}
+
+// ---------------------------------------------------------------- Comentários (RF-24)
+
+export type Comentario = { id: number; autor: Responsavel; conteudo: string; criadoEm: string };
+
+const SELECIONAR_COMENTARIO = `
+  SELECT c.id, c.conteudo, c.criado_em, u.id AS autor_id, u.nome AS autor_nome, u.ativo AS autor_ativo
+  FROM comentario c JOIN utilizador u ON u.id = c.autor_id`;
+
+function paraComentario(l: Record<string, unknown>): Comentario {
+  return {
+    id: Number(l.id),
+    autor: { id: Number(l.autor_id), nome: String(l.autor_nome), contaAtiva: Number(l.autor_ativo) === 1 },
+    conteudo: String(l.conteudo),
+    criadoEm: String(l.criado_em),
+  };
+}
+
+/** Comentários de uma tarefa por ordem cronológica, o mais antigo primeiro (RF-24, CA-24.2). */
+export function listarComentarios(bd: Bd, tarefaId: number): Comentario[] {
+  return bd
+    .prepare(`${SELECIONAR_COMENTARIO} WHERE c.tarefa_id = ? ORDER BY c.criado_em, c.id`)
+    .all(tarefaId)
+    .map(paraComentario);
+}
+
+export function inserirComentario(bd: Bd, tarefaId: number, autorId: number, conteudo: string, criadoEm: string): Comentario {
+  const { lastInsertRowid } = bd
+    .prepare('INSERT INTO comentario (tarefa_id, autor_id, conteudo, criado_em) VALUES (?, ?, ?, ?)')
+    .run(tarefaId, autorId, conteudo, criadoEm);
+  return paraComentario(bd.prepare(`${SELECIONAR_COMENTARIO} WHERE c.id = ?`).get(Number(lastInsertRowid))!);
+}
+
 /** Membros do projeto com conta ativa, entre os indicados (para validar responsáveis, D-12, A-15). */
 export function membrosAtivos(bd: Bd, projetoId: number, utilizadorIds: number[]): Set<number> {
   if (utilizadorIds.length === 0) return new Set();

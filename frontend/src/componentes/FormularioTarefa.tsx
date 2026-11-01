@@ -1,6 +1,6 @@
 // Formulário de tarefa (RF-09, RF-13, RF-14).
 // - "criar": Gestor, com título, descrição, prioridade (Média por omissão), data limite e responsáveis.
-// - "gestor": Gestor a editar todos os campos (os responsáveis mudam-se no I6).
+// - "gestor": Gestor a editar todos os campos (os responsáveis mudam-se na secção própria do detalhe da tarefa).
 // - "responsavel": responsável que não é Gestor, só a descrição (CA-14.1, CA-14.2).
 // Valida no navegador as regras de RF-09; o backend volta a validá-las e os seus erros aparecem no campo certo.
 import { useState, type FormEvent } from 'react';

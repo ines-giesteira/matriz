@@ -24,3 +24,17 @@ export const NOME_PRIORIDADE: Record<Prioridade, string> = {
   MEDIUM: 'Média',
   LOW: 'Baixa',
 };
+
+const formatoDataHora = new Intl.DateTimeFormat('pt-PT', {
+  timeZone: 'Europe/Lisbon',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
+/** Data e hora da API (UTC) mostrada em Europe/Lisbon (RNF-02), por exemplo 29/10/2026, 15:42. */
+export function formatarDataHora(instante: string): string {
+  return formatoDataHora.format(new Date(instante));
+}

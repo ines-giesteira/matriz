@@ -1,6 +1,6 @@
 // Detalhe da tarefa (Ficha 3, Exercício 7; wireframe, elemento 14): dados, descrição, estado, edição e eliminação.
 // Qualquer membro lê a tarefa (RV-17). O Gestor edita tudo e elimina tarefas "Por fazer" (RF-14, RF-22);
-// um responsável muda o estado e edita a descrição (RF-13). Os responsáveis mudam-se no I6.
+// um responsável muda o estado e edita a descrição (RF-13). Inclui os responsáveis e os comentários (I6).
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { obterProjeto } from '../api/projetos';
@@ -10,7 +10,8 @@ import { Confirmacao } from '../componentes/Confirmacao';
 import { Estrutura } from '../componentes/Estrutura';
 import { FormularioTarefa } from '../componentes/FormularioTarefa';
 import { SeletorEstado } from '../componentes/SeletorEstado';
-import { NomesResponsaveis } from '../componentes/TarefasProjeto';
+import { ComentariosTarefa } from '../componentes/ComentariosTarefa';
+import { ResponsaveisTarefa } from '../componentes/ResponsaveisTarefa';
 import { useSessao } from '../sessao/ContextoSessao';
 import { formatarData, NOME_ESTADO, NOME_PRIORIDADE } from '../textos';
 
@@ -130,13 +131,12 @@ export function Tarefa() {
             <dd>
               {formatarData(t.dataLimite)} {t.emAtraso && <span className="etiqueta etiqueta-atraso">Em atraso</span>}
             </dd>
-            <dt>Responsáveis</dt>
-            <dd>
-              <NomesResponsaveis tarefa={t} />
-            </dd>
             <dt>Descrição</dt>
             <dd className="descricao">{t.descricao ?? '—'}</dd>
           </dl>
+
+          <ResponsaveisTarefa projeto={p} tarefa={t} utilizadorId={utilizadorId} aoMudar={tarefa.definir} />
+          <ComentariosTarefa projeto={p} tarefaId={t.id} />
         </>
       )}
 
