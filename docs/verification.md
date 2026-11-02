@@ -1,10 +1,10 @@
 # Matriz — Verificação
 
-Versão 0.1 · 2 de novembro de 2026 · Ficha Prática 03, Exercício 7 (incremento I8)
+Versão 0.2 · 2 de novembro de 2026 · Ficha Prática 03, Exercícios 7 (incremento I8) e 8 (incremento I9)
 
-> **Estado:** percurso manual completo do I8, feito na interface com a API e a base de dados reais. Os cenários 01 a 09 da Ficha 3 (Exercício 8, incremento I9) acrescentam-se a este ficheiro. As verificações manuais estão separadas dos testes automáticos (secção 3).
+> **Estado:** percurso manual completo do I8 (secções 1 a 5) e cenários 01 a 09 da Ficha 3 do I9 (secção 6), feitos na interface e em pedidos diretos à API, com a base de dados real. As verificações manuais estão separadas dos testes automáticos (secções 3 e 6.3).
 
-**Fontes:** [user-stories.md](user-stories.md) (CA e EC), [requirements.md](requirements.md) (RF), [constraints.md](constraints.md) (RV), [implementation-plan.md](implementation-plan.md) (I8).
+**Fontes:** [user-stories.md](user-stories.md) (CA e EC), [requirements.md](requirements.md) (RF), [constraints.md](constraints.md) (RV), [implementation-plan.md](implementation-plan.md) (I8, I9).
 
 ## 1. Ambiente
 
@@ -109,4 +109,66 @@ Cada passo foi feito na interface; o resultado observado foi confirmado no ecrã
 
 - A ferramenta de automação do navegador muda caixas de seleção sem disparar o evento do React; no percurso, a caixa do responsável foi marcada com um clique real. Não é um problema da aplicação.
 - As mensagens 401 na consola antes de entrar vêm da verificação da sessão ao abrir a aplicação e são esperadas.
+- O percurso não mediu o desempenho nem a acessibilidade com leitores de ecrã.
+
+## 6. Verificação do MVP (I9)
+
+Cenários 01 a 09 da Ficha 3, Exercício 8. Cada cenário foi feito na interface e, para as regras de acesso e validação, também com pedidos diretos à API (`fetch` na consola do navegador, com o cookie de sessão da conta indicada).
+
+### 6.1 Ambiente
+
+| Item | Valor |
+|---|---|
+| Data | 2 de novembro de 2026 |
+| Base de dados | `dados/verificacao.sqlite`, separada da base de desenvolvimento, criada com `CAMINHO_BD=dados/verificacao.sqlite npm run bd:migrar` e `CAMINHO_BD=dados/verificacao.sqlite npm run bd:seed` (2 migrations, dados do seed) |
+| Arranque | Backend com `CAMINHO_BD=dados/verificacao.sqlite npm run dev -w backend`; interface com `npm run dev -w frontend` |
+| Navegador | Navegador da aplicação Claude (Chromium), 1280 px |
+| Contas | Contas de demonstração do seed (README, "Contas de demonstração"): Helena (Administrador), Ana e Paulo (Gestores), Marta e João (Membros), Rui (desativado) |
+| Identificadores | Projetos: 1 "Lançamento do novo site" (Ana), 2 "Migração do CRM" (Paulo, tarefas 11 e 12), 4 "Verificação I9" (criado no percurso), 5 "Projeto a eliminar" (criado e eliminado). Tarefa 14 "Testar formulários (I9)", criada no percurso |
+
+### 6.2 Cenários
+
+| Caso | Cenário | Resultado esperado | Resultado observado | Evidência | Requisitos |
+|---|---|---|---|---|---|
+| 01 | Acesso à aplicação | Credenciais válidas permitem entrar; credenciais inválidas, contas desativadas e pedidos sem sessão são recusados; a sessão terminada leva à entrada com mensagem | Como esperado | Formulário vazio: "Indique o email." e "Indique a palavra-passe.", sem pedido. Palavra-passe errada da Ana: "Email ou palavra-passe incorretos.", com o email mantido. Rui (desativado): `POST /sessao` 401 `CREDENCIAIS_INVALIDAS`, a mesma mensagem. Sem sessão: `GET /sessao`, `GET /projetos` e `POST /projetos/1/tarefas` dão 401 `NAO_AUTENTICADO`; `GET /saude` dá 200. Ana entra e vê o painel com os seus 2 projetos. Sessão terminada com `DELETE /sessao` noutro pedido: ao abrir um projeto, a interface volta à entrada com "A sessão terminou. Entre novamente." | CA-01.1 a CA-01.5, EC-20 |
+| 02 | Gestão de projetos | Criar, pesquisar, editar e eliminar funcionam de acordo com as permissões | Como esperado, com o problema P1 (secção 6.4) | Helena cria "Verificação I9" com Paulo como Gestor: mensagem de sucesso e projeto na lista. Pesquisa "crm": só "Migração do CRM". Eliminar "Lançamento do novo site" com confirmação: recusado, "O projeto tem tarefas e não pode ser eliminado. O Gestor pode arquivá-lo." (`DELETE /admin/projetos/1` 409 `PROJETO_COM_TAREFAS`). "Projeto a eliminar" (sem tarefas): confirmação, depois "foi eliminado." e a lista mostra "Nenhum projeto com "a eliminar" no nome.". Paulo edita o nome para "Verificação I9 (editado)" e o detalhe mostra-o. Marta: `PATCH /projetos/1`, `PUT /projetos/1/arquivado`, `POST /admin/projetos` e `DELETE /admin/projetos/4` dão 403. Ana (não é membro do 4): `GET` e `PATCH /projetos/4` dão 404. Pesquisa com `?nome=`: Ana "verifica" devolve `[]`, Ana "SITE" devolve só o projeto 1, Paulo "verifica" devolve o projeto 4 | CA-05.1, CA-05.2, CA-06.1, CA-22.1 a CA-22.3, EC-10, EC-18, EC-40, EC-41, EC-47 |
+| 03 | Persistência de tarefas | A tarefa aparece sem recarregar e mantém-se após reiniciar o backend | Como esperado | Ana cria "Testar formulários (I9)" (Alta) no projeto 1: "Tarefa … criada.", a lista passa a 11 tarefas e o progresso de 6/2/3 sem recarregar. Backend parado (`GET /saude` 502; a página mostra "Ocorreu um erro inesperado. Tente novamente.") e arrancado de novo: a tarefa continua na lista, a sessão continua válida e `GET /projetos/1/tarefas/14` devolve o título, a descrição, `TODO` e `HIGH` | CA-11.1, CA-11.2, CA-11.5, RNF-09 |
+| 04 | Validação de dados | Campos obrigatórios vazios ou só com espaços e valores inválidos são recusados | Como esperado | Interface: título da tarefa só com espaços dá "O título é obrigatório." e a descrição mantém-se; nome do projeto só com espaços dá "O nome do projeto é obrigatório." e a descrição mantém-se. API, como Ana: título `""` e `"   "` dão 422 `TITULO_OBRIGATORIO`; título com 201 caracteres dá 422 `LIMITE_EXCEDIDO`; prioridade `URGENTE`, data `31-12-2026` e estado `FEITA` dão 400 `PEDIDO_INVALIDO`; nome do projeto `""` dá 422 `NOME_OBRIGATORIO`; comentário `"   "` dá 422 `CONTEUDO_OBRIGATORIO`. A lista continua com 11 tarefas: nenhum pedido inválido criou registos | EC-01, EC-02, EC-14, EC-29, EC-44, EC-50 |
+| 05 | Estado e prioridade | A edição atualiza a tarefa, os filtros e as contagens de forma coerente | Como esperado | Ana muda a tarefa 14 para "Em curso" na lista: contagens de 6/2/3 para 5/3/3. Filtro "Em curso": 3 tarefas, incluindo a 14, e o progresso mantém as 11. Filtros "Em curso" e "Alta": as mesmas 3. Mudar a 14 para "Concluída" com o filtro ativo: sai da lista; 5/2/4 e 36,4% (4 de 11). Prioridade editada para "Baixa" no detalhe: `?prioridade=HIGH` devolve 6, 7 e 8; `?prioridade=LOW` devolve 3, 5 e 14; `?estado=DONE&prioridade=LOW` devolve a 14. O painel inicial e `GET /projetos` mostram 5/2/4 | CA-13.2, CA-13.5, CA-15.1, CA-23.1 a CA-23.4 |
+| 06 | Responsáveis | Associar e remover funciona; a mesma associação não fica duplicada | Como esperado | Ana adiciona Marta e depois João à tarefa 14; cada um sai das opções depois de adicionado. API: Marta outra vez dá 409 `RESPONSAVEL_REPETIDO`; Paulo (não é membro), o utilizador 999 (não existe), Helena (Administradora) e Rui (desativado) dão 422 `RESPONSAVEL_INVALIDO`; os responsáveis continuam "João Pires, Marta Lopes". "Remover João Pires": fica só a Marta e o João volta às opções | CA-12.1 a CA-12.4, EC-03, EC-22, EC-30, EC-43 |
+| 07 | Comentários | O conteúdo, o autor autenticado e a data ficam guardados e visíveis | Como esperado | Ana comenta na tarefa 14: "Ana Silva · 02/11/2026, 18:48" e o campo fica limpo. API: pedido com `autorId` ou com `criadoEm` dá 400 `PEDIDO_INVALIDO`; 2001 caracteres dá 422 `LIMITE_EXCEDIDO`. Marta comenta: 201, com o autor "Marta Lopes" e a data do servidor. Marta reabre a tarefa: os 2 comentários por ordem e a responsável Marta. Na base: 2 comentários na tarefa 14 | CA-24.1 a CA-24.3, EC-29, EC-44, EC-45 |
+| 08 | Autorização na API | Outro utilizador não consegue aceder nem alterar recursos sem permissão, mesmo mudando os identificadores | Como esperado | Marta (membro só do projeto 1): `GET /projetos/2`, `/projetos/2/tarefas` e `/projetos/2/tarefas/11`, a tarefa 11 pelo caminho do projeto 1 (`GET`, `PATCH`, `PUT .../estado`), `POST /projetos/2/tarefas/11/comentarios` e `POST /projetos/2/membros` dão 404 `NAO_ENCONTRADO`. No seu projeto: criar tarefa, editar o título da 14, eliminar a 3, adicionar o João como responsável da 3, `DELETE /projetos/1/tarefas/14/responsaveis/2`, mudar o estado da 4 (não é responsável) e `GET /utilizadores` dão 403 `SEM_PERMISSAO`. Paulo (Gestor do projeto 2): a tarefa 14 pelos caminhos `/projetos/1/...` e `/projetos/2/...` (`GET`, `PATCH`, `DELETE`, `POST .../responsaveis`) dá 404. No fim, a tarefa 14 está igual | CA-13.3, CA-14.3, EC-05, EC-12, EC-18, EC-41, EC-46 |
+| 09 | Eliminação e erros | A eliminação respeita as dependências; os erros da API não geram mensagens de sucesso nem perda dos dados do formulário | Como esperado na eliminação e nos formulários, com o problema P1 (secção 6.4) | Tarefa 3 ("Por fazer", com o João como responsável e um comentário): confirmação "…apaga também os responsáveis e os comentários da tarefa.", volta ao projeto sem ela e com o progresso em 4 de 10. Na base, 0 linhas da tarefa 3 em `tarefa`, `atribuicao` e `comentario`, e 0 atribuições ou comentários órfãos. Tarefa 6 ("Em curso"): sem botão "Eliminar"; `DELETE` dá 409 `TAREFA_INICIADA`. Tarefa 5 aberta na interface e mudada para "Em curso" por outro pedido: "Eliminar" e confirmação mostram "Só se podem eliminar tarefas por fazer.", sem sucesso, e a página mantém-se. Comentário na tarefa 5 com o backend parado: "Ocorreu um erro inesperado. Tente novamente." e o texto mantém-se; com o backend de novo ativo, o mesmo botão guarda-o uma só vez. Projeto com tarefas: ver o caso 02 | EC-09 a EC-11, EC-13, EC-40, EC-50, RF-22 |
+
+### 6.3 Testes automáticos
+
+| Comando | Resultado |
+|---|---|
+| `npm test` | 9 ficheiros, **234 testes, todos a passar** |
+| `npm run typecheck -w backend` | Sem erros |
+| `npm run build` | Sem erros (backend e interface) |
+| `npx vitest run --root backend -t "<nomes abaixo>"` | Os 4 testes mínimos passam (230 ignorados pelo filtro) |
+
+Testes mínimos pedidos pela Ficha 3:
+
+| Tipo | Teste | Ficheiro |
+|---|---|---|
+| Regra de validação | `EC-01, EC-02: título vazio ou só com espaços é recusado (regra de validação)` | `backend/testes/tarefas.test.ts` |
+| Autorização | `EC-18: uma tarefa de outro projeto não é encontrada, mesmo mudando o identificador do projeto` | `backend/testes/tarefas.test.ts` |
+| Criação com consulta posterior | `CA-24.1, CA-24.3: o autor vem da sessão e a data do servidor; o comentário fica guardado` e `CA-12.5: os responsáveis mantêm-se ao voltar a ler a tarefa (persistência)` | `backend/testes/responsaveis-comentarios.test.ts` |
+
+A persistência num ficheiro entre ligações está coberta por `bd.test.ts` ("persistência em ficheiro (RNF-09)") e, manualmente, pelo reinício do backend no caso 03.
+
+### 6.4 Problemas encontrados
+
+| # | Problema | Reprodução | Causa | Estado |
+|---|---|---|---|---|
+| P1 | Uma mensagem de sucesso de uma ação anterior fica visível quando uma ação seguinte falha (contra EC-50) | Na administração de projetos, criar um projeto ("… foi criado …") e depois tentar eliminar um projeto com tarefas: o diálogo mostra a recusa e, por cima, continua a mensagem de criação | A mensagem de sucesso só é limpa ao carregar em "Novo projeto" (`AdminProjetos.tsx`, linha 200). O mesmo padrão existe em `AdminContas.tsx` e `TarefasProjeto.tsx` | Por corrigir; correção proposta, à espera de aprovação |
+
+### 6.5 Verificações manuais e limitações
+
+- **Manual:** os casos 01 a 09 acima, na interface e com pedidos diretos à API. **Automático:** secção 6.3 e secção 3.
+- EC-51 (submissão repetida): dois cliques seguidos em "Criar tarefa" criaram uma só tarefa, mas o formulário fecha-se com a resposta, por isso o segundo clique pode não ter chegado a submeter. A proteção está no código (botão desativado enquanto o pedido está em curso, `disabled={aEnviar}` em `FormularioTarefa.tsx` e `ComentariosTarefa.tsx`) e foi revista no I8; não foi possível forçar um pedido lento.
+- Com o backend parado, o encaminhamento do Vite responde 502 e a interface mostra a mensagem genérica "Ocorreu um erro inesperado. Tente novamente." em vez de "Não foi possível contactar o servidor.". Só acontece em desenvolvimento, por causa do encaminhamento.
+- O percurso alterou a base de verificação (projetos 4 e 5, tarefa 14, tarefas 3 e 5, comentários). A base de desenvolvimento `dados/matriz.sqlite` não foi usada.
 - O percurso não mediu o desempenho nem a acessibilidade com leitores de ecrã.
