@@ -4,6 +4,7 @@
 import { useState, type FormEvent } from 'react';
 import { ErroApi } from '../api/cliente';
 import { alterarConta, criarConta, listarContas, type Conta, type Perfil } from '../api/contas';
+import { usarAcao } from '../api/usarAcao';
 import { mensagemDeErro, usarPedido } from '../api/usarPedido';
 import { Confirmacao } from '../componentes/Confirmacao';
 import { Estrutura } from '../componentes/Estrutura';
@@ -152,24 +153,16 @@ function LinhaConta({
 }) {
   const [perfil, setPerfil] = useState<EscolhaPerfil>(escolhaDe(conta.perfis));
   const [aDesativar, setADesativar] = useState(false);
-  const [emCurso, setEmCurso] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
+  const { emCurso, erro, setErro, executar } = usarAcao();
   const mudouPerfil = perfil !== escolhaDe(conta.perfis);
 
-  async function executar(dados: Parameters<typeof alterarConta>[1], mensagem: (c: Conta) => string) {
-    if (emCurso) return; // EC-51
-    setEmCurso(true);
-    setErro(null);
-    aoIniciar();
-    try {
+  function mudarConta(dados: Parameters<typeof alterarConta>[1], mensagem: (c: Conta) => string) {
+    void executar(async () => {
+      aoIniciar();
       const alterada = await alterarConta(conta.id, dados);
       setADesativar(false);
       aoAlterar(mensagem(alterada));
-    } catch (e) {
-      setErro(mensagemDeErro(e));
-    } finally {
-      setEmCurso(false);
-    }
+    });
   }
 
   if (conta.removida) {
@@ -208,7 +201,7 @@ function LinhaConta({
               type="button"
               className="botao-principal"
               disabled={emCurso}
-              onClick={() => executar({ perfis: perfisDe(perfil) }, (c) => `${c.nome} passou a ${NOME_ESCOLHA[escolhaDe(c.perfis)]}.`)}
+              onClick={() => mudarConta({ perfis: perfisDe(perfil) }, (c) => `${c.nome} passou a ${NOME_ESCOLHA[escolhaDe(c.perfis)]}.`)}
             >
               {emCurso ? 'A guardar…' : 'Guardar'}
             </button>
@@ -226,7 +219,7 @@ function LinhaConta({
             type="button"
             className="botao-secundario"
             disabled={emCurso}
-            onClick={() => executar({ ativo: true }, (c) => `A conta de ${c.nome} foi reativada.`)}
+            onClick={() => mudarConta({ ativo: true }, (c) => `A conta de ${c.nome} foi reativada.`)}
           >
             {emCurso ? 'A reativar…' : 'Reativar'}
           </button>
@@ -244,7 +237,7 @@ function LinhaConta({
             textoEmCurso="A desativar…"
             aConfirmar={emCurso}
             erro={erro}
-            aoConfirmar={() => executar({ ativo: false }, (c) => `A conta de ${c.nome} foi desativada.`)}
+            aoConfirmar={() => mudarConta({ ativo: false }, (c) => `A conta de ${c.nome} foi desativada.`)}
             aoCancelar={() => setADesativar(false)}
           />
         )}

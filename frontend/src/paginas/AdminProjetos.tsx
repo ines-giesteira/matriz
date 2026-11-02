@@ -15,7 +15,8 @@ import {
   type ProjetoAdmin,
   type UtilizadorResumo,
 } from '../api/projetos';
-import { mensagemDeErro, usarPedido } from '../api/usarPedido';
+import { usarAcao } from '../api/usarAcao';
+import { usarPedido } from '../api/usarPedido';
 import { Confirmacao } from '../componentes/Confirmacao';
 import { Estrutura } from '../componentes/Estrutura';
 import { dadosDe, FormularioProjeto, valoresDe } from '../componentes/FormularioProjeto';
@@ -61,38 +62,26 @@ function LinhaProjeto({
   const [destino, setDestino] = useState('');
   const [aEliminar, setAEliminar] = useState(false);
   const [verMembros, setVerMembros] = useState(false);
-  const [emCurso, setEmCurso] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
+  const { emCurso, erro, setErro, executar } = usarAcao();
 
-  async function transferir() {
+  function transferir() {
     if (destino === '') {
       setErro('Escolha o novo Gestor.');
       return;
     }
-    setEmCurso(true);
-    setErro(null);
-    try {
+    void executar(async () => {
       const atualizado = await transferirProjeto(projeto.id, Number(destino));
       setATransferir(false);
       aoAlterar(`"${atualizado.nome}" foi transferido para ${atualizado.gestor.nome}.`);
-    } catch (e) {
-      setErro(mensagemDeErro(e));
-    } finally {
-      setEmCurso(false);
-    }
+    });
   }
 
-  async function eliminar() {
-    setEmCurso(true);
-    setErro(null);
-    try {
+  function eliminar() {
+    void executar(async () => {
       await eliminarProjeto(projeto.id);
       setAEliminar(false);
       aoAlterar(`"${projeto.nome}" foi eliminado.`);
-    } catch (e) {
-      setErro(mensagemDeErro(e));
-      setEmCurso(false);
-    }
+    });
   }
 
   return (

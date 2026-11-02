@@ -5,7 +5,8 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { obterProjeto } from '../api/projetos';
 import { editarTarefa, eliminarTarefa, obterTarefa, podeMudarEstado } from '../api/tarefas';
-import { mensagemDeErro, usarPedido } from '../api/usarPedido';
+import { usarAcao } from '../api/usarAcao';
+import { usarPedido } from '../api/usarPedido';
 import { Confirmacao } from '../componentes/Confirmacao';
 import { Estrutura } from '../componentes/Estrutura';
 import { FormularioTarefa } from '../componentes/FormularioTarefa';
@@ -27,8 +28,7 @@ export function Tarefa() {
   const tarefa = usarPedido(() => obterTarefa(projetoId, tarefaId), [projetoId, tarefaId]);
   const [aEditar, setAEditar] = useState(false);
   const [aEliminar, setAEliminar] = useState(false);
-  const [emCurso, setEmCurso] = useState(false);
-  const [erroEliminar, setErroEliminar] = useState<string | null>(null);
+  const { emCurso, erro: erroEliminar, setErro: setErroEliminar, executar } = usarAcao();
 
   const voltar = <Link to={`/projetos/${projetoId}`}>← Voltar ao projeto</Link>;
 
@@ -55,16 +55,11 @@ export function Tarefa() {
   const podeEditar = !p.arquivado && (p.souGestor || eResponsavel);
   const podeEliminar = !p.arquivado && p.souGestor && t.estado === 'TODO'; // A-11
 
-  async function eliminar() {
-    setEmCurso(true);
-    setErroEliminar(null);
-    try {
+  function eliminar() {
+    void executar(async () => {
       await eliminarTarefa(projetoId, tarefaId);
       navegar(`/projetos/${projetoId}`, { replace: true });
-    } catch (e) {
-      setErroEliminar(mensagemDeErro(e));
-      setEmCurso(false);
-    }
+    });
   }
 
   return (

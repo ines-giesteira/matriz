@@ -1,8 +1,7 @@
 // Mudar o estado de uma tarefa (wireframe, elemento 11): só para os responsáveis e o Gestor (RF-11).
 // Qualquer transição é permitida (RF-12). A interface usa a resposta da API para se atualizar.
-import { useState } from 'react';
 import { mudarEstado, type Tarefa } from '../api/tarefas';
-import { mensagemDeErro } from '../api/usarPedido';
+import { usarAcao } from '../api/usarAcao';
 import { ESTADOS, NOME_ESTADO, type Estado } from '../textos';
 
 type Props = {
@@ -14,21 +13,14 @@ type Props = {
 };
 
 export function SeletorEstado({ tarefa, aoMudar, rotulo, aoIniciar }: Props) {
-  const [emCurso, setEmCurso] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
+  const { emCurso, erro, executar } = usarAcao();
 
-  async function alterar(estado: Estado) {
-    if (emCurso || estado === tarefa.estado) return;
-    setEmCurso(true);
-    setErro(null);
-    aoIniciar?.();
-    try {
+  function alterar(estado: Estado) {
+    if (estado === tarefa.estado) return;
+    void executar(async () => {
+      aoIniciar?.();
       aoMudar(await mudarEstado(tarefa.projetoId, tarefa.id, estado));
-    } catch (e) {
-      setErro(mensagemDeErro(e));
-    } finally {
-      setEmCurso(false);
-    }
+    });
   }
 
   return (

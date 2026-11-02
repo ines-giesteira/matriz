@@ -4,7 +4,8 @@
 import { useState, type FormEvent } from 'react';
 import { listarMembros, type Projeto } from '../api/projetos';
 import { adicionarResponsavel, removerResponsavel, type Tarefa } from '../api/tarefas';
-import { mensagemDeErro, usarPedido } from '../api/usarPedido';
+import { usarAcao } from '../api/usarAcao';
+import { usarPedido } from '../api/usarPedido';
 import { AvisoConta } from './AvisoConta';
 
 type Props = { projeto: Projeto; tarefa: Tarefa; utilizadorId: number; aoMudar: (tarefa: Tarefa) => void };
@@ -22,20 +23,11 @@ export function ResponsaveisTarefa({ projeto, tarefa, utilizadorId, aoMudar }: P
       ? membros.estado.dados.filter((m) => m.contaAtiva && !tarefa.responsaveis.some((r) => r.id === m.id))
       : [];
   const [escolhido, setEscolhido] = useState('');
-  const [emCurso, setEmCurso] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
+  const acao = usarAcao();
+  const { emCurso, erro } = acao;
 
-  async function executar(operacao: () => Promise<Tarefa>) {
-    if (emCurso) return; // EC-51
-    setEmCurso(true);
-    setErro(null);
-    try {
-      aoMudar(await operacao());
-    } catch (e) {
-      setErro(mensagemDeErro(e));
-    } finally {
-      setEmCurso(false);
-    }
+  function executar(operacao: () => Promise<Tarefa>) {
+    return acao.executar(async () => aoMudar(await operacao()));
   }
 
   function aoAdicionar(evento: FormEvent) {
