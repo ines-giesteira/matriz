@@ -41,6 +41,8 @@ info:
     - 422: os dados do pedido violam uma regra de negócio, com o campo e o motivo (Q-03).
       Por isso os textos obrigatórios e os limites de tamanho não são declarados no schema do pedido
       (um validador automático responderia 400): são verificados como regras de negócio.
+    - 500: erro inesperado no servidor, com o código `ERRO_INTERNO` e uma mensagem genérica, sem
+      detalhes internos. Não é declarado em cada operação, porque pode acontecer em qualquer uma.
 
     Ordem de verificação (RV-25): 401, 404, 403, 409, 400, 422. As permissões são verificadas antes
     do conteúdo do pedido. Exemplo: um Membro que tenta criar uma tarefa num projeto arquivado

@@ -63,8 +63,11 @@ Instalação, configuração e contas de demonstração: `README.md`, secção "
 | `npm run bd:seed` | Para criar os dados de demonstração numa base vazia. |
 | `npm run dev` | Para experimentar a aplicação. |
 | `npm test` | Antes de cada commit; tem de passar. |
-| `npm run typecheck -w backend` e `npm run build` | Antes de cada commit; não podem ter erros. |
+| `npm run typecheck -w backend` e `npm run build` | Antes de cada commit; não podem ter erros. O `build` também verifica os tipos do frontend (`tsc --noEmit` antes do Vite). |
+| `npm start` | Depois de `npm run build`, para arrancar o backend compilado. |
+| `http://localhost:3000/api/saude` | Para confirmar que o backend e a base de dados respondem. |
 
+- Para verificações manuais que criam ou alteram dados, usar uma base separada, sem tocar na de desenvolvimento: `CAMINHO_BD=dados/verificacao.sqlite` antes de `npm run bd:migrar`, `npm run bd:seed` e `npm run dev -w backend` (ver `docs/verification.md`, secção 6.1).
 - Nunca alterar uma migration já aplicada: as alterações ao esquema vão numa migration nova, com o número seguinte.
 - Não apagar a pasta `dados/` nem a base de dados sem aprovação (secção 3).
 
