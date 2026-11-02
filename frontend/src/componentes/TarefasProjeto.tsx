@@ -28,12 +28,13 @@ export function NomesResponsaveis({ tarefa }: { tarefa: Tarefa }) {
   );
 }
 
-export function TarefasProjeto({ projeto }: { projeto: Projeto }) {
+/** `versao` muda quando algo fora desta secção altera as tarefas (por exemplo, remover um membro, EC-19). */
+export function TarefasProjeto({ projeto, versao = 0 }: { projeto: Projeto; versao?: number }) {
   const { estado: sessao } = useSessao();
   const utilizadorId = sessao.tipo === 'autenticado' ? sessao.utilizador.id : 0;
   const [filtros, setFiltros] = useState<Filtros>({});
-  const progresso = usarPedido(() => obterProgresso(projeto.id), [projeto.id]);
-  const filtradas = usarPedido(() => listarTarefas(projeto.id, filtros), [projeto.id, filtros.estado, filtros.prioridade]);
+  const progresso = usarPedido(() => obterProgresso(projeto.id), [projeto.id, versao]);
+  const filtradas = usarPedido(() => listarTarefas(projeto.id, filtros), [projeto.id, filtros.estado, filtros.prioridade, versao]);
   const [aCriar, setACriar] = useState(false);
   const [sucesso, setSucesso] = useState<string | null>(null);
   const podeCriar = projeto.souGestor && !projeto.arquivado;

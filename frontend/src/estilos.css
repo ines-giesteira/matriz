@@ -377,7 +377,7 @@ button:disabled {
     padding: 4px 0;
   }
 
-  .tabela td::before {
+  .tabela td[data-rotulo]::before {
     content: attr(data-rotulo) ': ';
     font-weight: 600;
   }

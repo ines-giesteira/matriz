@@ -34,9 +34,11 @@ type Propriedades = {
   arquivado: boolean;
   podeGerir: boolean;
   operacoes: OperacoesMembros;
+  /** Avisa quem mostra as tarefas: remover um membro apaga as suas atribuições (EC-19). */
+  aoAlterar?: () => void;
 };
 
-export function GestaoMembros({ chave, projetoId, gestorId, arquivado, podeGerir, operacoes }: Propriedades) {
+export function GestaoMembros({ chave, projetoId, gestorId, arquivado, podeGerir, operacoes, aoAlterar }: Propriedades) {
   const podeAdicionar = podeGerir && !arquivado;
   const membros = usarPedido(operacoes.listar, [chave]);
   const candidatos = usarPedido(() => (podeAdicionar ? operacoes.candidatos() : Promise.resolve([])), [chave, podeAdicionar]);
@@ -54,6 +56,7 @@ export function GestaoMembros({ chave, projetoId, gestorId, arquivado, podeGerir
       await operacao();
       membros.recarregar();
       candidatos.recarregar();
+      aoAlterar?.();
     } catch (e) {
       setErro(mensagemDeErro(e));
     } finally {
@@ -149,7 +152,7 @@ export function GestaoMembros({ chave, projetoId, gestorId, arquivado, podeGerir
 }
 
 /** Membros no detalhe do projeto: qualquer membro vê os nomes (Q-13); só o Gestor gere (RF-06). */
-export function MembrosProjeto({ projeto }: { projeto: Projeto }) {
+export function MembrosProjeto({ projeto, aoAlterar }: { projeto: Projeto; aoAlterar?: () => void }) {
   const id = projeto.id;
   return (
     <GestaoMembros
@@ -158,6 +161,7 @@ export function MembrosProjeto({ projeto }: { projeto: Projeto }) {
       gestorId={projeto.gestor.id}
       arquivado={projeto.arquivado}
       podeGerir={projeto.souGestor}
+      aoAlterar={aoAlterar}
       operacoes={{
         listar: () => listarMembros(id),
         candidatos: () => listarCandidatosMembros(id),

@@ -11,7 +11,8 @@ export const MENSAGEM_SESSAO_TERMINADA = 'A sessão terminou. Entre novamente.';
 type EstadoSessao =
   | { tipo: 'a-carregar' }
   | { tipo: 'autenticado'; utilizador: UtilizadorAutenticado }
-  | { tipo: 'anonimo'; mensagem?: string }
+  /** `saiu`: o utilizador carregou em "Sair"; a próxima entrada começa no painel, não na última página. */
+  | { tipo: 'anonimo'; mensagem?: string; saiu?: boolean }
   | { tipo: 'erro'; mensagem: string };
 
 type ValorSessao = {
@@ -51,7 +52,7 @@ export function FornecedorSessao({ children }: { children: ReactNode }) {
   const sair = useCallback(async () => {
     try {
       await pedido<void>('/sessao', { method: 'DELETE' });
-      setEstado({ tipo: 'anonimo' });
+      setEstado({ tipo: 'anonimo', saiu: true });
     } catch (erro) {
       // Um 401 já foi tratado por aoPerderSessao (a sessão tinha terminado); outros erros sobem.
       if (!(erro instanceof ErroApi && erro.estadoHttp === 401)) throw erro;

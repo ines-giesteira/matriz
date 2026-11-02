@@ -16,6 +16,9 @@ export function Projeto() {
   const [aEditar, setAEditar] = useState(false);
   const [aArquivar, setAArquivar] = useState(false);
   const [erroAcao, setErroAcao] = useState<string | null>(null);
+  // Muda quando os membros mudam: remover um membro apaga as suas atribuições (EC-19), por isso as tarefas
+  // e o progresso voltam a ser pedidos, sem recarregar a página.
+  const [versaoMembros, setVersaoMembros] = useState(0);
 
   if (estado.tipo === 'a-carregar')
     return (
@@ -103,8 +106,8 @@ export function Projeto() {
             <dd className="descricao">{projeto.descricao ?? '—'}</dd>
           </dl>
 
-          <TarefasProjeto projeto={projeto} />
-          <MembrosProjeto projeto={projeto} />
+          <TarefasProjeto projeto={projeto} versao={versaoMembros} />
+          <MembrosProjeto projeto={projeto} aoAlterar={() => setVersaoMembros((v) => v + 1)} />
         </>
       )}
     </Estrutura>
