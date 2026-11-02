@@ -16,6 +16,7 @@ Antes de qualquer tarefa, lê o `README.md` e o ficheiro indicado para o tipo de
 | Endpoints, pedidos, respostas e códigos de erro | `openapi.yaml` |
 | Ecrãs, navegação e elementos da interface | `docs/ui/wireframe.md` |
 | Implementar um incremento: sequência, ficheiros, verificações e estado | `docs/implementation-plan.md` (I0 a I10, propostas P1 a P28) |
+| Verificar, registar resultados ou investigar um problema | `docs/verification.md` (percurso manual, cenários 01 a 09, testes automáticos, problemas e correções) |
 
 ## 2. Regras de trabalho
 
@@ -71,7 +72,12 @@ Instalação, configuração e contas de demonstração: `README.md`, secção "
 - Nunca alterar uma migration já aplicada: as alterações ao esquema vão numa migration nova, com o número seguinte.
 - Não apagar a pasta `dados/` nem a base de dados sem aprovação (secção 3).
 
+## Convenções
+
+- **Código e nomes:** ficheiros, funções, variáveis e componentes com nomes em português, como na documentação. Cada módulo do backend tem rotas, serviço (regras de negócio) e repositório (SQL) (`docs/implementation-plan.md`, secção 3).
+- **Testes:** o nome do teste, ou do seu `describe`, indica o CA, EC ou RV que verifica (`docs/implementation-plan.md`, secção 5).
+- **Commits:** mensagem em português, no formato `tipo: descrição (referência)`. O tipo é `feat`, `fix`, `docs` ou `refactor`; a referência, quando existe, é o incremento, a ficha ou o ID (por exemplo, `fix: limpa a mensagem de sucesso quando começa outra ação (P1, EC-50)`).
+
 ## A completar
 
-- Convenções de código e de nomes.
-- Convenções de commits e de branches.
+- Convenções de branches.

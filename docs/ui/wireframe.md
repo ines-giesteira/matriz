@@ -1,6 +1,6 @@
 # Matriz — Wireframe da página do projeto
 
-Versão 0.2 · 29 de outubro de 2026 · Ficha Prática 02, Exercícios 4 e 5 · a 0.2 aplica a revisão crítica (RV-27, RV-28, Q-12, Q-13).
+Versão 0.3 · 2 de novembro de 2026 · Ficha Prática 02, Exercícios 4 e 5 · a 0.2 aplica a revisão crítica (RV-27, RV-28, Q-12, Q-13); a 0.3 atualiza a validação face ao MVP (secção 4) ao âmbito conciliado com a Ficha 3 e ao contrato completo. A imagem não foi redesenhada (secção 7).
 
 > **Estado: proposta, por aprovar pela dona do produto (R-06).** Wireframe de baixa fidelidade de um ecrã do MVP. Não define cores, tipografia nem tecnologia. Os pressupostos de navegação e de interação estão na secção 5, separados dos requisitos.
 
@@ -59,17 +59,17 @@ Não desenhadas; decorrem da matriz de permissões ([requirements.md](../require
 
 | Verificação | Resultado |
 |---|---|
-| Todos os elementos correspondem a RF do MVP (RF-01 a RF-18, RF-22, RF-30) | ✅ Ver secção 2 |
-| Não aparecem funcionalidades fora do âmbito | ✅ Sem "As minhas tarefas" (RF-19), visão geral do Gestor (RF-20), filtros e ordenação (RF-21), histórico (RF-23), comentários (RF-24), notificações (RF-25), importação (RF-26) nem estados configuráveis (RF-27) |
+| Todos os elementos correspondem a RF do MVP (RF-01 a RF-18, RF-22, RF-24, RF-30 e RF-32 a RF-35) | ✅ Ver secção 2 |
+| Não aparecem funcionalidades fora do âmbito | ✅ Sem "As minhas tarefas" (RF-19), visão geral do Gestor (RF-20), filtros por responsável e data limite nem escolha da ordenação (RF-21), histórico (RF-23), notificações (RF-25), importação (RF-26) nem estados configuráveis (RF-27). Os comentários (RF-24), os filtros por estado e prioridade (RF-34) e o painel inicial (RF-35) entraram no MVP depois do wireframe (Q-15 a Q-17) e estão na secção 7 |
 | Os valores de progresso seguem as regras de cálculo | ✅ 3 de 10 = 30,0%; 1 tarefa em atraso, coerente com D-18, A-08 e CA-19.1 a CA-19.3 |
 | A interface está em português | ✅ RNF-01 |
-| Os dados mostrados correspondem ao contrato da API | ⚠️ Parcial. O progresso corresponde à operação `obterProgressoProjeto` e os campos de cada linha ao schema `Tarefa` do [openapi.yaml](../../openapi.yaml). As operações para listar tarefas, ver o projeto e os membros, atribuir responsável, editar e eliminar ainda não estão documentadas; estão listadas no openapi.yaml (RV-27). |
+| Os dados mostrados correspondem ao contrato da API | ✅ O progresso corresponde à operação `obterProgressoProjeto` e os campos de cada linha ao schema `Tarefa` do [openapi.yaml](../../openapi.yaml). As operações que faltavam na Ficha 2 (listar tarefas, ver o projeto e os membros, atribuir responsável, editar e eliminar; RV-27) foram documentadas na Ficha 3: o contrato tem 35 operações, iguais às rotas do backend |
 | A ordem das listas segue Q-12 | ✅ Por fazer → Em curso → Concluída; dentro de cada estado, por data limite crescente, com as tarefas sem data no fim |
-| A navegação permite chegar ao ecrã a partir da entrada | ✅ Entrada → lista de projetos (CA-01.1) → página do projeto |
+| A navegação permite chegar ao ecrã a partir da entrada | ✅ Entrada → painel inicial (CA-01.1, Q-17) ou lista de projetos → página do projeto |
 
 ## 5. Pressupostos deste wireframe (por aprovar)
 
-- Depois de entrar, o utilizador vê a lista de projetos (CA-01.1), e ao escolher um projeto abre esta página.
+- Depois de entrar, o utilizador vê a lista de projetos, e ao escolher um projeto abre esta página. Substituído pelo painel inicial (CA-01.1, Q-17; secção 7).
 - O progresso e a lista de tarefas ficam na mesma página, para o Gestor ver o ponto de situação sem mudar de ecrã (R-02).
 - O responsável e o estado mudam-se diretamente na lista; "Editar" abre um formulário com os restantes campos.
 - O Administrador tem entradas próprias na navegação para gerir contas, transferir projetos e gerir membros (RF-02, RF-03, RF-30, RV-32). Não aparecem aqui porque o ecrã é visto pelo Gestor.

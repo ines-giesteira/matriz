@@ -1,6 +1,6 @@
 # Matriz — Restrições, pressupostos e pendentes
 
-Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou Q-12, Q-13 e a revisão crítica do Architecture Pack (RV-24 a RV-30); a 1.4 acrescenta a conciliação com a Ficha 3 (Q-14 a Q-22); a 1.5 (1 de novembro de 2026) acrescenta RV-31, que altera R-07 e D-09, RV-32, sobre o papel do Administrador, RV-33, sobre a remoção de contas desativadas, e RV-34, com os detalhes das duas.
+Versão 1.6 · 2 de novembro de 2026 · a 1.3 acrescentou Q-12, Q-13 e a revisão crítica do Architecture Pack (RV-24 a RV-30); a 1.4 acrescenta a conciliação com a Ficha 3 (Q-14 a Q-22); a 1.5 (1 de novembro de 2026) acrescenta RV-31, que altera R-07 e D-09, RV-32, sobre o papel do Administrador, RV-33, sobre a remoção de contas desativadas, e RV-34, com os detalhes das duas; a 1.6 (2 de novembro de 2026) corrige incoerências: o estado da implementação, as regras das palavras-passe e da sessão (já aprovadas em P2 e P3) e o título que agrupava RV-31 a RV-34 com a revisão do Architecture Pack.
 
 > **Origem da informação.** O cliente é fictício. A única informação confirmada é a frase original do cliente (C-00). Todos os outros pontos são pressupostos da dona do produto: estão aprovados para orientar o desenvolvimento, mas **não são requisitos confirmados pelo cliente**.
 >
@@ -12,7 +12,7 @@ Versão 1.4 · 29 de outubro de 2026 · a 1.3 acrescentou Q-12, Q-13 e a revisã
 ## 1. Restrições conhecidas
 
 - **Cliente fictício.** Só a frase original (C-00) está confirmada. A dona do produto assume o papel de cliente e é a única responsável pela aprovação (R-06).
-- **Implementação a começar.** A especificação e a arquitetura estão revistas; o plano de implementação está em [implementation-plan.md](implementation-plan.md).
+- **Implementação concluída.** O MVP foi implementado nos incrementos I0 a I10 de [implementation-plan.md](implementation-plan.md) e verificado em [verification.md](verification.md); a versão entregue tem a tag `entrega-ficha3`.
 - **Stack.** Node.js e TypeScript, Express, React e SQLite (Q-14), sobre a arquitetura de monólito modular ([architecture.md](architecture.md)). Os requisitos e as User Stories continuam sem referir tecnologias.
 - **Prazo.** O piloto tem um prazo de 3 meses (R-05).
 - **IDs estáveis.** Os IDs (C, RF, RNF, US, CA, EC, R, G, D, A, Q, RV) não são renumerados. IDs novos são acrescentados no fim de cada série.
@@ -187,6 +187,13 @@ Resultado da revisão da coerência entre requisitos, arquitetura, dados, API e 
 | RV-28 | O wireframe não mostrava como abrir uma tarefa para ler a descrição (CA-17.2). | O título da tarefa é um link para o detalhe. | docs/ui/ | Decidido |
 | RV-29 | Não estava definido se um membro vê os outros membros do projeto. | Decidida em Q-13. | Q-13 | Decidido |
 | RV-30 | O diagrama ER não dizia que a unicidade do email ignora maiúsculas e minúsculas (Q-10). | Acrescentado ao comentário do atributo. | database.md, secção 3 | Decidido |
+
+### Revisões da dona do produto durante a implementação
+
+Decisões de 1 de novembro de 2026, tomadas durante a implementação (Ficha 3), depois da revisão do Architecture Pack. Continuam a série RV.
+
+| ID | Problema | Decisão | Onde se aplica | Estado |
+|---|---|---|---|---|
 | RV-31 | R-07 deixava qualquer pessoa estar em vários projetos ativos. | Decisão da dona do produto (01/11/2026): quem não tem o perfil Gestor só é membro de um projeto ativo de cada vez; os projetos arquivados não contam. Quem tem o perfil Gestor não tem limite. Para mudar de projeto, o Gestor do projeto atual remove a pessoa e o Gestor do outro projeto adiciona-a. A lista de candidatos só mostra, de quem não tem o perfil Gestor, quem não está em nenhum projeto ativo. Desarquivar é recusado se um membro sem o perfil Gestor estiver noutro projeto ativo; para o permitir, abre-se uma exceção a D-09: o Gestor pode remover membros de um projeto arquivado. | R-07, D-09, RF-06, EC-52, EC-53, P22 | Decidido (alterado) |
 | RV-32 | Q-06 deixava o Administrador ser membro de projetos, misturando a administração da plataforma com o trabalho nos projetos. | Decisão da dona do produto (01/11/2026): o Administrador só administra a plataforma e nunca é membro de um projeto; não tem o perfil Membro nem o perfil Gestor (os dois não se acumulam, a aplicar no I3). Além das contas, dos perfis, da criação, eliminação e transferência de projetos, adiciona e remove membros de qualquer projeto, com as regras do Gestor: só contas ativas (Q-11), um só projeto ativo para quem não tem o perfil Gestor (RV-31), o Gestor só se substitui por transferência (Q-05, RF-30) e, num projeto arquivado, remove mas não adiciona (D-09). Para isso vê os membros de cada projeto com nome e email; as tarefas, os comentários e o progresso continuam fora do seu acesso. | Q-06, RV-05, RV-02, D-04, D-05, RF-06, EC-30, EC-54, P23, P24 | Decidido (alterado) |
 | RV-33 | As contas desativadas ficavam guardadas para sempre (RV-04). | Decisão da dona do produto (01/11/2026): um ano depois da desativação, a conta é anonimizada automaticamente: o nome e o email são apagados, e os comentários e as atribuições mantêm-se com "Conta removida". A implementar no I3, com a data de desativação guardada numa migration nova. | D-02, RF-03, RNF-07, RV-04 | Decidido (alterado) |
@@ -202,6 +209,7 @@ Resultado da revisão da coerência entre requisitos, arquitetura, dados, API e 
 - O Administrador não pode atribuir a si próprio o perfil Gestor nem ser destino de uma transferência (RV-01).
 - As ações permitidas a cada perfil estão na matriz de permissões de [requirements.md](requirements.md#3-matriz-de-permissões).
 - Tem de existir sempre pelo menos 1 Administrador ativo (A-18).
+- **Palavras-passe e sessão:** a palavra-passe tem pelo menos 8 caracteres e, no MVP, só o Administrador a define, ao criar a conta (P3); a sessão expira após 8 horas sem atividade (P2). Ver [implementation-plan.md](implementation-plan.md#2-propostas-técnicas-aprovadas).
 - **Dados pessoais conhecidos:** nome e email dos utilizadores. O email é único (RV-18) e fica visível aos Gestores ao adicionarem membros (A-21) e ao Administrador ao gerir membros (RV-32). Um ano depois da desativação, o nome e o email são apagados (RV-33).
 - **Autenticação (Q-22):** email e palavra-passe; a palavra-passe é guardada só como hash, nunca em claro. A sessão fica no servidor e o cookie é httpOnly. A identidade do utilizador, o autor dos comentários e o Gestor indicado são sempre validados no backend, nunca aceites como prova enviada pelo cliente.
 - **Configuração:** as credenciais e os segredos ficam em variáveis de ambiente, fora do repositório; o repositório tem só um ficheiro de exemplo com valores fictícios. As contas de demonstração usam dados fictícios.
@@ -211,7 +219,6 @@ Resultado da revisão da coerência entre requisitos, arquitetura, dados, API e 
 - Os Gestores veem o nome e o email de todos os utilizadores ativos da empresa (RV-14).
 
 **Por definir:**
-- Regras para as palavras-passe (comprimento, mudança pelo próprio utilizador) e duração da sessão: aprovadas em P2 e P3, [implementation-plan.md](implementation-plan.md#2-propostas-técnicas-aprovadas).
 - Requisitos legais de proteção de dados pessoais aplicáveis. O prazo de retenção das contas desativadas e a anonimização estão decididos em RV-33; falta confirmar que cumprem os requisitos legais (RV-04).
 - Registo de acessos ou de auditoria: é necessário?
 - Cópias de segurança.
