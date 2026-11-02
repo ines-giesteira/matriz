@@ -170,7 +170,7 @@ export function TarefasProjeto({ projeto, versao = 0 }: { projeto: Projeto; vers
                   </td>
                   <td data-rotulo="Estado">
                     {!projeto.arquivado && podeMudarEstado(t, utilizadorId, projeto.souGestor) ? (
-                      <SeletorEstado tarefa={t} aoMudar={atualizar} />
+                      <SeletorEstado tarefa={t} aoMudar={atualizar} aoIniciar={() => setSucesso(null)} />
                     ) : (
                       NOME_ESTADO[t.estado]
                     )}

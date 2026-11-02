@@ -138,7 +138,18 @@ function FormularioConta({ aoCriar, aoCancelar }: { aoCriar: (conta: Conta) => v
 
 // ---------------------------------------------------------------- Linha de uma conta
 
-function LinhaConta({ conta, eu, aoAlterar }: { conta: Conta; eu: boolean; aoAlterar: (mensagem: string) => void }) {
+function LinhaConta({
+  conta,
+  eu,
+  aoAlterar,
+  aoIniciar,
+}: {
+  conta: Conta;
+  eu: boolean;
+  aoAlterar: (mensagem: string) => void;
+  /** Chamado quando começa uma ação na linha, para a página limpar a mensagem de sucesso anterior (EC-50). */
+  aoIniciar: () => void;
+}) {
   const [perfil, setPerfil] = useState<EscolhaPerfil>(escolhaDe(conta.perfis));
   const [aDesativar, setADesativar] = useState(false);
   const [emCurso, setEmCurso] = useState(false);
@@ -149,6 +160,7 @@ function LinhaConta({ conta, eu, aoAlterar }: { conta: Conta; eu: boolean; aoAlt
     if (emCurso) return; // EC-51
     setEmCurso(true);
     setErro(null);
+    aoIniciar();
     try {
       const alterada = await alterarConta(conta.id, dados);
       setADesativar(false);
@@ -206,7 +218,7 @@ function LinhaConta({ conta, eu, aoAlterar }: { conta: Conta; eu: boolean; aoAlt
       <td data-rotulo="Estado">{conta.ativo ? 'Ativa' : <span className="etiqueta">Desativada</span>}</td>
       <td data-rotulo="Ações">
         {conta.ativo ? (
-          <button type="button" className="botao-perigo" disabled={emCurso} onClick={() => (setADesativar(true), setErro(null))}>
+          <button type="button" className="botao-perigo" disabled={emCurso} onClick={() => (setADesativar(true), setErro(null), aoIniciar())}>
             Desativar
           </button>
         ) : (
@@ -309,6 +321,7 @@ export function AdminContas() {
                 conta={c}
                 eu={c.id === utilizadorId}
                 aoAlterar={aposAlterar}
+                aoIniciar={() => setSucesso(null)}
               />
             ))}
           </tbody>

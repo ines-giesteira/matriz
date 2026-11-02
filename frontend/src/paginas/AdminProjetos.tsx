@@ -49,10 +49,13 @@ function LinhaProjeto({
   projeto,
   gestores,
   aoAlterar,
+  aoIniciar,
 }: {
   projeto: ProjetoAdmin;
   gestores: UtilizadorResumo[];
   aoAlterar: (mensagem: string) => void;
+  /** Chamado quando começa uma ação na linha, para a página limpar a mensagem de sucesso anterior (EC-50). */
+  aoIniciar: () => void;
 }) {
   const [aTransferir, setATransferir] = useState(false);
   const [destino, setDestino] = useState('');
@@ -123,16 +126,16 @@ function LinhaProjeto({
               <button
                 type="button"
                 className="botao-secundario"
-                onClick={() => setVerMembros((v) => !v)}
+                onClick={() => (setVerMembros((v) => !v), aoIniciar())}
                 aria-expanded={verMembros}
                 aria-controls={`membros-${projeto.id}`}
               >
                 {verMembros ? 'Fechar membros' : 'Membros'}
               </button>
-              <button type="button" className="botao-secundario" onClick={() => (setATransferir(true), setErro(null))}>
+              <button type="button" className="botao-secundario" onClick={() => (setATransferir(true), setErro(null), aoIniciar())}>
                 Transferir
               </button>
-              <button type="button" className="botao-perigo" onClick={() => (setAEliminar(true), setErro(null))}>
+              <button type="button" className="botao-perigo" onClick={() => (setAEliminar(true), setErro(null), aoIniciar())}>
                 Eliminar
               </button>
             </div>
@@ -257,7 +260,7 @@ export function AdminProjetos() {
           </thead>
           <tbody>
             {estado.dados.map((p) => (
-              <LinhaProjeto key={p.id} projeto={p} gestores={gestores} aoAlterar={aposAlterar} />
+              <LinhaProjeto key={p.id} projeto={p} gestores={gestores} aoAlterar={aposAlterar} aoIniciar={() => setSucesso(null)} />
             ))}
           </tbody>
         </table>

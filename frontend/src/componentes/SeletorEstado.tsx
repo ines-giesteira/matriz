@@ -5,9 +5,15 @@ import { mudarEstado, type Tarefa } from '../api/tarefas';
 import { mensagemDeErro } from '../api/usarPedido';
 import { ESTADOS, NOME_ESTADO, type Estado } from '../textos';
 
-type Props = { tarefa: Tarefa; aoMudar: (tarefa: Tarefa) => void; rotulo?: string };
+type Props = {
+  tarefa: Tarefa;
+  aoMudar: (tarefa: Tarefa) => void;
+  rotulo?: string;
+  /** Chamado quando começa a mudança, para quem usa o seletor limpar uma mensagem de sucesso anterior (EC-50). */
+  aoIniciar?: () => void;
+};
 
-export function SeletorEstado({ tarefa, aoMudar, rotulo }: Props) {
+export function SeletorEstado({ tarefa, aoMudar, rotulo, aoIniciar }: Props) {
   const [emCurso, setEmCurso] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
@@ -15,6 +21,7 @@ export function SeletorEstado({ tarefa, aoMudar, rotulo }: Props) {
     if (emCurso || estado === tarefa.estado) return;
     setEmCurso(true);
     setErro(null);
+    aoIniciar?.();
     try {
       aoMudar(await mudarEstado(tarefa.projetoId, tarefa.id, estado));
     } catch (e) {
