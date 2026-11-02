@@ -97,9 +97,9 @@ Criadas pelo seed; todos os dados são fictícios. A palavra-passe de todas é o
 | Paulo Reis | `paulo.reis@matriz.test` | Gestor | Gere "Migração do CRM". |
 | Marta Lopes | `marta.lopes@matriz.test` | Membro | Está em "Lançamento do novo site" e em "Relatório anual 2025" (arquivado). |
 | João Pires | `joao.pires@matriz.test` | Membro | Está em "Lançamento do novo site". |
+| Rui Costa | `rui.costa@matriz.test` | Membro | Conta desativada: não consegue entrar. |
 
 Quem não tem o perfil Gestor só pode ser membro de um projeto ativo de cada vez; os projetos arquivados não contam (RV-31).
-| Rui Costa | `rui.costa@matriz.test` | Membro | Conta desativada: não consegue entrar. |
 
 O projeto "Lançamento do novo site" tem as 10 tarefas do CA-18.1 e do [wireframe](docs/ui/wireframe.md).
 
