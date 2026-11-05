@@ -47,7 +47,7 @@ const filtros = z.strictObject({ estado: estado.optional(), prioridade: priorida
 // ---------------------------------------------------------------- Regras de negócio (422)
 
 /** Título obrigatório (só espaços conta como vazio) e limites de tamanho (Q-01, A-20, EC-01, EC-02, EC-29). */
-function validarDados(dados: DadosTarefa): void {
+export function validarDados(dados: DadosTarefa): void {
   if (dados.titulo.trim() === '') {
     throw new ErroHttp(422, 'TITULO_OBRIGATORIO', 'O título é obrigatório.', 'titulo');
   }
