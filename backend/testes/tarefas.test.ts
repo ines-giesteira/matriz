@@ -442,6 +442,25 @@ describe('DELETE /projetos/{id}/tarefas/{tarefaId}', () => {
   });
 });
 
+// ---------------------------------------------------------------- Ordem de verificação (RV-25)
+
+describe('ordem de verificação: a permissão antes do estado do projeto (RV-25)', () => {
+  it('EC-16, EC-05, EC-12: num projeto arquivado, um Membro recebe 403 e o Gestor 409', async () => {
+    const total = contar('SELECT COUNT(*) AS n FROM tarefa WHERE projeto_id = ?', RELATORIO());
+    const marta = await como('marta');
+    const criar = await marta.post(url(RELATORIO())).send({ titulo: 'X' });
+    expect(criar.status).toBe(403);
+    expect(criar.body.codigo).toBe('SEM_PERMISSAO');
+    const eliminar = await marta.delete(url(RELATORIO(), tarefa('Compilar indicadores')));
+    expect(eliminar.status).toBe(403);
+    expect(eliminar.body.codigo).toBe('SEM_PERMISSAO');
+    const gestor = await (await como('ana')).post(url(RELATORIO())).send({ titulo: 'X' });
+    expect(gestor.status).toBe(409);
+    expect(gestor.body.codigo).toBe('PROJETO_ARQUIVADO');
+    expect(contar('SELECT COUNT(*) AS n FROM tarefa WHERE projeto_id = ?', RELATORIO())).toBe(total);
+  });
+});
+
 // ---------------------------------------------------------------- Administrador (RV-32)
 
 describe('o Administrador nunca é membro (RV-32)', () => {
