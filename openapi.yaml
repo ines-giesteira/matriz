@@ -736,6 +736,7 @@ paths:
         US-08, RF-07, A-05, A-13. Idempotente.
         Desarquivar é recusado (409 `MEMBRO_NOUTRO_PROJETO`, P22) se algum membro sem o perfil Gestor estiver noutro
         projeto ativo; a mensagem indica quem (RV-31, EC-53). O Gestor pode remover esse membro do projeto arquivado e voltar a tentar.
+        As contas anonimizadas não contam; as só desativadas contam, porque podem ser reativadas (Q-23, EC-59).
       requestBody:
         required: true
         content:

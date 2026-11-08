@@ -161,7 +161,8 @@ export function editar(bd: Bd, utilizador: UtilizadorAutenticado, id: number, co
 
 /**
  * Arquivar ou desarquivar: só o Gestor; idempotente; as tarefas mantêm o estado (RF-07, A-05, A-13).
- * Desarquivar é recusado se um membro sem o perfil Gestor já estiver noutro projeto ativo (RV-31, EC-53, P22).
+ * Desarquivar é recusado se um membro sem o perfil Gestor já estiver noutro projeto ativo (RV-31, EC-53, P22);
+ * as contas anonimizadas não contam (Q-23, EC-59).
  */
 export function definirArquivo(bd: Bd, utilizador: UtilizadorAutenticado, id: number, corpo: unknown): Projeto {
   const projeto = projetoDoMembro(bd, utilizador, id);

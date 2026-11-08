@@ -197,12 +197,15 @@ export function limitadoANoutroProjeto(bd: Bd, utilizadorId: number, projetoId: 
   );
 }
 
-/** Membros deste projeto sem o perfil Gestor que já são membros de outro projeto ativo (RV-31, EC-53), por nome. */
+/**
+ * Membros deste projeto sem o perfil Gestor que já são membros de outro projeto ativo (RV-31, EC-53), por nome.
+ * As contas anonimizadas não contam (Q-23, EC-59): já não podem ser reativadas. As só desativadas contam.
+ */
 export function membrosNoutroProjetoAtivo(bd: Bd, projetoId: number): string[] {
   return bd
     .prepare(
       `SELECT u.nome FROM membro_projeto m JOIN utilizador u ON u.id = m.utilizador_id
-       WHERE m.projeto_id = ? AND NOT ${TEM_PERFIL_GESTOR} AND ${NOUTRO_PROJETO_ATIVO}`,
+       WHERE m.projeto_id = ? AND u.anonimizado_em IS NULL AND NOT ${TEM_PERFIL_GESTOR} AND ${NOUTRO_PROJETO_ATIVO}`,
     )
     .all(projetoId, projetoId)
     .map((l) => String(l.nome))

@@ -1,6 +1,6 @@
 # Matriz — Requisitos
 
-Versão 1.6 · 8 de novembro de 2026 · consolida o "Âmbito funcional e MVP" v0.1, o "Backlog inicial do MVP" v0.1 (versões de trabalho anteriores, não incluídas no repositório), as decisões da dona do produto, as revisões críticas (RV-xx) e as decisões Q-09 a Q-22. A versão 1.3 acrescentou a ordem das listas (Q-12) e a visibilidade dos membros (Q-13); a 1.4 aplica a conciliação com a Ficha 3 (Q-15 a Q-22): comentários, pesquisa, filtros, painel inicial, criação e eliminação de projetos pelo Administrador, vários responsáveis e autenticação; a 1.5 (1 de novembro de 2026) aplica RV-31 (um só projeto ativo para quem não tem o perfil Gestor e remoção de membros num projeto arquivado), RV-32 (o Administrador nunca é membro e gere os membros de qualquer projeto) e RV-33 (remoção das contas desativadas ao fim de um ano); a 1.6 (8 de novembro de 2026) aplica RV-35 (limite de tentativas de entrada, RF-01) e RV-36 a RV-40 (regras das contas, RF-02).
+Versão 1.7 · 8 de novembro de 2026 · consolida o "Âmbito funcional e MVP" v0.1, o "Backlog inicial do MVP" v0.1 (versões de trabalho anteriores, não incluídas no repositório), as decisões da dona do produto, as revisões críticas (RV-xx) e as decisões Q-09 a Q-23. A versão 1.3 acrescentou a ordem das listas (Q-12) e a visibilidade dos membros (Q-13); a 1.4 aplica a conciliação com a Ficha 3 (Q-15 a Q-22): comentários, pesquisa, filtros, painel inicial, criação e eliminação de projetos pelo Administrador, vários responsáveis e autenticação; a 1.5 (1 de novembro de 2026) aplica RV-31 (um só projeto ativo para quem não tem o perfil Gestor e remoção de membros num projeto arquivado), RV-32 (o Administrador nunca é membro e gere os membros de qualquer projeto) e RV-33 (remoção das contas desativadas ao fim de um ano); a 1.6 (8 de novembro de 2026) aplica RV-35 (limite de tentativas de entrada, RF-01) e RV-36 a RV-40 (regras das contas, RF-02); a 1.7 (8 de novembro de 2026) aplica Q-23 (as contas anonimizadas não contam para a regra de um só projeto ativo, RF-03 e RF-06).
 
 > **Origem da informação.** O cliente é fictício. A única informação confirmada é a frase original do cliente:
 >
@@ -124,7 +124,7 @@ Os estados e as prioridades aparecem na interface em português. Na API e na bas
 - Um utilizador desativado não pode ser escolhido como responsável (A-15).
 - Para desativar um Gestor, o Administrador tem de transferir primeiro todos os projetos desse Gestor, ativos e arquivados (A-16, Q-07).
 - Tem de existir sempre pelo menos 1 Administrador ativo (A-18).
-- Reativar uma conta antes de passar um ano cancela a anonimização; numa nova desativação, o prazo recomeça. Uma conta anonimizada continua membro dos seus projetos, aparece como "Conta removida" e não pode ser reativada (RV-34, EC-56).
+- Reativar uma conta antes de passar um ano cancela a anonimização; numa nova desativação, o prazo recomeça. Uma conta anonimizada continua membro dos seus projetos, aparece como "Conta removida" e não pode ser reativada (RV-34, EC-56). Não conta para a regra de um só projeto ativo de RF-06 (Q-23, EC-59).
 
 ### Projetos
 
@@ -146,6 +146,7 @@ Os estados e as prioridades aparecem na interface em português. Na API e na bas
 - Quem tem o perfil Gestor pode estar em vários projetos. Quem não tem o perfil Gestor só é membro de um projeto ativo de cada vez; os projetos arquivados não contam (R-07, RV-31, EC-52). Para mudar de projeto, o Gestor do projeto atual remove a pessoa e o Gestor do outro projeto adiciona-a.
 - Num projeto arquivado, o Gestor pode remover membros, mas não adicionar (D-09, RV-31).
 - Desarquivar um projeto é recusado se algum dos seus membros sem o perfil Gestor estiver noutro projeto ativo (RV-31, EC-53).
+- As contas anonimizadas não contam para estas regras: continuam membros dos seus projetos só para o histórico e não podem ser reativadas. As contas só desativadas contam, porque podem ser reativadas (Q-23, EC-59).
 - O Gestor do projeto não pode ser removido dos membros; para deixar o projeto, este tem de ser transferido (Q-05).
 - Um Administrador nunca é membro de um projeto: não aparece na lista para adicionar e a adição é recusada (Q-06, RV-32, EC-30).
 - Qualquer membro do projeto vê os membros desse projeto, identificados só pelo nome, sem email (Q-13).

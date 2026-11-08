@@ -7,8 +7,10 @@ import { criarApp } from '../src/app.js';
 import { abrirBd, type Bd } from '../src/bd/ligacao.js';
 import { aplicarMigrations } from '../src/bd/migrar.js';
 import { semear } from '../src/bd/seed.js';
+import { anonimizarContasExpiradas } from '../src/modulos/contas/anonimizacao.js';
 
 const PALAVRA_PASSE = 'palavra-passe-de-teste';
+const DIA_MS = 24 * 60 * 60 * 1000;
 
 let bd: Bd;
 let app: ReturnType<typeof criarApp>;
@@ -289,6 +291,42 @@ describe('RV-31: quem não tem o perfil Gestor só é membro de um projeto ativo
     const ana = await como('ana');
     expect((await ana.put(`/api/projetos/${RELATORIO()}/arquivado`).send({ arquivado: true })).status).toBe(200);
     expect((await ana.put(`/api/projetos/${SITE()}/arquivado`).send({ arquivado: true })).status).toBe(200);
+  });
+
+  it('Q-23, EC-59: uma conta anonimizada em dois projetos ativos não impede o desarquivo', async () => {
+    // A Sofia tem o perfil Gestor e está em dois projetos ativos, sem gerir nenhum.
+    const helena = await como('helena');
+    const sofia = (
+      await helena
+        .post('/api/utilizadores')
+        .send({ nome: 'Sofia Ramos', email: 'sofia.ramos@matriz.test', palavraPasse: 'inicial-1234', perfis: ['GESTOR'] })
+    ).body;
+    expect((await helena.post(`/api/admin/projetos/${SITE()}/membros`).send({ utilizadorId: sofia.id })).status).toBe(201);
+    expect((await helena.post(`/api/admin/projetos/${CRM()}/membros`).send({ utilizadorId: sofia.id })).status).toBe(201);
+    expect((await helena.patch(`/api/utilizadores/${sofia.id}`).send({ ativo: false })).status).toBe(200);
+
+    const paulo = await como('paulo');
+    expect((await paulo.put(`/api/projetos/${CRM()}/arquivado`).send({ arquivado: true })).status).toBe(200);
+
+    // Um ano depois, é anonimizada: perde o perfil Gestor (P27) e continua membro dos dois projetos (RV-34).
+    anonimizarContasExpiradas(bd, new Date(Date.now() + 366 * DIA_MS));
+    expect(bd.prepare('SELECT anonimizado_em FROM utilizador WHERE id = ?').get(sofia.id)?.anonimizado_em).not.toBeNull();
+    const membros = (await paulo.get(`/api/projetos/${CRM()}/membros`)).body;
+    expect(membros).toContainEqual({ id: sofia.id, nome: 'Conta removida', contaAtiva: false });
+
+    // Sem o perfil Gestor e noutro projeto ativo, mas anonimizada: não conta (Q-23).
+    const aceite = await paulo.put(`/api/projetos/${CRM()}/arquivado`).send({ arquivado: false });
+    expect(aceite.status).toBe(200);
+    expect(aceite.body.arquivado).toBe(false);
+  });
+
+  it('Q-23, EC-59: uma conta só desativada, sem o perfil Gestor, continua a impedir o desarquivo', async () => {
+    // A Marta está no relatório arquivado e no "Lançamento do novo site", ativo (seed).
+    const helena = await como('helena');
+    expect((await helena.patch(`/api/utilizadores/${id('marta')}`).send({ ativo: false })).status).toBe(200);
+    const recusa = await (await como('ana')).put(`/api/projetos/${RELATORIO()}/arquivado`).send({ arquivado: false });
+    expect(recusa.status).toBe(409);
+    expect(recusa.body.codigo).toBe('MEMBRO_NOUTRO_PROJETO');
   });
 });
 
