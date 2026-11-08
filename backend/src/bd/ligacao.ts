@@ -4,6 +4,9 @@ import { DatabaseSync } from 'node:sqlite';
 
 export type Bd = DatabaseSync;
 
+/** Minúsculas independentes da língua do sistema, também nas letras acentuadas (RV-39). */
+export const paraMinusculas = (texto: string): string => texto.toLowerCase();
+
 /**
  * Abre a base de dados SQLite e ativa as chaves estrangeiras (docs/database.md, secção 5).
  * Usa ':memory:' para uma base temporária (testes).
@@ -13,6 +16,8 @@ export function abrirBd(caminho: string): Bd {
     mkdirSync(path.dirname(caminho), { recursive: true });
   }
   const bd = new DatabaseSync(caminho);
+  // O lower() do SQLite só converte as letras A a Z; esta função converte também as acentuadas (RV-39, P32).
+  bd.function('minusculas', { deterministic: true }, (texto) => (typeof texto === 'string' ? paraMinusculas(texto) : texto));
   bd.exec('PRAGMA foreign_keys = ON;');
   bd.exec('PRAGMA busy_timeout = 5000;');
   if (caminho !== ':memory:') {

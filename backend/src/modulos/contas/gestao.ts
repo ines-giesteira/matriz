@@ -4,7 +4,7 @@
 // chegam pela interface `ConsultaProjetos`, que o módulo de projetos implementa e app.ts liga.
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import { emTransacao, type Bd } from '../../bd/ligacao.js';
+import { emTransacao, paraMinusculas, type Bd } from '../../bd/ligacao.js';
 import { ErroHttp, naoEncontrado, validarFormato } from '../../http/erros.js';
 import * as repo from './repositorio.js';
 import type { LinhaConta, Perfil } from './repositorio.js';
@@ -15,9 +15,13 @@ export type ConsultaProjetos = {
   eGestorDeAlgumProjeto: (utilizadorId: number) => boolean;
   /** É membro de algum projeto, ativo ou arquivado (RV-32, RV-34). */
   eMembroDeAlgumProjeto: (utilizadorId: number) => boolean;
+  /** Número de projetos ativos de que é membro (RV-31, RV-36). */
+  contarProjetosAtivosComoMembro: (utilizadorId: number) => number;
 };
 
 export const PALAVRA_PASSE_MINIMO = 8; // P3
+export const PALAVRA_PASSE_MAXIMO_BYTES = 72; // RV-38: o bcrypt só usa os primeiros 72 bytes
+const DOMINIO_RESERVADO = /\.invalid$/i; // RV-40: usado nos emails das contas anonimizadas (P27)
 
 // ---------------------------------------------------------------- Formato dos pedidos (400)
 
@@ -69,16 +73,30 @@ export function listar(bd: Bd): LinhaConta[] {
 export function criar(bd: Bd, corpo: unknown): LinhaConta {
   const pedido = validarFormato(novaConta, corpo);
   const nome = pedido.nome.trim(); // P26
-  const email = pedido.email.trim();
+  const email = paraMinusculas(pedido.email.trim()); // P26, RV-39
   if (nome === '') throw new ErroHttp(422, 'NOME_OBRIGATORIO', 'O nome é obrigatório.', 'nome');
   if (email === '') throw new ErroHttp(422, 'EMAIL_OBRIGATORIO', 'O email é obrigatório.', 'email');
   if (!EMAIL_VALIDO.test(email)) throw new ErroHttp(422, 'EMAIL_INVALIDO', 'O email não é válido.', 'email');
+  if (DOMINIO_RESERVADO.test(email)) {
+    // RV-40, P31: o domínio .invalid fica para as contas anonimizadas
+    throw new ErroHttp(422, 'EMAIL_RESERVADO', 'Este email está reservado e não pode ser usado.', 'email');
+  }
   if ([...pedido.palavraPasse].length < PALAVRA_PASSE_MINIMO) {
     throw new ErroHttp(
       422,
       'PALAVRA_PASSE_CURTA',
       `A palavra-passe tem de ter pelo menos ${PALAVRA_PASSE_MINIMO} caracteres.`,
       'palavraPasse',
+    );
+  }
+  if (Buffer.byteLength(pedido.palavraPasse, 'utf8') > PALAVRA_PASSE_MAXIMO_BYTES) {
+    // RV-38, P31: o bcrypt ignoraria o resto
+    throw new ErroHttp(
+      422,
+      'PALAVRA_PASSE_LONGA',
+      `A palavra-passe não pode ter mais de ${PALAVRA_PASSE_MAXIMO_BYTES} bytes (as letras acentuadas contam 2).`,
+      'palavraPasse',
+      PALAVRA_PASSE_MAXIMO_BYTES,
     );
   }
   exigirPerfisCompativeis(pedido.perfis);
@@ -92,6 +110,17 @@ export function criar(bd: Bd, corpo: unknown): LinhaConta {
     return novoId;
   });
   return repo.lerLinhaConta(bd, id)!;
+}
+
+/**
+ * Criar a primeira conta, com o perfil Administrador, numa Matriz sem contas (RV-11, RV-37, CA-02.2, P30).
+ * Aplica as mesmas regras de `criar`; usada pelo comando `npm run bd:primeiro-admin`.
+ */
+export function criarPrimeiraConta(bd: Bd, dados: { nome: string; email: string; palavraPasse: string }): LinhaConta {
+  if (repo.contarContas(bd) > 0) {
+    throw new ErroHttp(409, 'JA_EXISTEM_CONTAS', 'A Matriz já tem contas: a primeira conta só se cria numa base vazia.');
+  }
+  return criar(bd, { ...dados, perfis: ['ADMIN'] });
 }
 
 /**
@@ -126,6 +155,15 @@ export function alterar(
   if (deixaDeGerir && projetos.eGestorDeAlgumProjeto(id)) {
     // EC-23, EC-26, A-16, A-17, Q-07
     throw new ErroHttp(422, 'GESTOR_COM_PROJETOS', 'Transfira primeiro todos os projetos deste Gestor.');
+  }
+  if (perde('GESTOR') && projetos.contarProjetosAtivosComoMembro(id) > 1) {
+    // RV-36, EC-58, P31: sem o perfil Gestor, só um projeto ativo (RV-31)
+    throw new ErroHttp(
+      422,
+      'GESTOR_EM_VARIOS_PROJETOS',
+      'Esta pessoa é membro de vários projetos ativos. Sem o perfil Gestor, só pode estar num: remova-a primeiro dos outros.',
+      'perfis',
+    );
   }
   if (ganha('ADMIN') && projetos.eMembroDeAlgumProjeto(id)) {
     // EC-55, RV-32, RV-34

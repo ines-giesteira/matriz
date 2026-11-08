@@ -122,6 +122,10 @@ export function existeEmail(bd: Bd, email: string): boolean {
   return bd.prepare('SELECT 1 AS ok FROM utilizador WHERE email = ?').get(email) !== undefined;
 }
 
+export function contarContas(bd: Bd): number {
+  return Number(bd.prepare('SELECT COUNT(*) AS n FROM utilizador').get()?.n);
+}
+
 export function inserirConta(bd: Bd, nome: string, email: string, palavraPasseHash: string): number {
   return Number(
     bd.prepare('INSERT INTO utilizador (nome, email, palavra_passe_hash) VALUES (?, ?, ?)').run(nome, email, palavraPasseHash)

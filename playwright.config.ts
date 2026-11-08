@@ -33,6 +33,7 @@ export default defineConfig({
         PORTA: String(PORTA_BACKEND_E2E),
         CAMINHO_BD: caminhoBd,
         SEED_PALAVRA_PASSE: PALAVRA_PASSE_E2E,
+        NODE_ENV: 'development', // o seed só corre em desenvolvimento (RV-37)
       },
     },
     {

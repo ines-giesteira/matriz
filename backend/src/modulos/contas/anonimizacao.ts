@@ -13,15 +13,23 @@ export function umAnoAntes(agora: Date): string {
   return limite.toISOString();
 }
 
-/** Anonimiza as contas desativadas há um ano ou mais. Devolve quantas foram anonimizadas. */
+/**
+ * Anonimiza as contas desativadas há um ano ou mais. Cada conta é tratada em separado: uma falha fica registada
+ * (só com o identificador, sem dados pessoais) e não impede as outras (RV-40, P33). Devolve quantas foram anonimizadas.
+ */
 export function anonimizarContasExpiradas(bd: Bd, agora: Date): number {
-  const ids = repo.contasPorAnonimizar(bd, umAnoAntes(agora));
-  for (const id of ids) {
-    // Hash de um valor aleatório que ninguém conhece: a palavra-passe deixa de servir para entrar.
-    const hash = bcrypt.hashSync(randomBytes(32).toString('hex'), 10);
-    emTransacao(bd, () => repo.anonimizarConta(bd, id, hash, agora.toISOString()));
+  let anonimizadas = 0;
+  for (const id of repo.contasPorAnonimizar(bd, umAnoAntes(agora))) {
+    try {
+      // Hash de um valor aleatório que ninguém conhece: a palavra-passe deixa de servir para entrar.
+      const hash = bcrypt.hashSync(randomBytes(32).toString('hex'), 10);
+      emTransacao(bd, () => repo.anonimizarConta(bd, id, hash, agora.toISOString()));
+      anonimizadas += 1;
+    } catch (erro) {
+      console.error(`Falha na anonimização da conta ${id} (RV-33):`, erro instanceof Error ? erro.message : erro);
+    }
   }
-  return ids.length;
+  return anonimizadas;
 }
 
 /** Corre a anonimização já e depois uma vez por dia (P28). Devolve a função que pára a rotina. */

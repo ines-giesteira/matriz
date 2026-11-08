@@ -230,7 +230,8 @@ paths:
       description: |
         US-02, RF-02. A conta fica ativa e, se não for Administrador, com o perfil Membro, que não se guarda (RV-02, RV-32).
         A palavra-passe inicial é guardada só como hash e nunca é devolvida (Q-22, EC-49). O nome e o email guardam-se
-        sem espaços no início e no fim (P26). Os perfis Administrador e Gestor não se acumulam (RV-32).
+        sem espaços no início e no fim (P26); o email guarda-se em minúsculas, incluindo as letras acentuadas (RV-39).
+        Os perfis Administrador e Gestor não se acumulam (RV-32).
       requestBody:
         required: true
         content:
@@ -257,9 +258,10 @@ paths:
           $ref: '#/components/responses/SemPermissao'
         '422':
           description: |
-            Códigos (P25): `NOME_OBRIGATORIO`, `EMAIL_OBRIGATORIO`, `EMAIL_INVALIDO`, `EMAIL_REPETIDO` (sem distinguir
-            maiúsculas, EC-33, EC-38), `PALAVRA_PASSE_CURTA` (menos de 8 caracteres, P3) e `PERFIS_INCOMPATIVEIS`
-            (Administrador e Gestor, RV-32).
+            Códigos (P25, P31): `NOME_OBRIGATORIO`, `EMAIL_OBRIGATORIO`, `EMAIL_INVALIDO`, `EMAIL_RESERVADO` (domínio
+            `.invalid`, reservado às contas anonimizadas, RV-40), `EMAIL_REPETIDO` (sem distinguir maiúsculas, EC-33,
+            EC-38, RV-39), `PALAVRA_PASSE_CURTA` (menos de 8 caracteres, P3), `PALAVRA_PASSE_LONGA` (mais de 72 bytes,
+            com `limite`, RV-38) e `PERFIS_INCOMPATIVEIS` (Administrador e Gestor, RV-32).
           content:
             application/json:
               schema:
@@ -307,7 +309,8 @@ paths:
           description: |
             Códigos (P25): `GESTOR_PROPRIO` (Administrador a atribuir a si próprio o perfil Gestor, EC-36),
             `PERFIS_INCOMPATIVEIS` (Administrador e Gestor, RV-32), `GESTOR_COM_PROJETOS` (retirar o perfil Gestor ou
-            desativar quem ainda gere projetos, EC-23, EC-26), `ULTIMO_ADMINISTRADOR` (deixar de haver um Administrador
+            desativar quem ainda gere projetos, EC-23, EC-26), `GESTOR_EM_VARIOS_PROJETOS` (retirar o perfil Gestor a
+            quem é membro de mais de um projeto ativo, RV-36, EC-58), `ULTIMO_ADMINISTRADOR` (deixar de haver um Administrador
             ativo, EC-27), `ADMINISTRADOR_COM_PROJETOS` (perfil Administrador a quem é membro de projetos, EC-55) e
             `CONTA_REMOVIDA` (conta anonimizada, RV-34).
           content:
@@ -1537,7 +1540,7 @@ components:
           type: string
         palavraPasse:
           type: string
-          description: Palavra-passe inicial (Q-22); pelo menos 8 caracteres (P3).
+          description: Palavra-passe inicial (Q-22); pelo menos 8 caracteres (P3) e no máximo 72 bytes em UTF-8 (RV-38).
         perfis:
           type: array
           uniqueItems: true

@@ -1,12 +1,14 @@
 // Testes do incremento I3: contas e perfis (RF-02, RF-03, US-02 a US-04) e anonimização (RV-33, RV-34).
 // Seed: Helena (Administrador), Ana e Paulo (Gestores, com projetos), Marta e João (Membros), Rui (desativado).
 import request from 'supertest';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { criarApp } from '../src/app.js';
 import { abrirBd, type Bd } from '../src/bd/ligacao.js';
 import { aplicarMigrations } from '../src/bd/migrar.js';
-import { semear } from '../src/bd/seed.js';
+import { motivoParaRecusarSeed, semear } from '../src/bd/seed.js';
+import { ErroHttp } from '../src/http/erros.js';
 import { anonimizarContasExpiradas, umAnoAntes } from '../src/modulos/contas/anonimizacao.js';
+import { criarPrimeiraConta } from '../src/modulos/contas/gestao.js';
 
 const PALAVRA_PASSE = 'palavra-passe-de-teste';
 const DIA_MS = 24 * 60 * 60 * 1000;
@@ -367,5 +369,139 @@ describe('anonimização das contas desativadas há mais de um ano (RV-33, EC-56
     anonimizarContasExpiradas(bd, daquiA(366));
     expect(Number(bd.prepare('SELECT COUNT(*) AS n FROM perfil_atribuido WHERE utilizador_id = ?').get(id('paulo'))?.n)).toBe(0);
     expect(Number(bd.prepare('SELECT COUNT(*) AS n FROM sessao WHERE utilizador_id = ?').get(id('paulo'))?.n)).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------- Segunda revisão de segurança (RV-36 a RV-40)
+
+describe('RV-36, EC-58: retirar o perfil Gestor a quem está em vários projetos ativos', () => {
+  async function gestorEmDoisProjetos() {
+    const helena = await como('helena');
+    const sofia = (await helena.post('/api/utilizadores').send(conta({ perfis: ['GESTOR'] }))).body;
+    expect((await helena.post(`/api/admin/projetos/${SITE()}/membros`).send({ utilizadorId: sofia.id })).status).toBe(201);
+    expect((await helena.post(`/api/admin/projetos/${CRM()}/membros`).send({ utilizadorId: sofia.id })).status).toBe(201);
+    return { helena, sofia };
+  }
+  const perfisDe = (utilizadorId: number) =>
+    bd.prepare('SELECT perfil FROM perfil_atribuido WHERE utilizador_id = ?').all(utilizadorId).map((l) => l.perfil);
+
+  it('é recusado com 422 e os perfis ficam iguais', async () => {
+    const { helena, sofia } = await gestorEmDoisProjetos();
+    const resposta = await helena.patch(`/api/utilizadores/${sofia.id}`).send({ perfis: [] });
+    expect(resposta.status).toBe(422);
+    expect(resposta.body).toMatchObject({ codigo: 'GESTOR_EM_VARIOS_PROJETOS', campo: 'perfis' });
+    expect(perfisDe(sofia.id)).toEqual(['GESTOR']);
+  });
+
+  it('depois de sair de um dos projetos, o perfil Gestor pode ser retirado', async () => {
+    const { helena, sofia } = await gestorEmDoisProjetos();
+    expect((await helena.delete(`/api/admin/projetos/${CRM()}/membros/${sofia.id}`)).status).toBe(204);
+    expect((await helena.patch(`/api/utilizadores/${sofia.id}`).send({ perfis: [] })).status).toBe(200);
+    expect(perfisDe(sofia.id)).toEqual([]);
+  });
+
+  it('os projetos arquivados não contam (RV-31)', async () => {
+    const helena = await como('helena');
+    const sofia = (await helena.post('/api/utilizadores').send(conta({ perfis: ['GESTOR'] }))).body;
+    await helena.post(`/api/admin/projetos/${SITE()}/membros`).send({ utilizadorId: sofia.id });
+    bd.prepare('INSERT INTO membro_projeto (projeto_id, utilizador_id) VALUES (?, ?)').run(RELATORIO(), sofia.id);
+    expect((await helena.patch(`/api/utilizadores/${sofia.id}`).send({ perfis: [] })).status).toBe(200);
+  });
+});
+
+describe('RV-40: o domínio .invalid fica reservado às contas anonimizadas', () => {
+  it('criar uma conta com um email .invalid é recusado com 422, também em maiúsculas', async () => {
+    const helena = await como('helena');
+    for (const email of [`removida-${id('rui')}@matriz.invalid`, 'alguem@MATRIZ.INVALID']) {
+      const resposta = await helena.post('/api/utilizadores').send(conta({ email }));
+      expect(resposta.status).toBe(422);
+      expect(resposta.body).toMatchObject({ codigo: 'EMAIL_RESERVADO', campo: 'email' });
+    }
+  });
+
+  it('P33: uma conta que não se consegue anonimizar não impede as outras', async () => {
+    const helena = await como('helena');
+    const sofia = (await helena.post('/api/utilizadores').send(conta())).body;
+    await helena.patch(`/api/utilizadores/${sofia.id}`).send({ ativo: false });
+    // Conta anterior a RV-40, com o email que a anonimização do Rui usaria.
+    bd.prepare("INSERT INTO utilizador (nome, email, palavra_passe_hash) VALUES ('Antiga', ?, 'x')").run(
+      `removida-${id('rui')}@matriz.invalid`,
+    );
+    const erros = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const n = anonimizarContasExpiradas(bd, new Date(Date.now() + 2 * 365 * DIA_MS));
+    expect(n).toBe(1);
+    expect(erros).toHaveBeenCalledTimes(1);
+    expect(String(erros.mock.calls[0]?.[0])).toContain(`conta ${id('rui')}`);
+    erros.mockRestore();
+    const removida = (pessoaId: number) =>
+      bd.prepare('SELECT anonimizado_em FROM utilizador WHERE id = ?').get(pessoaId)?.anonimizado_em !== null;
+    expect(removida(sofia.id)).toBe(true);
+    expect(removida(id('rui'))).toBe(false);
+  });
+});
+
+describe('RV-38: palavra-passe com no máximo 72 bytes', () => {
+  it('72 bytes são aceites; 73 são recusados com 422 e o limite', async () => {
+    const helena = await como('helena');
+    expect((await helena.post('/api/utilizadores').send(conta({ palavraPasse: 'ç'.repeat(36) }))).status).toBe(201);
+    const resposta = await helena
+      .post('/api/utilizadores')
+      .send(conta({ email: 'outra@matriz.test', palavraPasse: 'ç'.repeat(36) + 'a' }));
+    expect(resposta.status).toBe(422);
+    expect(resposta.body).toMatchObject({ codigo: 'PALAVRA_PASSE_LONGA', campo: 'palavraPasse', limite: 72 });
+  });
+});
+
+describe('RV-39: email em minúsculas, incluindo as letras acentuadas', () => {
+  it('guarda-se em minúsculas, recusa a versão em maiúsculas e entra com qualquer uma', async () => {
+    const helena = await como('helena');
+    const criada = await helena.post('/api/utilizadores').send(conta({ email: 'Élia.Sá@Matriz.test' }));
+    expect(criada.status).toBe(201);
+    expect(criada.body.email).toBe('élia.sá@matriz.test');
+    const repetida = await helena.post('/api/utilizadores').send(conta({ email: 'ÉLIA.SÁ@matriz.test' }));
+    expect(repetida.body.codigo).toBe('EMAIL_REPETIDO');
+    expect((await entrar('ÉLIA.SÁ@MATRIZ.TEST', 'inicial-1234')).status).toBe(200);
+  });
+});
+
+describe('RV-37, CA-02.2: primeira conta e seed de demonstração', () => {
+  const dados = { nome: 'Dona do Produto', email: 'Dona@Empresa.test', palavraPasse: 'inicial-1234' };
+  const contarContas = (base: Bd) => Number(base.prepare('SELECT COUNT(*) AS n FROM utilizador').get()?.n);
+
+  it('numa base sem contas, cria a primeira conta com o perfil Administrador, que consegue entrar', async () => {
+    const vazia = abrirBd(':memory:');
+    aplicarMigrations(vazia);
+    const criada = criarPrimeiraConta(vazia, dados);
+    expect(criada).toMatchObject({ email: 'dona@empresa.test', perfis: ['ADMIN'], ativo: true });
+    const resposta = await request(criarApp({ bd: vazia }))
+      .post('/api/sessao')
+      .send({ email: dados.email, palavraPasse: dados.palavraPasse });
+    expect(resposta.status).toBe(200);
+    expect(Number(vazia.prepare('SELECT COUNT(*) AS n FROM projeto').get()?.n)).toBe(0);
+    vazia.close();
+  });
+
+  it('numa base com contas, é recusada e não cria nada', () => {
+    const antes = contarContas(bd);
+    expect(() => criarPrimeiraConta(bd, dados)).toThrow(ErroHttp);
+    expect(() => criarPrimeiraConta(bd, dados)).toThrow(/já tem contas/);
+    expect(contarContas(bd)).toBe(antes);
+  });
+
+  it('aplica as regras das contas (P3)', () => {
+    const vazia = abrirBd(':memory:');
+    aplicarMigrations(vazia);
+    expect(() => criarPrimeiraConta(vazia, { ...dados, palavraPasse: 'curta' })).toThrow(/pelo menos 8/);
+    expect(contarContas(vazia)).toBe(0);
+    vazia.close();
+  });
+
+  it('o seed só corre em desenvolvimento e nunca com a palavra-passe de exemplo', () => {
+    const exemplo = 'valor-de-exemplo-1';
+    const motivo = (desenvolvimento: boolean, palavraPasse: string) =>
+      motivoParaRecusarSeed({ desenvolvimento, palavraPasse, palavraPasseDeExemplo: exemplo });
+    expect(motivo(false, 'outra-1234')).toMatch(/NODE_ENV=development/);
+    expect(motivo(true, exemplo)).toMatch(/valor de exemplo/);
+    expect(motivo(true, 'outra-1234')).toBeNull();
   });
 });

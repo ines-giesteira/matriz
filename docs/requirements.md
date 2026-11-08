@@ -1,6 +1,6 @@
 # Matriz — Requisitos
 
-Versão 1.6 · 8 de novembro de 2026 · consolida o "Âmbito funcional e MVP" v0.1, o "Backlog inicial do MVP" v0.1 (versões de trabalho anteriores, não incluídas no repositório), as decisões da dona do produto, as revisões críticas (RV-xx) e as decisões Q-09 a Q-22. A versão 1.3 acrescentou a ordem das listas (Q-12) e a visibilidade dos membros (Q-13); a 1.4 aplica a conciliação com a Ficha 3 (Q-15 a Q-22): comentários, pesquisa, filtros, painel inicial, criação e eliminação de projetos pelo Administrador, vários responsáveis e autenticação; a 1.5 (1 de novembro de 2026) aplica RV-31 (um só projeto ativo para quem não tem o perfil Gestor e remoção de membros num projeto arquivado), RV-32 (o Administrador nunca é membro e gere os membros de qualquer projeto) e RV-33 (remoção das contas desativadas ao fim de um ano); a 1.6 (8 de novembro de 2026) aplica RV-35 (limite de tentativas de entrada, RF-01).
+Versão 1.6 · 8 de novembro de 2026 · consolida o "Âmbito funcional e MVP" v0.1, o "Backlog inicial do MVP" v0.1 (versões de trabalho anteriores, não incluídas no repositório), as decisões da dona do produto, as revisões críticas (RV-xx) e as decisões Q-09 a Q-22. A versão 1.3 acrescentou a ordem das listas (Q-12) e a visibilidade dos membros (Q-13); a 1.4 aplica a conciliação com a Ficha 3 (Q-15 a Q-22): comentários, pesquisa, filtros, painel inicial, criação e eliminação de projetos pelo Administrador, vários responsáveis e autenticação; a 1.5 (1 de novembro de 2026) aplica RV-31 (um só projeto ativo para quem não tem o perfil Gestor e remoção de membros num projeto arquivado), RV-32 (o Administrador nunca é membro e gere os membros de qualquer projeto) e RV-33 (remoção das contas desativadas ao fim de um ano); a 1.6 (8 de novembro de 2026) aplica RV-35 (limite de tentativas de entrada, RF-01) e RV-36 a RV-40 (regras das contas, RF-02).
 
 > **Origem da informação.** O cliente é fictício. A única informação confirmada é a frase original do cliente:
 >
@@ -106,13 +106,14 @@ Os estados e as prioridades aparecem na interface em português. Na API e na bas
 - Só são permitidas 5 tentativas de entrada falhadas por conta em 15 minutos; à 5.ª, a entrada nessa conta fica bloqueada durante 15 minutos, mesmo com a palavra-passe certa. Uma entrada com sucesso repõe o contador (RV-35, EC-57).
 
 **RF-02 — Criar contas e gerir perfis.** O Administrador cria contas e atribui ou altera o perfil de cada utilizador (R-08).
-- A primeira conta é criada pela dona do produto e fica com o perfil Administrador (RV-11).
-- Ao criar uma conta, o Administrador define a palavra-passe inicial (Q-22).
+- A primeira conta é criada pela dona do produto e fica com o perfil Administrador (RV-11). É criada por uma operação própria, só numa Matriz sem contas e sem dados de demonstração; os dados de demonstração só existem em desenvolvimento (RV-37).
+- Ao criar uma conta, o Administrador define a palavra-passe inicial (Q-22): pelo menos 8 caracteres e no máximo 72 bytes, em que as letras acentuadas contam 2 (P3, RV-38).
+- Não se criam contas com emails do domínio reservado `.invalid`, usado pelas contas anonimizadas (RV-40).
 - Todas as contas, exceto as de Administrador, têm o perfil Membro, que não pode ser retirado (RV-02, RV-32).
 - Um utilizador pode ter os perfis Gestor e Membro; o perfil Administrador não se acumula com nenhum outro (D-04, RV-32).
-- O email de cada conta é único (RV-18). A comparação ignora maiúsculas e minúsculas (Q-10).
+- O email de cada conta é único (RV-18). A comparação ignora maiúsculas e minúsculas (Q-10), incluindo nas letras acentuadas: o email guarda-se em minúsculas (RV-39).
 - O Administrador não pode atribuir a si próprio o perfil Gestor (RV-01).
-- Só se pode retirar o perfil Gestor a quem já não é Gestor de nenhum projeto, ativo ou arquivado. Os projetos têm de ser transferidos antes (A-17, Q-07).
+- Só se pode retirar o perfil Gestor a quem já não é Gestor de nenhum projeto, ativo ou arquivado. Os projetos têm de ser transferidos antes (A-17, Q-07). Também é recusado enquanto a pessoa for membro de mais de um projeto ativo (RV-31, RV-36, EC-58).
 - Tem de existir sempre pelo menos 1 Administrador ativo (A-18).
 - Atribuir o perfil Administrador a quem é membro de projetos é recusado até a pessoa ser removida de todos (RV-32, RV-34, EC-55).
 

@@ -115,6 +115,18 @@ export function eMembroDeAlgumProjeto(bd: Bd, utilizadorId: number): boolean {
 }
 
 /** Acrescenta um membro, se ainda não o for. */
+/** Número de projetos ativos de que o utilizador é membro (RV-31, RV-36). */
+export function contarProjetosAtivosComoMembro(bd: Bd, utilizadorId: number): number {
+  return Number(
+    bd
+      .prepare(
+        `SELECT COUNT(*) AS n FROM membro_projeto m JOIN projeto p ON p.id = m.projeto_id
+         WHERE m.utilizador_id = ? AND p.arquivado = 0`,
+      )
+      .get(utilizadorId)?.n,
+  );
+}
+
 export function garantirMembro(bd: Bd, projetoId: number, utilizadorId: number): void {
   bd.prepare('INSERT OR IGNORE INTO membro_projeto (projeto_id, utilizador_id) VALUES (?, ?)').run(projetoId, utilizadorId);
 }

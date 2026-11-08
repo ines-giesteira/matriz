@@ -63,10 +63,11 @@ O `.env` fica fora do Git. Os valores de `.env.example` são fictícios e servem
 
 | Variável | Para que serve | Exemplo |
 |---|---|---|
+| `NODE_ENV` | `development` no computador de quem desenvolve; sem este valor, a Matriz comporta-se como em produção (RV-37) | `development` |
 | `PORTA` | Porta do backend | `3000` |
 | `CAMINHO_BD` | Ficheiro SQLite, relativo à raiz do repositório | `dados/matriz.sqlite` |
 | `SESSAO_HORAS` | Horas sem atividade até a sessão expirar (P2) | `8` |
-| `SEED_PALAVRA_PASSE` | Palavra-passe das contas de demonstração (P10) | ver `.env.example` |
+| `SEED_PALAVRA_PASSE` | Palavra-passe das contas de demonstração (P10), com pelo menos 8 caracteres. **Mude-a no `.env`:** o valor do `.env.example` é público e o seed recusa-o (RV-37) | um valor seu |
 
 O npm 11 avisa que o pacote `esbuild` tem um script de instalação por aprovar. Não é preciso aprová-lo: o `esbuild` funciona sem ele.
 
@@ -78,10 +79,16 @@ Cria ou atualiza o esquema (pode correr-se várias vezes; cada migration aplica-
 npm run bd:migrar
 ```
 
-Cria os dados de demonstração, só se a base de dados ainda não tiver contas (nunca apaga nem duplica dados):
+Em desenvolvimento, cria os dados de demonstração, só se a base de dados ainda não tiver contas (nunca apaga nem duplica dados). Só corre com `NODE_ENV=development` e com uma `SEED_PALAVRA_PASSE` diferente da do `.env.example` (RV-37):
 
 ```bash
 npm run bd:seed
+```
+
+No piloto, sem dados de demonstração, cria-se só a primeira conta, com o perfil Administrador, numa base sem contas (RV-11, RV-37). O comando pede o nome, o email e a palavra-passe; a palavra-passe não aparece no ecrã:
+
+```bash
+npm run bd:primeiro-admin
 ```
 
 O backend também aplica as migrations ao arrancar, mas nunca corre o seed sozinho. Para recomeçar do zero, apaga-se a pasta `dados/` e volta-se a correr os dois comandos.

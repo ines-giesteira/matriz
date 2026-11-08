@@ -8,6 +8,7 @@
     "start": "node dist/servidor.js",
     "bd:migrar": "tsx src/bd/cli-migrar.ts",
     "bd:seed": "tsx src/bd/cli-seed.ts",
+    "bd:primeiro-admin": "tsx src/bd/cli-primeiro-admin.ts",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

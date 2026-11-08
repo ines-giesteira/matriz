@@ -7,7 +7,7 @@
 // 3. Uma sessão expirada, de uma conta desativada ou terminada pelo utilizador é apagada e deixa de ser aceite.
 import { createHash, randomBytes } from 'node:crypto';
 import bcrypt from 'bcryptjs';
-import type { Bd } from '../../bd/ligacao.js';
+import { paraMinusculas, type Bd } from '../../bd/ligacao.js';
 import * as repo from './repositorio.js';
 import type { Perfil } from './repositorio.js';
 
@@ -61,12 +61,12 @@ export type ResultadoEntrada =
  */
 export function entrar(bd: Bd, opcoes: OpcoesSessao, email: string, palavraPasse: string): ResultadoEntrada {
   const agora = opcoes.agora();
-  const chave = email.trim().toLowerCase();
+  const chave = paraMinusculas(email.trim()); // RV-39
   repo.apagarFalhasAntigas(bd, new Date(agora.getTime() - JANELA_FALHAS_MS - DURACAO_BLOQUEIO_MS).toISOString());
   const fim = fimDoBloqueio(repo.falhasRecentes(bd, chave, MAXIMO_FALHAS_ENTRADA));
   if (fim && agora < fim) return { tipo: 'bloqueada' };
 
-  const conta = repo.procurarContaPorEmail(bd, email.trim());
+  const conta = repo.procurarContaPorEmail(bd, chave);
   const correta = bcrypt.compareSync(palavraPasse, conta?.palavraPasseHash ?? HASH_FICTICIO);
   if (!conta || !correta || !conta.ativo) {
     repo.registarFalhaEntrada(bd, chave, agora.toISOString());

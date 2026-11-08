@@ -1,5 +1,5 @@
 // Testes do incremento I0: esquema, migrations, seed e persistência (docs/implementation-plan.md).
-import { mkdtempSync, rmSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import bcrypt from 'bcryptjs';
@@ -43,13 +43,55 @@ describe('migrations', () => {
   });
 
   it('são aplicadas uma só vez, mesmo correndo várias vezes', () => {
-    expect(aplicarMigrations(bd)).toEqual(['001_esquema_inicial.sql', '002_desativacao_e_anonimizacao.sql', '003_falhas_de_entrada.sql']);
+    expect(aplicarMigrations(bd)).toEqual([
+      '001_esquema_inicial.sql',
+      '002_desativacao_e_anonimizacao.sql',
+      '003_falhas_de_entrada.sql',
+      '004_email_em_minusculas.sql',
+    ]);
     expect(aplicarMigrations(bd)).toEqual([]);
-    expect(contar(bd, 'SELECT COUNT(*) AS n FROM migracao_aplicada')).toBe(3);
+    expect(contar(bd, 'SELECT COUNT(*) AS n FROM migracao_aplicada')).toBe(4);
   });
 
   it('ativam as chaves estrangeiras', () => {
     expect(bd.prepare('PRAGMA foreign_keys').get()?.foreign_keys).toBe(1);
+  });
+});
+
+describe('RV-39: migration 004, emails em minúsculas', () => {
+  const PASTA = path.join(import.meta.dirname, '..', 'migrations');
+  let bd: Bd;
+  let pastaAte003: string;
+  beforeEach(() => {
+    bd = abrirBd(':memory:');
+    pastaAte003 = mkdtempSync(path.join(tmpdir(), 'matriz-migrations-'));
+    for (const nome of ['001_esquema_inicial.sql', '002_desativacao_e_anonimizacao.sql', '003_falhas_de_entrada.sql']) {
+      copyFileSync(path.join(PASTA, nome), path.join(pastaAte003, nome));
+    }
+    aplicarMigrations(bd, pastaAte003);
+  });
+  afterEach(() => {
+    bd.close();
+    rmSync(pastaAte003, { recursive: true, force: true });
+  });
+  const inserir = (email: string) =>
+    bd.prepare("INSERT INTO utilizador (nome, email, palavra_passe_hash) VALUES ('Teste', ?, 'x')").run(email);
+
+  it('converte os emails existentes, incluindo as letras acentuadas', () => {
+    inserir('ÉLIA.Sá@Matriz.test');
+    inserir('ana@matriz.test');
+    expect(aplicarMigrations(bd, PASTA)).toEqual(['004_email_em_minusculas.sql']);
+    const emails = bd.prepare('SELECT email FROM utilizador ORDER BY id').all().map((l) => l.email);
+    expect(emails).toEqual(['élia.sá@matriz.test', 'ana@matriz.test']);
+  });
+
+  it('falha sem alterar nada se duas contas só diferirem em maiúsculas acentuadas', () => {
+    inserir('élia@matriz.test');
+    inserir('ÉLIA@matriz.test');
+    expect(() => aplicarMigrations(bd, PASTA)).toThrow(/UNIQUE/);
+    const emails = bd.prepare('SELECT email FROM utilizador ORDER BY id').all().map((l) => l.email);
+    expect(emails).toEqual(['élia@matriz.test', 'ÉLIA@matriz.test']);
+    expect(contar(bd, "SELECT COUNT(*) AS n FROM migracao_aplicada WHERE nome LIKE '004%'")).toBe(0);
   });
 });
 

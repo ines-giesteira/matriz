@@ -1,6 +1,6 @@
 # Matriz — Modelo de dados
 
-Versão 0.7 · 8 de novembro de 2026 · Ficha Prática 02, Exercício 2 · a 0.2 acrescentou a regra 15 (Q-12) e clarificou o email no diagrama (RV-30); a 0.3 aplica a conciliação com a Ficha 3: palavra-passe e sessões (Q-22), vários responsáveis (Q-20), comentários (Q-15), eliminação de projetos (Q-19), códigos técnicos (Q-21) e o mapeamento para SQLite (Q-14); a 0.4 (1 de novembro de 2026) aplica RV-31: um só projeto ativo para quem não tem o perfil Gestor (regra 19) e remoção de membros num projeto arquivado (regra 11); aplica RV-32: o Administrador nunca é membro (regra 20) e não acumula perfis; regista RV-33 (anonimização das contas desativadas, a implementar no I3); a 0.5 acrescenta `desativado_em` e `anonimizado_em` a UTILIZADOR (I3, migration 002, P27); a 0.6 corrige a cardinalidade dos perfis para 0..1 (RV-32), acrescenta ao diagrama ER as colunas da 0.5 e atualiza as referências ao I3, já concluído; a 0.7 (8 de novembro de 2026) acrescenta FALHA_ENTRADA e a regra 22 (RV-35, migration 003, P29).
+Versão 0.7 · 8 de novembro de 2026 · Ficha Prática 02, Exercício 2 · a 0.2 acrescentou a regra 15 (Q-12) e clarificou o email no diagrama (RV-30); a 0.3 aplica a conciliação com a Ficha 3: palavra-passe e sessões (Q-22), vários responsáveis (Q-20), comentários (Q-15), eliminação de projetos (Q-19), códigos técnicos (Q-21) e o mapeamento para SQLite (Q-14); a 0.4 (1 de novembro de 2026) aplica RV-31: um só projeto ativo para quem não tem o perfil Gestor (regra 19) e remoção de membros num projeto arquivado (regra 11); aplica RV-32: o Administrador nunca é membro (regra 20) e não acumula perfis; regista RV-33 (anonimização das contas desativadas, a implementar no I3); a 0.5 acrescenta `desativado_em` e `anonimizado_em` a UTILIZADOR (I3, migration 002, P27); a 0.6 corrige a cardinalidade dos perfis para 0..1 (RV-32), acrescenta ao diagrama ER as colunas da 0.5 e atualiza as referências ao I3, já concluído; a 0.7 (8 de novembro de 2026) acrescenta FALHA_ENTRADA e a regra 22 (RV-35, migration 003, P29), o email em minúsculas (RV-39, migration 004, P32) e completa as regras 19 e 21 (RV-36, RV-40).
 
 > **Estado: proposta, por aprovar pela dona do produto (R-06).** Modelo dos dados do MVP (RF-01 a RF-18, RF-22, RF-24, RF-30, RF-32 a RF-35), coerente com a arquitetura de [architecture.md](architecture.md): uma base de dados única (SQLite, Q-14), partilhada pelos módulos Contas, Projetos e Tarefas. As secções 1 a 4 são o modelo conceptual; a secção 5 mapeia-o para SQLite. Os pressupostos por aprovar estão na secção 6; as questões já decididas, na secção 7.
 
@@ -12,7 +12,7 @@ Versão 0.7 · 8 de novembro de 2026 · Ficha Prática 02, Exercício 2 · a 0.2
 |---|---|---|---|---|
 | `id` | identificador | Sim | Identificador técnico, chave primária. | — |
 | `nome` | texto | Sim | | A-21, Q-08 |
-| `email` | texto | Sim | Único entre todas as contas, ativas ou desativadas, sem distinguir maiúsculas de minúsculas. | RV-18, Q-10, EC-33 |
+| `email` | texto | Sim | Único entre todas as contas, ativas ou desativadas, sem distinguir maiúsculas de minúsculas. Guarda-se em minúsculas, incluindo as letras acentuadas. | RV-18, Q-10, EC-33, RV-39 |
 | `palavra_passe_hash` | texto | Sim | Hash da palavra-passe; a palavra-passe nunca é guardada em claro nem devolvida pela API. | Q-22, EC-49 |
 | `ativo` | booleano | Sim | `verdadeiro` ao criar. A conta nunca é apagada no MVP; desativar e reativar muda só este campo. | RF-03, D-02, RV-18 |
 | `desativado_em` | data e hora | Não | Momento da última desativação; vazio numa conta ativa. Conta o ano de RV-33. | RV-33, RV-34, P27 |
@@ -226,9 +226,9 @@ Regras que o diagrama não mostra e que têm de ser garantidas pelos módulos ou
 
 **Membros sem o perfil Gestor**
 
-19. Um utilizador sem o perfil Gestor tem, no máximo, uma linha em MEMBRO_PROJETO num projeto com `arquivado = falso`. É garantido pelo módulo Projetos, ao adicionar um membro (EC-52) e ao desarquivar (EC-53); não há restrição na base de dados, porque depende do perfil e do arquivo (R-07, RV-31).
+19. Um utilizador sem o perfil Gestor tem, no máximo, uma linha em MEMBRO_PROJETO num projeto com `arquivado = falso`. É garantido pelo módulo Projetos, ao adicionar um membro (EC-52) e ao desarquivar (EC-53), e pelo módulo Contas, ao retirar o perfil Gestor (EC-58, RV-36); não há restrição na base de dados, porque depende do perfil e do arquivo (R-07, RV-31).
 20. Um utilizador com o perfil Administrador nunca tem linhas em MEMBRO_PROJETO. É garantido pelo módulo Projetos ao adicionar membros (EC-30) e pelo módulo Contas ao atribuir perfis, através da interface `ConsultaProjetos` (EC-55, RV-32, RV-34).
-21. Um ano depois de `desativado_em`, a conta é anonimizada: `nome` passa a "Conta removida", `email` a `removida-<id>@matriz.invalid`, `palavra_passe_hash` a um valor que não corresponde a nenhuma palavra-passe, e os perfis e as sessões são apagados; `anonimizado_em` fica preenchido. As linhas de MEMBRO_PROJETO, ATRIBUICAO e COMENTARIO mantêm-se. Reativar a conta limpa `desativado_em` (RV-33, RV-34, P27).
+21. Um ano depois de `desativado_em`, a conta é anonimizada: `nome` passa a "Conta removida", `email` a `removida-<id>@matriz.invalid`, `palavra_passe_hash` a um valor que não corresponde a nenhuma palavra-passe, e os perfis e as sessões são apagados; `anonimizado_em` fica preenchido. As linhas de MEMBRO_PROJETO, ATRIBUICAO e COMENTARIO mantêm-se. Reativar a conta limpa `desativado_em` (RV-33, RV-34, P27). Nenhuma conta nova pode usar o domínio `.invalid`, e cada conta é anonimizada em separado, para uma falha não impedir as outras (RV-40, P33).
 
 **Tentativas de entrada**
 
@@ -244,7 +244,7 @@ Regras que o diagrama não mostra e que têm de ser garantidas pelos módulos ou
 | Data | `TEXT` no formato `AAAA-MM-DD`. |
 | Data e hora | `TEXT` em ISO 8601, em UTC; a interface mostra-a em Europe/Lisbon (RNF-02). |
 | Enumerado | `TEXT` com `CHECK` sobre os códigos de Q-21. |
-| Email único | `UNIQUE` com `COLLATE NOCASE` (Q-10). |
+| Email único | `UNIQUE` com `COLLATE NOCASE` (Q-10), e o email guardado em minúsculas pelo backend, também nas letras acentuadas (RV-39, P32). |
 | Chaves estrangeiras | Ativadas em cada ligação (`PRAGMA foreign_keys = ON`). |
 
 **Comportamento das chaves estrangeiras ao apagar:**
@@ -264,7 +264,7 @@ Regras que o diagrama não mostra e que têm de ser garantidas pelos módulos ou
 - O Gestor do projeto é guardado em PROJETO (`gestor_id`) e também como linha em MEMBRO_PROJETO, para que "membro do projeto" inclua sempre o Gestor (A-01) sem casos especiais.
 - As sessões ficam na mesma base de dados, para continuarem válidas depois de reiniciar o backend.
 - Só os comentários e as sessões guardam datas de criação. As tarefas e os projetos não, porque nenhum requisito do MVP as pede. O histórico de alterações (RF-23) e o registo de auditoria estão fora do âmbito ou por decidir.
-- `COLLATE NOCASE` só ignora maiúsculas e minúsculas em letras sem acentos. Os emails de trabalho não costumam ter acentos; a rever se for preciso.
+- `COLLATE NOCASE` só ignora maiúsculas e minúsculas em letras sem acentos. Por isso, desde RV-39, o email guarda-se em minúsculas (migration 004, P32), e a unicidade cobre também as letras acentuadas.
 
 ## 7. Questões levantadas por este modelo
 

@@ -326,6 +326,7 @@ export function consultaProjetos(bd: Bd): ConsultaProjetos {
   return {
     eGestorDeAlgumProjeto: (utilizadorId) => repo.eGestorDeAlgumProjeto(bd, utilizadorId),
     eMembroDeAlgumProjeto: (utilizadorId) => repo.eMembroDeAlgumProjeto(bd, utilizadorId),
+    contarProjetosAtivosComoMembro: (utilizadorId) => repo.contarProjetosAtivosComoMembro(bd, utilizadorId),
   };
 }
 

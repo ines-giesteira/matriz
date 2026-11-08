@@ -2,6 +2,24 @@ import bcrypt from 'bcryptjs';
 import { emTransacao, type Bd } from './ligacao.js';
 
 /**
+ * Motivo para recusar o seed de demonstração, ou `null` se pode correr (RV-37, P30):
+ * só em desenvolvimento e nunca com a palavra-passe de exemplo do `.env.example`, que é pública.
+ */
+export function motivoParaRecusarSeed(opcoes: {
+  desenvolvimento: boolean;
+  palavraPasse: string;
+  palavraPasseDeExemplo: string | undefined;
+}): string | null {
+  if (!opcoes.desenvolvimento) {
+    return 'O seed de demonstração só corre com NODE_ENV=development. Para criar a primeira conta, use npm run bd:primeiro-admin.';
+  }
+  if (opcoes.palavraPasseDeExemplo !== undefined && opcoes.palavraPasse === opcoes.palavraPasseDeExemplo) {
+    return 'SEED_PALAVRA_PASSE tem o valor de exemplo do .env.example, que é público. Escolha outro valor no .env.';
+  }
+  return null;
+}
+
+/**
  * Dados de demonstração (docs/implementation-plan.md, I0). Todos os nomes e emails são fictícios.
  *
  * Permitem testar acessos distintos:
