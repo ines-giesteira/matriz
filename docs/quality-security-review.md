@@ -2,7 +2,7 @@
 
 Versão 0.2 · 8 de novembro de 2026 · Ficha Prática 04, Exercício 5 · a 0.2 acrescenta a segunda revisão de segurança (secção 7, SEG-03 a SEG-10)
 
-> **Estado:** Code Review do último incremento de código (I10) e do diff da Ficha 4, Security Review do acesso a projetos e tarefas com contas de demonstração, e análise estática com as ferramentas disponíveis. **Nenhum IDOR nem escalada de privilégios.** A segunda revisão (secção 7) encontrou 8 pontos novos (3 de severidade Média e 5 de Baixa), sete confirmados por execução; todos os pontos estão decididos desde 8 de novembro de 2026 (secções 6 e 7.5). SEG-01 a SEG-10 estão corrigidos; CR-02 a CR-04 estão corrigidos e CR-01 (testes do frontend) está por implementar.
+> **Estado:** Code Review do último incremento de código (I10) e do diff da Ficha 4, Security Review do acesso a projetos e tarefas com contas de demonstração, e análise estática com as ferramentas disponíveis. **Nenhum IDOR nem escalada de privilégios.** A segunda revisão (secção 7) encontrou 8 pontos novos (3 de severidade Média e 5 de Baixa), sete confirmados por execução; todos os pontos estão decididos desde 8 de novembro de 2026 (secções 6 e 7.5). SEG-01 a SEG-10 estão corrigidos; CR-01 a CR-04 também.
 
 **Fontes:** [requirements.md](requirements.md) (matriz de permissões, RNF-04), [constraints.md](constraints.md) (secção 3, segurança e privacidade), [`openapi.yaml`](../openapi.yaml) (códigos de erro e ordem de verificação, RV-25), [verification.md](verification.md) (caso 08), [test-plan.md](test-plan.md).
 
@@ -127,7 +127,7 @@ Não há ESLint, Semgrep nem SonarQube configurados no projeto; não foram acres
 | 1 | Correções aplicadas | SEG-01 corrigido (RV-35, commit `8aaeb44`). As restantes correções estão decididas (08/11/2026) e por implementar. |
 | 2 | SEG-01, limite de tentativas de entrada | **Decidido (RV-35, 08/11/2026):** 5 tentativas falhadas por conta em 15 minutos; à 5.ª, a entrada nessa conta fica bloqueada durante 15 minutos (duração confirmada); uma entrada com sucesso repõe o contador. **Implementado** (EC-57, P29). |
 | 3 | SEG-02, cabeçalhos de segurança | **Decidido (08/11/2026) e implementado (P35):** o backend acrescenta `X-Content-Type-Options`, `X-Frame-Options` e uma `Content-Security-Policy` às suas respostas, sem dependência nova. Os cabeçalhos da interface publicada continuam a depender do alojamento. |
-| 4 | CR-01, testes do frontend | **Decidido (08/11/2026):** acrescentar testes de componentes ao frontend (dependência nova aprovada), começando por EC-50 e EC-51. Por implementar. |
+| 4 | CR-01, testes do frontend | **Decidido (08/11/2026) e implementado (P41):** testes de componentes no frontend (Vitest, Testing Library, jsdom) para EC-51, EC-50 e CR-03; `npm test` corre-os com os do backend. |
 | 5 | CR-02, espaços nas pontas do título; CR-03, linha da tarefa eliminada; CR-04, isolamento do E2E | **Decidido (08/11/2026) e corrigido:** CR-02 (P38), CR-03 (P39) e CR-04 (P40). |
 | 6 | Script de IDOR da secção 3 | Passou a teste automático (`backend/testes/seguranca-acessos.test.ts`), aprovado na revisão humana; corre com `npm test`. Não é um teste de regressão de uma correção, porque nenhuma foi aplicada: protege a matriz de permissões contra regressões futuras. |
 | 7 | SEG-03 a SEG-10 (segunda revisão) | Decididos; ver secção 7.5. |

@@ -82,6 +82,7 @@ Detalhes que a documentação não fixava e de que a implementação precisa. Ap
 | P38 | O título da tarefa guarda-se sem espaços no início e no fim, ao criar e ao editar, e o limite de 200 caracteres conta-se depois, como no nome do projeto (P13). Aprovado a 08/11/2026. | CR-02 ([quality-security-review.md](quality-security-review.md)). |
 | P39 | Na lista de tarefas, quando mudar o estado de uma tarefa recebe 404 (tarefa eliminada noutro pedido), a lista e o progresso recarregam. Aprovado a 08/11/2026. | CR-03. |
 | P40 | O caminho da base do E2E é gerado em cada execução e só se reaproveita dentro dessa execução (um `MATRIZ_E2E_BD` do ambiente é ignorado); a limpeza só apaga bases `matriz-e2e-*` com mais de um dia. Aprovado a 08/11/2026. | CR-04. |
+| P41 | Testes de componentes do frontend em `frontend/testes/` (Vitest, `@testing-library/react` e `jsdom`, só para desenvolvimento), com a API simulada por um `fetch` falso e os componentes reais. `npm test` corre os testes do backend e do frontend. Primeiros casos: EC-51 (duplo clique em "Criar tarefa" com a resposta atrasada), EC-50 (a mensagem de sucesso desaparece na ação seguinte) e CR-03 (lista recarregada após 404). Aprovado a 08/11/2026. | CR-01: estes comportamentos só eram verificados à mão. |
 
 ## 3. Estrutura prevista
 

@@ -16,7 +16,7 @@
     "bd:primeiro-admin": "npm run bd:primeiro-admin -w backend",
     "build": "npm run build -w backend && npm run build -w frontend",
     "start": "npm run start -w backend",
-    "test": "npm test -w backend",
+    "test": "npm test -w backend && npm test -w frontend",
     "test:e2e": "playwright test"
   },
   "devDependencies": {

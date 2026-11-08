@@ -142,7 +142,7 @@ npm start
 
 ### Testes
 
-Testes unitários e de integração do backend (Vitest e Supertest, com uma base SQLite em memória por teste):
+Testes unitários e de integração do backend (Vitest e Supertest, com uma base SQLite em memória por teste) e testes de componentes do frontend (Vitest, Testing Library e jsdom, com a API simulada):
 
 ```bash
 npm test

@@ -1,6 +1,6 @@
 # Matriz — Plano de testes
 
-Versão 0.5 · 8 de novembro de 2026 · cenários essenciais das tarefas e das respetivas permissões; a 0.2 acrescenta os testes unitários da validação do título (secção 5); a 0.3, os testes de integração de criação e consulta (secção 6); a 0.4, o teste End-to-End de criação (secção 7); a 0.5, os testes de segurança na cobertura do TP-05 e do TP-06 (Exercício 5)
+Versão 0.6 · 8 de novembro de 2026 · cenários essenciais das tarefas e das respetivas permissões; a 0.2 acrescenta os testes unitários da validação do título (secção 5); a 0.3, os testes de integração de criação e consulta (secção 6); a 0.4, o teste End-to-End de criação (secção 7); a 0.5, os testes de segurança na cobertura do TP-05 e do TP-06 (Exercício 5); a 0.6 acrescenta os testes de componentes do frontend (secção 8, CR-01) e atualiza as decisões do título (CR-02) e do E2E (CR-04).
 
 > **Estado:** seleção dos cenários essenciais de tarefas: título inválido, criação e consulta, e acesso sem autorização. Todos têm teste automático de integração; todos menos o TP-04 têm verificação manual registada. O TP-01 tem também testes unitários. As decisões e a revisão das sugestões da IA estão na secção 4 (Ficha 4, Exercício 1); os testes unitários e os seus resultados, na secção 5 (Exercício 2); os testes de integração de criação e consulta, na secção 6 (Exercício 3); o teste End-to-End, na secção 7 (Exercício 4).
 
@@ -228,3 +228,21 @@ Execuções de 8 de novembro de 2026:
 | 3 | O `npm test` não corre o E2E | Mantido à parte (`npm run test:e2e`): precisa de navegador e de arrancar os servidores, e demora mais. |
 | 4 | A base do E2E podia vir de `MATRIZ_E2E_BD` do ambiente, e a limpeza apagava as bases de outras execuções (CR-04) | Corrigido (P40): o caminho é gerado em cada execução e um valor do ambiente é ignorado; só se apagam bases com mais de um dia. |
 | 5 | Os ficheiros de `e2e/` e `playwright.config.ts` não entram no `npm run typecheck -w backend` nem no `build` | O Playwright converte o TypeScript ao correr, por isso um erro de tipos não impede o teste. Verificados à mão a 8 de novembro de 2026 com `tsc --noEmit --strict` (sem erros); fica por decidir se se acrescenta um `tsconfig` próprio. |
+
+## 8. Testes de componentes do frontend (CR-01, P41)
+
+Antes, o frontend não tinha testes automáticos: a proteção contra submissão repetida (EC-51) e a limpeza da mensagem de sucesso (EC-50) só eram verificadas à mão (CR-01, [quality-security-review.md](quality-security-review.md)).
+
+| Ficheiro | Ferramentas | Isolamento |
+|---|---|---|
+| `frontend/testes/tarefas-projeto.test.tsx` | Vitest, Testing Library e jsdom | A API é simulada por um `fetch` falso; o componente `TarefasProjeto`, a sessão e o cliente HTTP são os reais. Não arranca o backend. |
+
+| Caso | Verifica | Resultado (8/11/2026) |
+|---|---|---|
+| EC-51 | Duplo clique em "Criar tarefa", com a resposta da API atrasada: um só `POST` e a mensagem de sucesso. | Passa |
+| EC-50, P1 | A mensagem de sucesso desaparece quando se muda o estado de uma tarefa. | Passa |
+| CR-03, P39 | Mudar o estado de uma tarefa que já não existe (404): a lista recarrega e a linha desaparece. | Passa |
+
+**Os testes falham se o comportamento falhar?** Sim. Cada proteção foi retirada temporariamente do código e o teste correspondente falhou (e só esse): sem o bloqueio de `aEnviar` no formulário, o EC-51; sem limpar a mensagem em `aoIniciar`, o EC-50; sem `aoNaoEncontrar`, o CR-03. Os ficheiros foram repostos com `git checkout`.
+
+**Limitação:** o `fireEvent` despacha os dois cliques um a seguir ao outro, tal como um duplo clique real, mas não reproduz o tempo entre cliques de uma pessoa; o caso manual de [verification.md](verification.md), secção 6.6, continua a complementar o EC-51.
