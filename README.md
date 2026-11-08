@@ -133,9 +133,19 @@ npm start
 
 ### Testes
 
+Testes unitários e de integração do backend (Vitest e Supertest, com uma base SQLite em memória por teste):
+
 ```bash
 npm test
 ```
+
+Teste End-to-End (Playwright): entra como Gestora, abre um projeto, cria uma tarefa e confirma-a na lista. Usa o Microsoft Edge instalado no sistema, sem descarregar navegadores, e arranca o backend (porta 3100) e a interface (porta 5174) com uma base temporária própria, por isso não usa a base de desenvolvimento nem precisa de `.env`:
+
+```bash
+npm run test:e2e
+```
+
+Em caso de falha, o screenshot e o trace ficam em `test-results/` (`npx playwright show-trace <ficheiro trace.zip>`). Os cenários, os resultados e as limitações estão em [docs/test-plan.md](docs/test-plan.md).
 
 Para confirmar que o backend e a base de dados respondem, abre-se `http://localhost:3000/api/saude`.
 

@@ -1,8 +1,8 @@
 # Matriz — Plano de testes
 
-Versão 0.3 · 8 de novembro de 2026 · cenários essenciais das tarefas e das respetivas permissões; a 0.2 acrescenta os testes unitários da validação do título (secção 5); a 0.3, os testes de integração de criação e consulta (secção 6)
+Versão 0.4 · 8 de novembro de 2026 · cenários essenciais das tarefas e das respetivas permissões; a 0.2 acrescenta os testes unitários da validação do título (secção 5); a 0.3, os testes de integração de criação e consulta (secção 6); a 0.4, o teste End-to-End de criação (secção 7)
 
-> **Estado:** seleção dos cenários essenciais de tarefas: título inválido, criação e consulta, e acesso sem autorização. Todos têm teste automático de integração; todos menos o TP-04 têm verificação manual registada. O TP-01 tem também testes unitários. As decisões e a revisão das sugestões da IA estão na secção 4 (Ficha 4, Exercício 1); os testes unitários e os seus resultados, na secção 5 (Exercício 2); os testes de integração de criação e consulta, na secção 6 (Exercício 3).
+> **Estado:** seleção dos cenários essenciais de tarefas: título inválido, criação e consulta, e acesso sem autorização. Todos têm teste automático de integração; todos menos o TP-04 têm verificação manual registada. O TP-01 tem também testes unitários. As decisões e a revisão das sugestões da IA estão na secção 4 (Ficha 4, Exercício 1); os testes unitários e os seus resultados, na secção 5 (Exercício 2); os testes de integração de criação e consulta, na secção 6 (Exercício 3); o teste End-to-End, na secção 7 (Exercício 4).
 
 **Fontes:** [requirements.md](requirements.md) (matriz de permissões, secção 3; RF-09, RF-15), [user-stories.md](user-stories.md) (US-11, US-17; CA e EC), [`openapi.yaml`](../openapi.yaml) (códigos de erro e ordem de verificação, RV-25), [implementation-plan.md](implementation-plan.md) (estratégia de testes, secção 5) e [verification.md](verification.md) (casos 03, 04 e 08).
 
@@ -178,3 +178,52 @@ Execuções de 8 de novembro de 2026:
 | 2 | A persistência só era verificada através da API | O teste lê também as tabelas `tarefa` e `atribuicao`, para não depender só da resposta da própria API. |
 | 3 | Persistência depois de reiniciar o backend | Fica fora deste teste, que usa uma base em memória; está coberta por `bd.test.ts` ("persistência em ficheiro (RNF-09)") e pelo caso manual 03 de [verification.md](verification.md). |
 | 4 | Dois cenários negativos em vez de um | Um de validação (422) e um de recurso inexistente (404), os dois exemplos do enunciado. |
+
+## 7. Teste End-to-End: criar uma tarefa pela interface (Ficha 4, Exercício 4)
+
+### 7.1 Ferramenta e ambiente
+
+- **Playwright** (`@playwright/test` 1.64.1, dependência de desenvolvimento na raiz, versão fixa). Não havia ferramenta E2E no projeto; a dependência foi aprovada antes de ser acrescentada. Escolheu-se a 1.64.1 em vez da 1.65.0, publicada três dias antes, por estar disponível há mais tempo.
+- **Navegador:** o Microsoft Edge instalado no sistema (`channel: 'msedge'`), para não descarregar navegadores (`playwright install` não foi usado).
+- **Arranque** (`playwright.config.ts`): o Playwright arranca o backend na porta 3100 (`bd:migrar`, `bd:seed` e `dev -w backend`) e a interface na porta 5174, e para-os no fim. As portas não chocam com um `npm run dev` (3000 e 5173).
+- **Dados isolados:** cada execução usa uma base SQLite nova na pasta temporária do sistema (`matriz-e2e-<instante>.sqlite`), com os dados de demonstração e uma palavra-passe de teste fictícia (`e2e/dados.ts`). A base de desenvolvimento não é usada e não é preciso `.env`. Antes de cada execução, `e2e/limpar-bases.ts` apaga as bases de execuções anteriores; a da última fica até à seguinte, para diagnóstico.
+
+```bash
+npm run test:e2e
+```
+
+### 7.2 Teste
+
+Ficheiro `e2e/criar-tarefa.spec.ts`: "CA-01.1, CA-11.1, CA-11.5: a Gestora entra, cria uma tarefa e vê-a na lista do projeto".
+
+| Passo | Ação | Verificação |
+|---|---|---|
+| 1. Autenticar | Email e palavra-passe da Ana; "Entrar" | Título "Olá, Ana Silva" no painel (CA-01.1) |
+| 2. Abrir o projeto | Ligação "Lançamento do novo site" | Título "Tarefas (10)" (seed de CA-18.1) |
+| 3. Criar a tarefa | "Nova tarefa"; Título "Rever acessibilidade do formulário de contacto"; "Criar tarefa" | Mensagem `Tarefa "…" criada.` |
+| 4. Verificar na lista | — | "Tarefas (11)" sem recarregar (CA-11.5); a linha da tarefa existe e está "Por fazer" (CA-11.1) |
+| 5. Recarregar | `page.reload()` | "Tarefas (11)" e a tarefa continuam na lista (RNF-09) |
+
+**Seletores:** só por papel e nome acessível (`getByRole`, `getByLabel`), com os textos e os rótulos que a interface já tinha; não foi preciso alterar o código de produção nem acrescentar `data-testid`. **Esperas:** só as automáticas do Playwright (`expect(...).toBeVisible()`, `toHaveText`), sem esperas fixas. **Diagnóstico:** o trace e o screenshot só são guardados quando o teste falha (`test-results/`, fora do Git).
+
+### 7.3 Resultados
+
+Execuções de 8 de novembro de 2026:
+
+| Execução | Resultado |
+|---|---|
+| `npm run test:e2e`, cinco vezes | 1 teste a passar em todas (entre 6,7 e 8,2 s cada) |
+| Servidores nas portas 3100 e 5174 depois do teste | Nenhum: o Playwright parou-os |
+| Ficheiros criados no repositório | Só `test-results/` (no `.gitignore`) |
+| Bases temporárias depois de várias execuções | Só as da última execução (três ficheiros: `.sqlite`, `-wal` e `-shm`) |
+
+**O teste falha quando a interface está errada?** A mensagem de sucesso em `TarefasProjeto.tsx` foi alterada temporariamente para "Tarefa guardada.". O teste falhou no passo 3 (`expect(locator).toHaveText` sem o texto esperado) e guardou o screenshot, o contexto e o trace. O screenshot confirmou o diagnóstico: a tarefa foi criada e o total passou a 11, só a mensagem era diferente. O ficheiro foi reposto e `git status` confirmou que ficou sem alterações.
+
+### 7.4 Limitações e decisões
+
+| # | Ponto | Decisão |
+|---|---|---|
+| 1 | O teste depende do Edge instalado no sistema | Aceite para evitar descarregar navegadores. Noutra máquina sem Edge, muda-se `channel` para `chrome` ou corre-se `npx playwright install chromium` e retira-se `channel`. |
+| 2 | O backend do E2E usa a data real, porque só os testes de integração fixam o relógio | Não afeta o teste: a tarefa criada não tem data limite, e as verificações não dependem dos atrasos. |
+| 3 | O `npm test` não corre o E2E | Mantido à parte (`npm run test:e2e`): precisa de navegador e de arrancar os servidores, e demora mais. |
+| 4 | Os ficheiros de `e2e/` e `playwright.config.ts` não entram no `npm run typecheck -w backend` nem no `build` | O Playwright converte o TypeScript ao correr, por isso um erro de tipos não impede o teste. Verificados à mão a 8 de novembro de 2026 com `tsc --noEmit --strict` (sem erros); fica por decidir se se acrescenta um `tsconfig` próprio. |

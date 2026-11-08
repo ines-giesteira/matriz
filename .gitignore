@@ -11,6 +11,10 @@ dados/
 backend/dist/
 frontend/dist/
 
+# Resultados dos testes E2E (Playwright)
+test-results/
+playwright-report/
+
 # Configuração local do Claude (caminhos desta máquina)
 .claude/launch.json
 
