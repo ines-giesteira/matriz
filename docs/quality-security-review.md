@@ -2,7 +2,7 @@
 
 Versão 0.2 · 8 de novembro de 2026 · Ficha Prática 04, Exercício 5 · a 0.2 acrescenta a segunda revisão de segurança (secção 7, SEG-03 a SEG-10)
 
-> **Estado:** Code Review do último incremento de código (I10) e do diff da Ficha 4, Security Review do acesso a projetos e tarefas com contas de demonstração, e análise estática com as ferramentas disponíveis. **Nenhum IDOR nem escalada de privilégios.** A segunda revisão (secção 7) encontrou 8 pontos novos (3 de severidade Média e 5 de Baixa), sete confirmados por execução; todos os pontos estão decididos desde 8 de novembro de 2026 (secções 6 e 7.5). SEG-01 está corrigido (RV-35); as restantes correções estão por implementar.
+> **Estado:** Code Review do último incremento de código (I10) e do diff da Ficha 4, Security Review do acesso a projetos e tarefas com contas de demonstração, e análise estática com as ferramentas disponíveis. **Nenhum IDOR nem escalada de privilégios.** A segunda revisão (secção 7) encontrou 8 pontos novos (3 de severidade Média e 5 de Baixa), sete confirmados por execução; todos os pontos estão decididos desde 8 de novembro de 2026 (secções 6 e 7.5). SEG-01 a SEG-10 estão corrigidos; as correções de qualidade CR-01 a CR-04 estão por implementar.
 
 **Fontes:** [requirements.md](requirements.md) (matriz de permissões, RNF-04), [constraints.md](constraints.md) (secção 3, segurança e privacidade), [`openapi.yaml`](../openapi.yaml) (códigos de erro e ordem de verificação, RV-25), [verification.md](verification.md) (caso 08), [test-plan.md](test-plan.md).
 
@@ -126,7 +126,7 @@ Não há ESLint, Semgrep nem SonarQube configurados no projeto; não foram acres
 |---|---|---|
 | 1 | Correções aplicadas | SEG-01 corrigido (RV-35, commit `8aaeb44`). As restantes correções estão decididas (08/11/2026) e por implementar. |
 | 2 | SEG-01, limite de tentativas de entrada | **Decidido (RV-35, 08/11/2026):** 5 tentativas falhadas por conta em 15 minutos; à 5.ª, a entrada nessa conta fica bloqueada durante 15 minutos (duração confirmada); uma entrada com sucesso repõe o contador. **Implementado** (EC-57, P29). |
-| 3 | SEG-02, cabeçalhos de segurança | **Decidido (08/11/2026):** o backend acrescenta `X-Content-Type-Options`, `X-Frame-Options` e uma `Content-Security-Policy` às suas respostas, sem dependência nova. Os cabeçalhos da interface publicada continuam a depender do alojamento. Por implementar. |
+| 3 | SEG-02, cabeçalhos de segurança | **Decidido (08/11/2026) e implementado (P35):** o backend acrescenta `X-Content-Type-Options`, `X-Frame-Options` e uma `Content-Security-Policy` às suas respostas, sem dependência nova. Os cabeçalhos da interface publicada continuam a depender do alojamento. |
 | 4 | CR-01, testes do frontend | **Decidido (08/11/2026):** acrescentar testes de componentes ao frontend (dependência nova aprovada), começando por EC-50 e EC-51. Por implementar. |
 | 5 | CR-02, espaços nas pontas do título; CR-03, linha da tarefa eliminada; CR-04, isolamento do E2E | **Decidido (08/11/2026):** corrigir os três como proposto na secção 2. Por implementar. |
 | 6 | Script de IDOR da secção 3 | Passou a teste automático (`backend/testes/seguranca-acessos.test.ts`), aprovado na revisão humana; corre com `npm test`. Não é um teste de regressão de uma correção, porque nenhuma foi aplicada: protege a matriz de permissões contra regressões futuras. |
@@ -182,8 +182,8 @@ Os pontos foram confirmados com scripts executados fora do repositório, contra 
 
 | # | Ponto | Decisão |
 |---|---|---|
-| 1 | Correções aplicadas | Todas decididas a 08/11/2026. Implementadas: SEG-03, SEG-05, SEG-06, SEG-07 e SEG-08. Por implementar: SEG-02, SEG-04, SEG-09 e SEG-10. |
+| 1 | Correções aplicadas | Todas decididas a 08/11/2026. Todas implementadas (SEG-02 a SEG-10). |
 | 2 | SEG-03, arranque do piloto | **Decidido (RV-37) e implementado (P30):** `npm run bd:primeiro-admin` cria a primeira conta de Administrador; o seed recusa correr sem `NODE_ENV=development` e com o valor de exemplo. |
-| 3 | SEG-04, bloqueio na entrada | O limite de RV-35 reduz o abuso numa só conta, mas não o resolve: é por conta, e pedidos para muitos emails diferentes continuam a ocupar o servidor. **Decidido (08/11/2026):** verificar a palavra-passe numa worker thread (`node:worker_threads`, sem dependência nova). |
+| 3 | SEG-04, bloqueio na entrada | O limite de RV-35 reduz o abuso numa só conta, mas não o resolve: é por conta, e pedidos para muitos emails diferentes continuam a ocupar o servidor. **Decidido (08/11/2026) e implementado (P34):** a palavra-passe é verificada numa worker thread (`node:worker_threads`, sem dependência nova). Com 30 entradas em paralelo, `GET /api/saude` passou de 2554 ms para 7 ms. |
 | 4 | SEG-05, RV-31 ao retirar o perfil Gestor | **Decidido (RV-36) e implementado (EC-58, P31):** recusado com 422 `GESTOR_EM_VARIOS_PROJETOS` enquanto a pessoa for membro de mais de um projeto ativo. Fica por decidir o caso da anonimização: apaga os perfis de um ex-Gestor que continua membro de vários projetos ativos (RV-34). |
-| 5 | SEG-06 a SEG-10 | **Decididos (08/11/2026), todos a corrigir:** SEG-06 (RV-40: domínio `.invalid` recusado e anonimização conta a conta, P31, P33), SEG-07 (RV-38: máximo de 72 bytes, P31) e SEG-08 (RV-39: email em minúsculas, incluindo acentos, P32) estão implementados; SEG-09 (400 `PEDIDO_INVALIDO` para pedidos ilegíveis, sem registo); SEG-10 (`Secure` por omissão, exceto com `NODE_ENV=development`). |
+| 5 | SEG-06 a SEG-10 | **Decididos (08/11/2026) e corrigidos:** SEG-06 (RV-40: domínio `.invalid` recusado e anonimização conta a conta, P31, P33), SEG-07 (RV-38: máximo de 72 bytes, P31) e SEG-08 (RV-39: email em minúsculas, incluindo acentos, P32) estão implementados; SEG-09 (400 `PEDIDO_INVALIDO` para pedidos ilegíveis, sem registo, P36) e SEG-10 (`Secure` por omissão, exceto com `NODE_ENV=development`, P37) também. |

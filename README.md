@@ -114,7 +114,7 @@ O projeto "Lançamento do novo site" tem as 10 tarefas do CA-18.1 e do [wirefram
 
 Entra-se em `http://localhost:5173` com o email e a palavra-passe de uma conta de demonstração. O ciclo da sessão (Q-22, P2):
 
-1. Ao entrar, o backend cria a sessão e devolve o cookie `matriz_sessao` (httpOnly, `SameSite=Lax`; `Secure` quando `NODE_ENV=production`). Na base de dados guarda-se só o hash do identificador.
+1. Ao entrar, o backend cria a sessão e devolve o cookie `matriz_sessao` (httpOnly, `SameSite=Lax`; `Secure` sempre, exceto com `NODE_ENV=development`, P37). Na base de dados guarda-se só o hash do identificador.
 2. Cada pedido relê a conta e os perfis e renova a sessão: expira após `SESSAO_HORAS` horas sem atividade.
 3. A sessão termina com "Sair", quando expira ou quando a conta é desativada. A interface volta então à entrada com a mensagem "A sessão terminou. Entre novamente.".
 

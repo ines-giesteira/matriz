@@ -16,13 +16,13 @@ const credenciais = z.strictObject({ email: z.string(), palavraPasse: z.string()
 export function rotasSessao(bd: Bd, opcoes: OpcoesSessao, cookieSeguro: boolean, exigirSessao: RequestHandler): Router {
   const rotas = Router();
 
-  rotas.post('/sessao', (pedido, resposta) => {
+  rotas.post('/sessao', async (pedido, resposta) => {
     const dados = credenciais.safeParse(pedido.body);
     if (!dados.success) {
       resposta.status(400).json({ codigo: 'PEDIDO_INVALIDO', mensagem: 'O pedido tem um formato inválido.' });
       return;
     }
-    const resultado = entrar(bd, opcoes, dados.data.email, dados.data.palavraPasse);
+    const resultado = await entrar(bd, opcoes, dados.data.email, dados.data.palavraPasse);
     if (resultado.tipo === 'bloqueada') {
       // RV-35, EC-57, P29
       resposta.status(429).json({

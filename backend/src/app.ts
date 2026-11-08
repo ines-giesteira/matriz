@@ -23,6 +23,13 @@ export type Dependencias = {
 
 const OITO_HORAS_MS = 8 * 60 * 60 * 1000;
 
+/** Erros da leitura do corpo (express.json): têm um `type` e um estado 4xx. */
+function eErroDeLeituraDoPedido(erro: unknown): boolean {
+  if (typeof erro !== 'object' || erro === null) return false;
+  const { type, status } = erro as { type?: unknown; status?: unknown };
+  return typeof type === 'string' && typeof status === 'number' && status >= 400 && status < 500;
+}
+
 /**
  * Cria a aplicação Express. Recebe as dependências para os testes poderem usar uma base temporária.
  * Os módulos (contas, projetos, tarefas, progresso) são ligados aqui.
@@ -36,6 +43,16 @@ export function criarApp({ bd, sessao, cookieSeguro = false, hoje = () => hojeEm
 
   const app = express();
   app.disable('x-powered-by');
+  // Cabeçalhos de segurança em todas as respostas da API (SEG-02, P35). A API só devolve JSON:
+  // não carrega recursos nem pode ser mostrada dentro de outra página (clickjacking).
+  app.use((_pedido, resposta, seguinte) => {
+    resposta.set({
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'",
+    });
+    seguinte();
+  });
   app.use(express.json({ limit: '100kb' }));
 
   // Operações públicas: GET /saude e POST /sessao (openapi.yaml).
@@ -66,7 +83,9 @@ export function criarApp({ bd, sessao, cookieSeguro = false, hoje = () => hojeEm
       resposta.status(erro.estado).json(erro.corpo());
       return;
     }
-    if (erro?.type === 'entity.parse.failed') {
+    if (eErroDeLeituraDoPedido(erro)) {
+      // JSON mal formado, corpo acima de 100 kB, codificação desconhecida (SEG-09, P36): é um erro do pedido,
+      // não do servidor, por isso não fica no registo.
       resposta.status(400).json({ codigo: 'PEDIDO_INVALIDO', mensagem: 'O pedido tem um formato inválido.' });
       return;
     }

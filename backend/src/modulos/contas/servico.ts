@@ -10,6 +10,7 @@ import bcrypt from 'bcryptjs';
 import { paraMinusculas, type Bd } from '../../bd/ligacao.js';
 import * as repo from './repositorio.js';
 import type { Perfil } from './repositorio.js';
+import { verificarPalavraPasse } from './verificacao.js';
 
 export type UtilizadorAutenticado = { id: number; nome: string; email: string; perfis: Perfil[] };
 
@@ -58,20 +59,24 @@ export type ResultadoEntrada =
  * Inicia uma sessão. Credenciais erradas, email inexistente e conta desativada dão `recusada`
  * (a mesma resposta: CA-01.3, EC-20) e contam como falha. Com a conta bloqueada (RV-35, EC-57), dá `bloqueada`
  * sem verificar a palavra-passe, mesmo que esteja certa.
+ *
+ * A palavra-passe é verificada numa worker thread (SEG-04, P34). Para pedidos em simultâneo não passarem todos
+ * antes de a primeira falha ficar registada, cada tentativa conta como falha logo à partida; uma entrada com
+ * sucesso apaga as falhas desse email, incluindo a sua.
  */
-export function entrar(bd: Bd, opcoes: OpcoesSessao, email: string, palavraPasse: string): ResultadoEntrada {
+export async function entrar(bd: Bd, opcoes: OpcoesSessao, email: string, palavraPasse: string): Promise<ResultadoEntrada> {
   const agora = opcoes.agora();
   const chave = paraMinusculas(email.trim()); // RV-39
   repo.apagarFalhasAntigas(bd, new Date(agora.getTime() - JANELA_FALHAS_MS - DURACAO_BLOQUEIO_MS).toISOString());
   const fim = fimDoBloqueio(repo.falhasRecentes(bd, chave, MAXIMO_FALHAS_ENTRADA));
   if (fim && agora < fim) return { tipo: 'bloqueada' };
+  repo.registarFalhaEntrada(bd, chave, agora.toISOString());
 
+  const hash = repo.procurarContaPorEmail(bd, chave)?.palavraPasseHash ?? HASH_FICTICIO;
+  const correta = await verificarPalavraPasse(palavraPasse, hash);
+  // Relida depois da verificação: a conta pode ter sido desativada entretanto (RV-09).
   const conta = repo.procurarContaPorEmail(bd, chave);
-  const correta = bcrypt.compareSync(palavraPasse, conta?.palavraPasseHash ?? HASH_FICTICIO);
-  if (!conta || !correta || !conta.ativo) {
-    repo.registarFalhaEntrada(bd, chave, agora.toISOString());
-    return { tipo: 'recusada' };
-  }
+  if (!conta || !correta || !conta.ativo || conta.palavraPasseHash !== hash) return { tipo: 'recusada' };
 
   repo.apagarFalhasEntrada(bd, chave);
   repo.apagarSessoesExpiradas(bd, agora.toISOString());

@@ -23,7 +23,7 @@ export type Config = {
   seedPalavraPasse: string | undefined;
   /** Desenvolvimento só com NODE_ENV=development; qualquer outro valor, ou nenhum, conta como produção (RV-37). */
   desenvolvimento: boolean;
-  /** Cookie de sessão com Secure fora do desenvolvimento (P2): ativo quando NODE_ENV=production. */
+  /** Cookie de sessão com Secure fora do desenvolvimento (P2): ativo sempre, exceto com NODE_ENV=development (SEG-10, P37). */
   cookieSeguro: boolean;
 };
 
@@ -51,6 +51,6 @@ export function lerConfig(ambiente: NodeJS.ProcessEnv = process.env): Config {
     sessaoHoras: v.SESSAO_HORAS,
     seedPalavraPasse: v.SEED_PALAVRA_PASSE,
     desenvolvimento: ambiente.NODE_ENV === 'development',
-    cookieSeguro: ambiente.NODE_ENV === 'production',
+    cookieSeguro: ambiente.NODE_ENV !== 'development', // SEG-10, P37
   };
 }

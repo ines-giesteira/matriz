@@ -16,7 +16,7 @@ info:
       Todas as outras operações, exceto `GET /saude`, exigem esse cookie e uma conta ativa (RF-01, D-01).
     - Ciclo da sessão (Q-22, P2):
       1. `POST /sessao` com credenciais corretas e conta ativa cria a sessão no servidor e devolve o cookie
-         `matriz_sessao` (httpOnly, SameSite=Lax, Path=/; Secure fora do desenvolvimento). O cookie não tem
+         `matriz_sessao` (httpOnly, SameSite=Lax, Path=/; Secure exceto com `NODE_ENV=development`, P37). O cookie não tem
          Max-Age: a expiração é decidida no servidor. Na base de dados guarda-se só o hash do identificador.
       2. Cada pedido com o cookie relê a conta e os perfis e renova a expiração: a sessão expira após
          8 horas sem atividade (`SESSAO_HORAS`).
@@ -24,6 +24,8 @@ info:
          a termina com `DELETE /sessao`. A partir daí, os pedidos recebem 401 `NAO_AUTENTICADO` e a
          resposta apaga o cookie.
     - A autorização é verificada em cada pedido, com o estado atual da conta, dos perfis e dos papéis (RV-09).
+    - Todas as respostas levam `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` e
+      `Content-Security-Policy: default-src 'none'; frame-ancestors 'none'` (P35).
     - A identidade do utilizador, o autor dos comentários e as datas são obtidos no backend,
       nunca aceites do cliente (Q-15, Q-22).
     - Estados e prioridades usam códigos técnicos (Q-21); a interface traduz para português (RNF-01).
@@ -32,7 +34,8 @@ info:
       Administrador só vê o nome e o Gestor de cada projeto (A-02, Q-18, Q-19).
 
     Códigos de erro:
-    - 400: pedido mal formado (JSON inválido, campo desconhecido, tipo errado ou valor fora do enumerado).
+    - 400: pedido mal formado (JSON inválido, corpo acima de 100 kB, codificação desconhecida, campo desconhecido,
+      tipo errado ou valor fora do enumerado) (P36).
     - 401: sem sessão válida ou com a conta desativada.
     - 403: o utilizador tem acesso ao recurso, mas o seu perfil ou papel não permite a ação.
     - 404: o recurso não existe ou o utilizador não é membro do projeto; não se revela se existe (D-10, EC-18).
