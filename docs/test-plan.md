@@ -1,6 +1,6 @@
 # Matriz — Plano de testes
 
-Versão 0.4 · 8 de novembro de 2026 · cenários essenciais das tarefas e das respetivas permissões; a 0.2 acrescenta os testes unitários da validação do título (secção 5); a 0.3, os testes de integração de criação e consulta (secção 6); a 0.4, o teste End-to-End de criação (secção 7)
+Versão 0.5 · 8 de novembro de 2026 · cenários essenciais das tarefas e das respetivas permissões; a 0.2 acrescenta os testes unitários da validação do título (secção 5); a 0.3, os testes de integração de criação e consulta (secção 6); a 0.4, o teste End-to-End de criação (secção 7); a 0.5, os testes de segurança na cobertura do TP-05 e do TP-06 (Exercício 5)
 
 > **Estado:** seleção dos cenários essenciais de tarefas: título inválido, criação e consulta, e acesso sem autorização. Todos têm teste automático de integração; todos menos o TP-04 têm verificação manual registada. O TP-01 tem também testes unitários. As decisões e a revisão das sugestões da IA estão na secção 4 (Ficha 4, Exercício 1); os testes unitários e os seus resultados, na secção 5 (Exercício 2); os testes de integração de criação e consulta, na secção 6 (Exercício 3); o teste End-to-End, na secção 7 (Exercício 4).
 
@@ -39,8 +39,8 @@ Os caminhos são relativos a `/api/projetos/{p}`, em que `{p}` é o projeto e `{
 | TP-02 | "CA-11.1: só com o título: "Por fazer", prioridade Média, sem responsáveis, e aparece na lista"; "CA-11.5: as contagens do projeto refletem a nova tarefa" | Caso 03 |
 | TP-03 | "CA-11.2: com todos os campos; os valores ficam guardados (persistência)"; em `integracao-tarefa.test.ts`, "CA-11.2, CA-17.2: o Gestor cria com 201 e a tarefa é devolvida igual ao Gestor e a um membro" (secção 6) | Caso 03 (reinício do backend) |
 | TP-04 | "CA-17.2: um membro lê a descrição de uma tarefa de que não é responsável" (leitura); "CA-14.3: um Membro não altera a descrição de uma tarefa de que não é responsável" (edição recusada) | — |
-| TP-05 | "EC-05: um Membro recebe 403 e um Gestor de outro projeto recebe 404 (autorização)" | Caso 08 (API); passo M1 da secção 2.3 (sem ações de gestão na interface) |
-| TP-06 | "EC-18: uma tarefa de outro projeto não é encontrada, mesmo mudando o identificador do projeto"; "D-05: não lê, não cria nem elimina tarefas (404)" | Caso 08 |
+| TP-05 | "EC-05: um Membro recebe 403 e um Gestor de outro projeto recebe 404 (autorização)"; em `seguranca-acessos.test.ts`, "V01-V09: a Marta (Membro) não faz ações de Gestor nem de Administrador" | Caso 08 (API); passo M1 da secção 2.3 (sem ações de gestão na interface) |
+| TP-06 | "EC-18: uma tarefa de outro projeto não é encontrada, mesmo mudando o identificador do projeto"; "D-05: não lê, não cria nem elimina tarefas (404)"; em `seguranca-acessos.test.ts`, "H01-H14" e "H16-H19" ([quality-security-review.md](quality-security-review.md), secção 3) | Caso 08 |
 
 Para correr o ficheiro que contém estes testes (inclui os outros testes de tarefas):
 
