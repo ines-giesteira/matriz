@@ -1,8 +1,8 @@
 # Matriz — Plano de testes
 
-Versão 0.2 · 5 de novembro de 2026 · cenários essenciais das tarefas e das respetivas permissões; a 0.2 acrescenta os testes unitários da validação do título (secção 5)
+Versão 0.3 · 8 de novembro de 2026 · cenários essenciais das tarefas e das respetivas permissões; a 0.2 acrescenta os testes unitários da validação do título (secção 5); a 0.3, os testes de integração de criação e consulta (secção 6)
 
-> **Estado:** seleção dos cenários essenciais de tarefas: título inválido, criação e consulta, e acesso sem autorização. Todos têm teste automático de integração; todos menos o TP-04 têm verificação manual registada. O TP-01 tem também testes unitários. As decisões e a revisão das sugestões da IA estão na secção 4 (Ficha 4, Exercício 1); os testes unitários e os seus resultados, na secção 5 (Exercício 2).
+> **Estado:** seleção dos cenários essenciais de tarefas: título inválido, criação e consulta, e acesso sem autorização. Todos têm teste automático de integração; todos menos o TP-04 têm verificação manual registada. O TP-01 tem também testes unitários. As decisões e a revisão das sugestões da IA estão na secção 4 (Ficha 4, Exercício 1); os testes unitários e os seus resultados, na secção 5 (Exercício 2); os testes de integração de criação e consulta, na secção 6 (Exercício 3).
 
 **Fontes:** [requirements.md](requirements.md) (matriz de permissões, secção 3; RF-09, RF-15), [user-stories.md](user-stories.md) (US-11, US-17; CA e EC), [`openapi.yaml`](../openapi.yaml) (códigos de erro e ordem de verificação, RV-25), [implementation-plan.md](implementation-plan.md) (estratégia de testes, secção 5) e [verification.md](verification.md) (casos 03, 04 e 08).
 
@@ -37,7 +37,7 @@ Os caminhos são relativos a `/api/projetos/{p}`, em que `{p}` é o projeto e `{
 |---|---|---|
 | TP-01 | Unitários: os 5 testes de `validacao-tarefa.test.ts` (secção 5). Integração: "EC-01, EC-02: título vazio ou só com espaços é recusado (regra de validação)"; "EC-29: título acima de 200 e descrição acima de 5000 caracteres são recusados" | Caso 04 |
 | TP-02 | "CA-11.1: só com o título: "Por fazer", prioridade Média, sem responsáveis, e aparece na lista"; "CA-11.5: as contagens do projeto refletem a nova tarefa" | Caso 03 |
-| TP-03 | "CA-11.2: com todos os campos; os valores ficam guardados (persistência)" | Caso 03 (reinício do backend) |
+| TP-03 | "CA-11.2: com todos os campos; os valores ficam guardados (persistência)"; em `integracao-tarefa.test.ts`, "CA-11.2, CA-17.2: o Gestor cria com 201 e a tarefa é devolvida igual ao Gestor e a um membro" (secção 6) | Caso 03 (reinício do backend) |
 | TP-04 | "CA-17.2: um membro lê a descrição de uma tarefa de que não é responsável" (leitura); "CA-14.3: um Membro não altera a descrição de uma tarefa de que não é responsável" (edição recusada) | — |
 | TP-05 | "EC-05: um Membro recebe 403 e um Gestor de outro projeto recebe 404 (autorização)" | Caso 08 (API); passo M1 da secção 2.3 (sem ações de gestão na interface) |
 | TP-06 | "EC-18: uma tarefa de outro projeto não é encontrada, mesmo mudando o identificador do projeto"; "D-05: não lê, não cria nem elimina tarefas (404)" | Caso 08 |
@@ -127,3 +127,54 @@ Todas as alterações foram detetadas. A regra não foi alterada para obter test
 | 3 | O valor-limite usa só letras | O título é validado e guardado sem retirar os espaços das pontas, e a documentação não diz se contam para o limite; o teste não depende disso. |
 
 **Por decidir (pressuposto por aprovar):** se os espaços nas pontas do título contam para o limite de 200 caracteres. Hoje contam (199 letras e um espaço dão 200 e são aceites), ao contrário do nome do projeto, em que os espaços nas pontas são retirados. Não foi alterado.
+
+## 6. Testes de integração: criar e consultar uma tarefa (Ficha 4, Exercício 3)
+
+### 6.1 Testes
+
+Ficheiro `backend/testes/integracao-tarefa.test.ts` (Vitest e Supertest), sobre a aplicação Express real e os caminhos e campos de [`openapi.yaml`](../openapi.yaml). Atores do seed: a Ana, Gestora de "Lançamento do novo site", e a Marta, membro do mesmo projeto.
+
+| Tipo | Teste | Entradas | Resultado esperado | Resultado |
+|---|---|---|---|---|
+| Fluxo | "CA-11.2, CA-17.2: o Gestor cria com 201 e a tarefa é devolvida igual ao Gestor e a um membro" | Ana: `POST /api/projetos/{p}/tarefas` com título, descrição, a Marta como responsável, `HIGH` e `2026-11-30`; depois `GET /api/projetos/{p}/tarefas/{id}` pela Ana e pela Marta | `POST` 201 com todos os campos do schema `Tarefa` (estado `TODO`, `emAtraso` falso); na base, a linha de `tarefa` com os mesmos valores e a atribuição da Marta em `atribuicao`; `GET` 200 com a mesma tarefa, para o Gestor e para o membro (RV-17) | Passa |
+| Negativo | "EC-02: um título só com espaços dá 422 TITULO_OBRIGATORIO e nada é guardado" | Ana: `POST` com `titulo: "   "` | 422 `TITULO_OBRIGATORIO`, `campo: titulo`; o número de tarefas na base não muda | Passa |
+| Negativo | "EC-11, EC-18: uma tarefa que não existe dá 404 NAO_ENCONTRADO" | Ana: `GET /api/projetos/{p}/tarefas/999999` | 404 `NAO_ENCONTRADO` | Passa |
+
+```bash
+npx vitest run --root backend testes/integracao-tarefa.test.ts
+```
+
+### 6.2 As asserções verificam os requisitos?
+
+O código de produção foi alterado temporariamente de três formas, e os testes foram corridos com cada alteração. No fim, os dois ficheiros foram repostos e o `git status` confirmou que ficaram sem alterações.
+
+| Alteração temporária | Testes que falharam |
+|---|---|
+| `inserirTarefa` não guarda a descrição | Fluxo (a linha na base e as respostas da API diferem) |
+| `inserirTarefa` não guarda os responsáveis | Fluxo |
+| A validação do título deixa de usar `trim()` | EC-02: a base de dados recusa o título pela sua restrição `CHECK`, mas a API deixa de responder 422 |
+
+### 6.3 Base de dados de teste e isolamento
+
+- **Base de teste:** cada teste abre uma base SQLite nova em memória (`abrirBd(':memory:')`), aplica as migrations e os dados de demonstração (`beforeEach`), e fecha-a no fim (`afterEach`). A aplicação recebe essa base, por isso não lê `CAMINHO_BD` nem toca na base de desenvolvimento.
+- **Limpeza:** como a base é descartada a cada teste, nenhum dado passa de um teste para outro nem de uma execução para a seguinte; não é precisa limpeza manual.
+- **Data:** o dia de hoje é fixado em 29/10/2026, para que `emAtraso` não dependa do dia em que se corre o teste (A-08).
+
+Execuções de 8 de novembro de 2026:
+
+| Execução | Resultado |
+|---|---|
+| Duas vezes seguidas | 3 testes a passar em ambas |
+| Ordem aleatória (`--sequence.shuffle`, sementes 1 e 42) | 3 testes a passar em ambas |
+| Cada teste sozinho (`-t "CA-11.2"`, `-t "EC-02"`, `-t "EC-11"`) | Cada um passa sem os outros |
+| Ficheiros SQLite ou pasta `dados/` criados no repositório | Nenhum |
+| `npm test` | 11 ficheiros e 243 testes, todos a passar; `npm run typecheck -w backend` sem erros |
+
+### 6.4 Decisões
+
+| # | Ponto | Decisão |
+|---|---|---|
+| 1 | O teste "CA-11.2" de `tarefas.test.ts` já criava e consultava, mas não verificava os códigos HTTP nem todos os campos | Teste novo e próprio para o exercício, sem alterar o existente. |
+| 2 | A persistência só era verificada através da API | O teste lê também as tabelas `tarefa` e `atribuicao`, para não depender só da resposta da própria API. |
+| 3 | Persistência depois de reiniciar o backend | Fica fora deste teste, que usa uma base em memória; está coberta por `bd.test.ts` ("persistência em ficheiro (RNF-09)") e pelo caso manual 03 de [verification.md](verification.md). |
+| 4 | Dois cenários negativos em vez de um | Um de validação (422) e um de recurso inexistente (404), os dois exemplos do enunciado. |
