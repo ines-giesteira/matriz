@@ -141,7 +141,7 @@ export function criar(bd: Bd, hoje: Hoje, utilizador: UtilizadorAutenticado, pro
   exigirNaoArquivado(projeto); // EC-16
   const pedido = validarFormato(novaTarefa, corpo);
   const dados: DadosTarefa = {
-    titulo: pedido.titulo,
+    titulo: pedido.titulo.trim(), // P38: sem espaços nas pontas, como o nome do projeto (P13)
     descricao: pedido.descricao ?? null,
     prioridade: pedido.prioridade ?? 'MEDIUM',
     dataLimite: pedido.dataLimite ?? null, // pode estar no passado (A-07, EC-06)
@@ -175,7 +175,7 @@ export function editar(
   exigirNaoArquivado(projeto);
   const alteracao = validarFormato(alteracaoTarefa, corpo);
   const dados: DadosTarefa = {
-    titulo: alteracao.titulo ?? atual.titulo,
+    titulo: alteracao.titulo !== undefined ? alteracao.titulo.trim() : atual.titulo, // P38
     descricao: alteracao.descricao !== undefined ? alteracao.descricao : atual.descricao,
     prioridade: alteracao.prioridade ?? atual.prioridade,
     dataLimite: alteracao.dataLimite !== undefined ? alteracao.dataLimite : atual.dataLimite,

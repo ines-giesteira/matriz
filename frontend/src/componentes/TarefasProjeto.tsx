@@ -170,7 +170,12 @@ export function TarefasProjeto({ projeto, versao = 0 }: { projeto: Projeto; vers
                   </td>
                   <td data-rotulo="Estado">
                     {!projeto.arquivado && podeMudarEstado(t, utilizadorId, projeto.souGestor) ? (
-                      <SeletorEstado tarefa={t} aoMudar={atualizar} aoIniciar={() => setSucesso(null)} />
+                      <SeletorEstado
+                        tarefa={t}
+                        aoMudar={atualizar}
+                        aoIniciar={() => setSucesso(null)}
+                        aoNaoEncontrar={atualizar} // CR-03: a linha de uma tarefa que já não existe desaparece
+                      />
                     ) : (
                       NOME_ESTADO[t.estado]
                     )}

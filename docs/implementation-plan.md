@@ -79,6 +79,9 @@ Detalhes que a documentação não fixava e de que a implementação precisa. Ap
 | P35 | Todas as respostas da API levam `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` e `Content-Security-Policy: default-src 'none'; frame-ancestors 'none'`, com um middleware próprio. Os cabeçalhos da interface publicada dependem do alojamento, por definir. Aprovado a 08/11/2026. | SEG-02. |
 | P36 | Um pedido que não se consegue ler (JSON mal formado, corpo acima de 100 kB, codificação desconhecida) responde 400 `PEDIDO_INVALIDO` e não fica no registo. Aprovado a 08/11/2026. | SEG-09. |
 | P37 | O cookie de sessão leva `Secure` sempre, exceto com `NODE_ENV=development` (antes, só com `NODE_ENV=production`). O `.env.example` e o E2E definem `NODE_ENV=development`. Aprovado a 08/11/2026. | SEG-10. |
+| P38 | O título da tarefa guarda-se sem espaços no início e no fim, ao criar e ao editar, e o limite de 200 caracteres conta-se depois, como no nome do projeto (P13). Aprovado a 08/11/2026. | CR-02 ([quality-security-review.md](quality-security-review.md)). |
+| P39 | Na lista de tarefas, quando mudar o estado de uma tarefa recebe 404 (tarefa eliminada noutro pedido), a lista e o progresso recarregam. Aprovado a 08/11/2026. | CR-03. |
+| P40 | O caminho da base do E2E é gerado em cada execução e só se reaproveita dentro dessa execução (um `MATRIZ_E2E_BD` do ambiente é ignorado); a limpeza só apaga bases `matriz-e2e-*` com mais de um dia. Aprovado a 08/11/2026. | CR-04. |
 
 ## 3. Estrutura prevista
 

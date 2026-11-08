@@ -126,7 +126,7 @@ Todas as alterações foram detetadas. A regra não foi alterada para obter test
 | 2 | Testar os dois lados do limite (200 e 201) | Mantido: só assim se deteta um `>=` no lugar de `>` (secção 5.3). |
 | 3 | O valor-limite usa só letras | O título é validado e guardado sem retirar os espaços das pontas, e a documentação não diz se contam para o limite; o teste não depende disso. |
 
-**Por decidir (pressuposto por aprovar):** se os espaços nas pontas do título contam para o limite de 200 caracteres. Hoje contam (199 letras e um espaço dão 200 e são aceites), ao contrário do nome do projeto, em que os espaços nas pontas são retirados. Não foi alterado.
+**Decidido a 8 de novembro de 2026 (CR-02, P38):** o título guarda-se sem espaços nas pontas e o limite de 200 caracteres conta-se depois, como no nome do projeto. `validarDados` continua a receber o título já sem espaços nas pontas; o teste de integração `CR-02, P38` (`integracao-tarefa.test.ts`) verifica a criação e a edição.
 
 ## 6. Testes de integração: criar e consultar uma tarefa (Ficha 4, Exercício 3)
 
@@ -226,4 +226,5 @@ Execuções de 8 de novembro de 2026:
 | 1 | O teste depende do Edge instalado no sistema | Aceite para evitar descarregar navegadores. Noutra máquina sem Edge, muda-se `channel` para `chrome` ou corre-se `npx playwright install chromium` e retira-se `channel`. |
 | 2 | O backend do E2E usa a data real, porque só os testes de integração fixam o relógio | Não afeta o teste: a tarefa criada não tem data limite, e as verificações não dependem dos atrasos. |
 | 3 | O `npm test` não corre o E2E | Mantido à parte (`npm run test:e2e`): precisa de navegador e de arrancar os servidores, e demora mais. |
-| 4 | Os ficheiros de `e2e/` e `playwright.config.ts` não entram no `npm run typecheck -w backend` nem no `build` | O Playwright converte o TypeScript ao correr, por isso um erro de tipos não impede o teste. Verificados à mão a 8 de novembro de 2026 com `tsc --noEmit --strict` (sem erros); fica por decidir se se acrescenta um `tsconfig` próprio. |
+| 4 | A base do E2E podia vir de `MATRIZ_E2E_BD` do ambiente, e a limpeza apagava as bases de outras execuções (CR-04) | Corrigido (P40): o caminho é gerado em cada execução e um valor do ambiente é ignorado; só se apagam bases com mais de um dia. |
+| 5 | Os ficheiros de `e2e/` e `playwright.config.ts` não entram no `npm run typecheck -w backend` nem no `build` | O Playwright converte o TypeScript ao correr, por isso um erro de tipos não impede o teste. Verificados à mão a 8 de novembro de 2026 com `tsc --noEmit --strict` (sem erros); fica por decidir se se acrescenta um `tsconfig` próprio. |

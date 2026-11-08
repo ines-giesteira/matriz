@@ -104,3 +104,24 @@ describe('cenários negativos (Exercício 3)', () => {
     expect(resposta.body).toMatchObject({ codigo: 'NAO_ENCONTRADO' });
   });
 });
+
+describe('CR-02, P38: o título guarda-se sem espaços nas pontas', () => {
+  it('ao criar e ao editar, os espaços nas pontas são retirados; os do meio mantêm-se', async () => {
+    const ana = await como('ana');
+    const criada = await ana.post(`/api/projetos/${SITE()}/tarefas`).send({ titulo: '  Rever  orçamento  ' });
+    expect(criada.status).toBe(201);
+    expect(criada.body.titulo).toBe('Rever  orçamento');
+    const editada = await ana.patch(`/api/projetos/${SITE()}/tarefas/${criada.body.id}`).send({ titulo: '\tAprovar\n' });
+    expect(editada.body.titulo).toBe('Aprovar');
+  });
+
+  it('RV-16: o limite de 200 caracteres conta-se depois de retirar os espaços das pontas', async () => {
+    const ana = await como('ana');
+    const titulo = `   ${'a'.repeat(200)}   `;
+    const resposta = await ana.post(`/api/projetos/${SITE()}/tarefas`).send({ titulo });
+    expect(resposta.status).toBe(201);
+    expect(resposta.body.titulo).toHaveLength(200);
+    const longo = await ana.post(`/api/projetos/${SITE()}/tarefas`).send({ titulo: ` ${'a'.repeat(201)} ` });
+    expect(longo.body).toMatchObject({ codigo: 'LIMITE_EXCEDIDO', limite: 200 });
+  });
+});

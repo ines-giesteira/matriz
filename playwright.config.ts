@@ -6,9 +6,15 @@ import path from 'node:path';
 import { defineConfig } from '@playwright/test';
 import { PALAVRA_PASSE_E2E, PORTA_BACKEND_E2E, PORTA_INTERFACE_E2E } from './e2e/dados';
 
-// Guardado no ambiente para que todos os processos do Playwright usem o mesmo caminho.
-process.env.MATRIZ_E2E_BD ??= path.join(os.tmpdir(), `matriz-e2e-${Date.now()}.sqlite`);
-const caminhoBd = process.env.MATRIZ_E2E_BD;
+// O caminho da base é gerado em cada execução e guardado no ambiente, para os processos do Playwright usarem o
+// mesmo (CR-04, P40). Só se reaproveita se foi gerado por este processo ou pelo processo que o lançou (os workers);
+// um MATRIZ_E2E_BD que já venha do ambiente de quem corre os testes é ignorado, para nunca escrever noutra base.
+const dono = process.env.MATRIZ_E2E_DONO;
+if (dono !== String(process.pid) && dono !== String(process.ppid)) {
+  process.env.MATRIZ_E2E_DONO = String(process.pid);
+  process.env.MATRIZ_E2E_BD = path.join(os.tmpdir(), `matriz-e2e-${process.pid}-${Date.now()}.sqlite`);
+}
+const caminhoBd = process.env.MATRIZ_E2E_BD!;
 
 export default defineConfig({
   testDir: 'e2e',
