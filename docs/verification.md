@@ -1,6 +1,6 @@
 # Matriz — Verificação
 
-Versão 0.3 · 2 de novembro de 2026 · Ficha Prática 03, Exercícios 7 (incremento I8), 8 (incremento I9) e 9 (incremento I10)
+Versão 0.4 · 8 de novembro de 2026 · Ficha Prática 03, Exercícios 7 (incremento I8), 8 (incremento I9) e 9 (incremento I10) · a 0.4 acrescenta notas sobre o que a Ficha 4 mudou depois (secções 3, 6.5, 6.6 e 7.1), sem alterar os resultados registados a 1 e 2 de novembro.
 
 > **Estado:** percurso manual completo do I8 (secções 1 a 5), cenários 01 a 09 da Ficha 3 do I9 (secção 6) e revisão para a entrega do I10 (secção 7), feitos na interface e em pedidos diretos à API, com a base de dados real. As verificações manuais estão separadas dos testes automáticos (secções 3 e 6.3).
 
@@ -87,6 +87,8 @@ Cada passo foi feito na interface; o resultado observado foi confirmado no ecrã
 ## 3. Testes automáticos
 
 `npm test`: **234 testes, 9 ficheiros, todos a passar** (2 de novembro de 2026). `npm run typecheck -w backend` e `npm run build` sem erros.
+
+A Ficha 4 acrescentou testes unitários, de integração, de segurança, de componentes do frontend e um teste End-to-End. A execução final está em [test-plan.md](test-plan.md), secção 9.
 
 | Ficheiro | O que cobre |
 |---|---|
@@ -181,10 +183,12 @@ A persistência num ficheiro entre ligações está coberta por `bd.test.ts` ("p
 
 **Fica de fora:** no R3, a linha da tarefa eliminada continua na lista até se recarregar ou fazer outra alteração. O erro é mostrado e nenhum dado se perde; não faz parte do P1.
 
+**Atualização (8 de novembro de 2026, Ficha 4):** a linha da tarefa eliminada passou a desaparecer da lista (CR-03, P39). O P1 e o CR-03 têm agora também testes automáticos de componentes do frontend (P41, [test-plan.md](test-plan.md), secção 8).
+
 ### 6.6 Verificações manuais e limitações
 
 - **Manual:** os casos 01 a 09 acima, na interface e com pedidos diretos à API. **Automático:** secção 6.3 e secção 3.
-- EC-51 (submissão repetida): dois cliques seguidos em "Criar tarefa" criaram uma só tarefa, mas o formulário fecha-se com a resposta, por isso o segundo clique pode não ter chegado a submeter. A proteção está no código (botão desativado enquanto o pedido está em curso, `disabled={aEnviar}` em `FormularioTarefa.tsx` e `ComentariosTarefa.tsx`) e foi revista no I8; não foi possível forçar um pedido lento.
+- EC-51 (submissão repetida): dois cliques seguidos em "Criar tarefa" criaram uma só tarefa, mas o formulário fecha-se com a resposta, por isso o segundo clique pode não ter chegado a submeter. A proteção está no código (botão desativado enquanto o pedido está em curso, `disabled={aEnviar}` em `FormularioTarefa.tsx` e `ComentariosTarefa.tsx`) e foi revista no I8; não foi possível forçar um pedido lento. Desde a Ficha 4, o EC-51 tem também um teste automático de componentes, com a resposta da API atrasada (P41, [test-plan.md](test-plan.md), secção 8).
 - Com o backend parado, o encaminhamento do Vite responde 502 e a interface mostra a mensagem genérica "Ocorreu um erro inesperado. Tente novamente." em vez de "Não foi possível contactar o servidor.". Só acontece em desenvolvimento, por causa do encaminhamento.
 - O percurso alterou a base de verificação (projetos 4 e 5, tarefa 14, tarefas 3 e 5, comentários), que foi apagada no fim. A base de desenvolvimento `dados/matriz.sqlite` não foi usada.
 - O percurso não mediu o desempenho nem a acessibilidade com leitores de ecrã.
@@ -207,7 +211,7 @@ Revisão do código da Ficha 3 (de `01c3e43` até ao I9: 73 ficheiros de `backen
 
 Observações, sem alteração (não há regra documentada que as decida):
 
-- O nome do projeto e o nome da conta guardam-se sem espaços nas pontas (P13, P26), mas o título da tarefa e o comentário guardam-se como foram escritos. Uniformizar exigiria uma regra nova, a aprovar.
+- O nome do projeto e o nome da conta guardam-se sem espaços nas pontas (P13, P26), mas o título da tarefa e o comentário guardam-se como foram escritos. Uniformizar exigiria uma regra nova, a aprovar. Decidido depois, na Ficha 4: o título da tarefa também se guarda sem espaços nas pontas (CR-02, P38); o comentário continua a guardar-se como foi escrito.
 - Na administração de contas, depois de uma ação recusada, o erro continua por baixo da linha até à ação seguinte nessa linha, mesmo que entretanto outra linha mostre uma mensagem de sucesso. Já era assim antes da refatoração (secção 7.2).
 
 ### 7.2 Refatoração

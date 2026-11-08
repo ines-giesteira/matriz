@@ -40,6 +40,8 @@ O detalhe, as regras de negócio e a matriz de permissões estão em [docs/requi
 | [`openapi.yaml`](openapi.yaml) | Contrato REST (OpenAPI 3.1) com todas as operações do MVP. |
 | [`docs/verification.md`](docs/verification.md) | Percurso manual com a API e a base de dados reais (I8), cenários 01 a 09 da Ficha 3 com evidência (I9), revisão para a entrega e exemplos de uso da IA (I10), testes automáticos e problemas encontrados. |
 | [`docs/implementation-plan.md`](docs/implementation-plan.md) | Conciliação com a Ficha 3, propostas técnicas, estrutura prevista, incrementos e estado da implementação. |
+| [`docs/test-plan.md`](docs/test-plan.md) | Plano de testes das tarefas e permissões (TP-01 a TP-06), testes unitários, de integração, End-to-End e de componentes, e execução final. |
+| [`docs/quality-security-review.md`](docs/quality-security-review.md) | Revisão de código (CR-01 a CR-04) e de segurança (SEG-01 a SEG-10), com evidências, decisões e estado final. |
 | [`docs/ui/`](docs/ui/wireframe.md) | Wireframe de baixa fidelidade da página do projeto (`wireframe.png`), com a validação face ao MVP. |
 | [`AGENTS.md`](AGENTS.md) | Instruções persistentes para agentes de desenvolvimento. |
 
@@ -161,10 +163,11 @@ Para confirmar que o backend e a base de dados respondem, abre-se `http://localh
 ## Estado atual
 
 - **Specification Pack (Aula 1):** concluído e revisto (RV-01 a RV-23).
-- **Architecture Pack (Aula 2):** concluído e revisto (RV-24 a RV-30). A arquitetura, o modelo de dados, o contrato OpenAPI e o wireframe continuam como proposta, por aprovar pela dona do produto (R-06).
-- **Implementação (Aula 3):** plano consolidado em [docs/implementation-plan.md](docs/implementation-plan.md); âmbito conciliado com a Ficha 3 (Q-14 a Q-22). As propostas técnicas do plano (P1 a P28) estão aprovadas.
-- **Questões:** todas decididas (Q-01 a Q-22). Revisões da dona do produto a 01/11/2026: RV-31 (um só projeto ativo sem o perfil Gestor), RV-32 (o Administrador nunca é membro e gere os membros) e RV-33 (anonimização das contas desativadas ao fim de um ano, implementada no I3).
+- **Architecture Pack (Aula 2):** concluído e revisto (RV-24 a RV-30). A arquitetura, o modelo de dados, o contrato OpenAPI e o wireframe foram aprovados pela dona do produto a 08/11/2026 (RV-41); os pressupostos que cada documento assinala continuam por aprovar.
+- **Implementação (Aula 3):** plano consolidado em [docs/implementation-plan.md](docs/implementation-plan.md); âmbito conciliado com a Ficha 3 (Q-14 a Q-22). As propostas técnicas do plano estão aprovadas: P1 a P28 na Ficha 3 e P29 a P41 na Ficha 4.
+- **Testes e qualidade (Aula 4):** plano de testes, testes unitários, de integração, End-to-End e de componentes do frontend em [docs/test-plan.md](docs/test-plan.md); revisão de código e de segurança em [docs/quality-security-review.md](docs/quality-security-review.md), sem IDOR nem escalada de privilégios, com CR-01 a CR-04 e SEG-01 a SEG-10 corrigidos.
+- **Questões:** Q-01 a Q-22 decididas; Q-23 (anonimização de quem está em vários projetos ativos) por decidir. Revisões da dona do produto a 01/11/2026: RV-31 (um só projeto ativo sem o perfil Gestor), RV-32 (o Administrador nunca é membro e gere os membros) e RV-33 (anonimização das contas desativadas ao fim de um ano, implementada no I3); a 08/11/2026: RV-35 a RV-40 (segunda revisão de segurança) e RV-41 (aprovação do Architecture Pack).
 - **Stack:** Node.js 26 e TypeScript, Express, React com Vite, SQLite através de `node:sqlite` (Q-14).
 - **Código:** incrementos I0 (estrutura, configuração, esquema, migrations, seed e testes), I1 (sessão e autorização base), I2 (projetos e administração de projetos), I3 (contas e perfis, com a anonimização de RV-33), I4 (membros), I5 (tarefas, estado e filtros), I6 (responsáveis e comentários), I7 (progresso e painel inicial), I8 (consolidação do frontend, com o percurso manual em [docs/verification.md](docs/verification.md)), I9 (verificação do MVP: cenários 01 a 09 da Ficha 3 e correção do problema P1) e I10 (revisão e entrega: revisão do código, refatoração, contrato atualizado, execução a partir de uma cópia limpa e exemplos de uso da IA) concluídos, com as regras de RV-31 e RV-32 aplicadas. O estado de cada incremento está em [docs/implementation-plan.md](docs/implementation-plan.md#8-estado-do-plano).
-- **Versão entregue (Ficha 3):** tag `entrega-ficha3`.
-- **Pendente:** decisões técnicas e requisitos de segurança por definir, em [docs/constraints.md](docs/constraints.md#4-decisões-técnicas-pendentes).
+- **Versões entregues:** Ficha 3, tag `entrega-ficha3`; Ficha 4, tag `entrega-ficha4`.
+- **Pendente:** a questão Q-23, em [docs/constraints.md](docs/constraints.md#questões-por-decidir), e as decisões técnicas e requisitos de segurança por definir, em [docs/constraints.md](docs/constraints.md#4-decisões-técnicas-pendentes). As verificações por fazer estão em [docs/quality-security-review.md](docs/quality-security-review.md#8-estado-final).

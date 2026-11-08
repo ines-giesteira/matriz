@@ -1,8 +1,8 @@
 # Matriz — Arquitetura
 
-Versão 0.5 · 2 de novembro de 2026 · Ficha Prática 02, Exercício 1 · a 0.3 retirou o acesso direto do Progresso à base de dados (RV-24); a 0.4 regista a stack (Q-14) e a autenticação (Q-22) e ajusta os componentes às decisões da Ficha 3 (Q-15 a Q-20); a 0.5 retira dos pendentes as regras das palavras-passe e a duração da sessão, aprovadas em P2 e P3.
+Versão 0.6 · 8 de novembro de 2026 · Ficha Prática 02, Exercício 1 · a 0.3 retirou o acesso direto do Progresso à base de dados (RV-24); a 0.4 regista a stack (Q-14) e a autenticação (Q-22) e ajusta os componentes às decisões da Ficha 3 (Q-15 a Q-20); a 0.5 retira dos pendentes as regras das palavras-passe e a duração da sessão, aprovadas em P2 e P3; a 0.6 (8 de novembro de 2026) regista a aprovação da arquitetura (RV-41).
 
-> **Estado: proposta, por aprovar pela dona do produto (R-06).** Este documento decide o estilo de arquitetura, os componentes do MVP e a stack (secção 3.1). O alojamento continua pendente ([constraints.md](constraints.md#4-decisões-técnicas-pendentes)). Os pressupostos novos estão na secção 6, separados dos requisitos confirmados.
+> **Estado: aprovado pela dona do produto a 8 de novembro de 2026 (RV-41).** Este documento decide o estilo de arquitetura, os componentes do MVP e a stack (secção 3.1). O alojamento continua pendente ([constraints.md](constraints.md#4-decisões-técnicas-pendentes)). Os pressupostos novos estão na secção 6, separados dos requisitos confirmados, e continuam por aprovar.
 
 ## 1. Fatores que pesam na decisão
 

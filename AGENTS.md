@@ -1,6 +1,6 @@
 # AGENTS.md — Matriz
 
-A Matriz é uma aplicação de gestão de projetos e tarefas para equipas. O cliente é fictício: todas as regras são pressupostos aprovados pela dona do produto. A especificação está concluída e revista; a arquitetura, o modelo de dados, o contrato da API e o wireframe estão propostos, por aprovar (ver o estado atual no `README.md`). A stack está escolhida (Node.js e TypeScript, Express, React, SQLite; Q-14) e a implementação segue `docs/implementation-plan.md`.
+A Matriz é uma aplicação de gestão de projetos e tarefas para equipas. O cliente é fictício: todas as regras são pressupostos aprovados pela dona do produto. A especificação está concluída e revista; a arquitetura, o modelo de dados, o contrato da API e o wireframe estão aprovados (RV-41; ver o estado atual no `README.md`). A stack está escolhida (Node.js e TypeScript, Express, React, SQLite; Q-14) e a implementação segue `docs/implementation-plan.md`.
 
 ## 1. Ler antes de agir
 
@@ -15,8 +15,10 @@ Antes de qualquer tarefa, lê o `README.md` e o ficheiro indicado para o tipo de
 | Dados, entidades e regras de integridade | `docs/database.md` |
 | Endpoints, pedidos, respostas e códigos de erro | `openapi.yaml` |
 | Ecrãs, navegação e elementos da interface | `docs/ui/wireframe.md` |
-| Implementar um incremento: sequência, ficheiros, verificações e estado | `docs/implementation-plan.md` (I0 a I10, propostas P1 a P28) |
+| Implementar um incremento: sequência, ficheiros, verificações e estado | `docs/implementation-plan.md` (I0 a I10, propostas P1 a P41) |
 | Verificar, registar resultados ou investigar um problema | `docs/verification.md` (percurso manual, cenários 01 a 09, testes automáticos, problemas e correções) |
+| Planear, escrever ou executar testes | `docs/test-plan.md` (cenários TP-01 a TP-06, testes unitários, de integração, E2E e de componentes, execução final) |
+| Rever código ou segurança | `docs/quality-security-review.md` (CR-01 a CR-04, SEG-01 a SEG-10, verificações e decisões) |
 
 ## 2. Regras de trabalho
 
@@ -61,9 +63,11 @@ Instalação, configuração e contas de demonstração: `README.md`, secção "
 |---|---|
 | `npm install` | Depois de mudar dependências. |
 | `npm run bd:migrar` | Depois de acrescentar uma migration em `backend/migrations/`. |
-| `npm run bd:seed` | Para criar os dados de demonstração numa base vazia. |
+| `npm run bd:seed` | Para criar os dados de demonstração numa base vazia. Só corre com `NODE_ENV=development` e com uma `SEED_PALAVRA_PASSE` diferente da do `.env.example` (RV-37). |
+| `npm run bd:primeiro-admin` | Só no piloto, numa base sem contas, para criar a primeira conta de Administrador (RV-37). Não usar nas bases de desenvolvimento nem de verificação. |
 | `npm run dev` | Para experimentar a aplicação. |
-| `npm test` | Antes de cada commit; tem de passar. |
+| `npm test` | Antes de cada commit; tem de passar. Corre os testes do backend e os de componentes do frontend. |
+| `npm run test:e2e` | Depois de mudar a interface, a sessão ou a criação de tarefas; tem de passar antes de uma entrega. Usa o Microsoft Edge do sistema e uma base temporária própria (`docs/test-plan.md`, secção 7). |
 | `npm run typecheck -w backend` e `npm run build` | Antes de cada commit; não podem ter erros. O `build` também verifica os tipos do frontend (`tsc --noEmit` antes do Vite). |
 | `npm start` | Depois de `npm run build`, para arrancar o backend compilado. |
 | `http://localhost:3000/api/saude` | Para confirmar que o backend e a base de dados respondem. |
@@ -78,6 +82,8 @@ Instalação, configuração e contas de demonstração: `README.md`, secção "
 - **Testes:** o nome do teste, ou do seu `describe`, indica o CA, EC ou RV que verifica (`docs/implementation-plan.md`, secção 5).
 - **Commits:** mensagem em português, no formato `tipo: descrição (referência)`. O tipo é `feat`, `fix`, `docs` ou `refactor`; a referência, quando existe, é o incremento, a ficha ou o ID (por exemplo, `fix: limpa a mensagem de sucesso quando começa outra ação (P1, EC-50)`).
 
-## A completar
+## Branches
 
-- Convenções de branches.
+- O `main` tem sempre a versão estável.
+- Cada tarefa é feita num ramo próprio, criado a partir do `main`, e só entra no `main` com `npm test`, `npm run typecheck -w backend` e `npm run build` sem erros.
+- Cada entrega fica marcada com uma tag anotada `entrega-fichaN` (por exemplo, `entrega-ficha3`).

@@ -5,7 +5,8 @@ info:
   summary: Contrato REST do MVP da Matriz.
   description: |
     Ficha Prática 02, Exercício 3; completado na Ficha Prática 03, Exercício 1.
-    Proposta, por aprovar pela dona do produto (R-06).
+    Aprovado pela dona do produto a 8 de novembro de 2026 (RV-41); os pressupostos do fim desta descrição
+    continuam por aprovar.
 
     Cobre todas as operações do MVP (RF-01 a RF-18, RF-22, RF-24, RF-30, RF-32 a RF-35).
 

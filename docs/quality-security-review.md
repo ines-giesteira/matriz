@@ -1,8 +1,8 @@
 # Matriz — Revisão de qualidade e de segurança
 
-Versão 0.2 · 8 de novembro de 2026 · Ficha Prática 04, Exercício 5 · a 0.2 acrescenta a segunda revisão de segurança (secção 7, SEG-03 a SEG-10)
+Versão 0.3 · 8 de novembro de 2026 · Ficha Prática 04, Exercício 5 · a 0.2 acrescenta a segunda revisão de segurança (secção 7, SEG-03 a SEG-10); a 0.3 corrige a decisão 1 da secção 6 e a tabela da secção 3.2, regista a questão Q-23 e acrescenta o estado final (secção 8), com a verificação de regressão do CR-04.
 
-> **Estado:** Code Review do último incremento de código (I10) e do diff da Ficha 4, Security Review do acesso a projetos e tarefas com contas de demonstração, e análise estática com as ferramentas disponíveis. **Nenhum IDOR nem escalada de privilégios.** A segunda revisão (secção 7) encontrou 8 pontos novos (3 de severidade Média e 5 de Baixa), sete confirmados por execução; todos os pontos estão decididos desde 8 de novembro de 2026 (secções 6 e 7.5). SEG-01 a SEG-10 estão corrigidos; CR-01 a CR-04 também.
+> **Estado:** Code Review do último incremento de código (I10) e do diff da Ficha 4, Security Review do acesso a projetos e tarefas com contas de demonstração, e análise estática com as ferramentas disponíveis. **Nenhum IDOR nem escalada de privilégios.** A segunda revisão (secção 7) encontrou 8 pontos novos (3 de severidade Média e 5 de Baixa), sete confirmados por execução; todos os pontos estão decididos desde 8 de novembro de 2026 (secções 6 e 7.5). SEG-01 a SEG-10 estão corrigidos; CR-01 a CR-04 também, cada um com um teste ou uma verificação de regressão (secção 8.1). Fica por decidir a questão Q-23, levantada a partir do SEG-05. A versão final tem a tag `entrega-ficha4` (secção 8).
 
 **Fontes:** [requirements.md](requirements.md) (matriz de permissões, RNF-04), [constraints.md](constraints.md) (secção 3, segurança e privacidade), [`openapi.yaml`](../openapi.yaml) (códigos de erro e ordem de verificação, RV-25), [verification.md](verification.md) (caso 08), [test-plan.md](test-plan.md).
 
@@ -65,7 +65,9 @@ Contas de demonstração: **Marta** (Membro de "Lançamento do novo site", proje
 |---|---|
 | `projetoDoMembro` deixa de verificar se o utilizador é membro | H01-H14, H16-H19 e D03 |
 | `eGestorDoProjeto` passa a aceitar qualquer utilizador | V01-V09 |
-| `lerTarefa` deixa de exigir que a tarefa seja do projeto do caminho | H01-H14 e H16-H19 | O cenário de autorização entre dois utilizadores de demonstração (critério de conclusão da Ficha) está validado. Os testes automáticos já cobrem parte destes casos (EC-05, EC-12, EC-18, EC-41, EC-46 em `backend/testes/`) e o caso manual 08 de [verification.md](verification.md) repetiu-os na interface e na API.
+| `lerTarefa` deixa de exigir que a tarefa seja do projeto do caminho | H01-H14 e H16-H19 |
+
+O cenário de autorização entre dois utilizadores de demonstração (critério de conclusão da Ficha) está validado. Os testes automáticos já cobrem parte destes casos (EC-05, EC-12, EC-18, EC-41, EC-46 em `backend/testes/`) e o caso manual 08 de [verification.md](verification.md) repetiu-os na interface e na API.
 
 ### 3.3 Exposição de dados e entradas do cliente
 
@@ -85,7 +87,7 @@ Contas de demonstração: **Marta** (Membro de "Lançamento do novo site", proje
 |---|---|---|---|---|
 | SEG-01 | 20 tentativas de entrada seguidas com a palavra-passe errada na conta do João, e depois a certa | 401 nas 20; a seguir, 200. Não há limite de tentativas, atraso nem bloqueio. | Média | Facto (ausência de controlo) |
 | SEG-02 | Cabeçalhos de segurança em `GET /api/saude` | Sem `Content-Security-Policy`, `X-Content-Type-Options`, `X-Frame-Options` nem `Strict-Transport-Security` | Baixa | Facto |
-| — | Atributos do cookie de sessão | `HttpOnly; SameSite=Lax; Path=/`. `Secure` só com `NODE_ENV=production`, como previsto (P2) | — | Facto |
+| — | Atributos do cookie de sessão | `HttpOnly; SameSite=Lax; Path=/`. `Secure` só com `NODE_ENV=production`, como previsto (P2). Alterado depois (SEG-10, P37): `Secure` sempre, exceto com `NODE_ENV=development` | — | Facto |
 | — | Pedidos entre sites (CSRF) | `SameSite=Lax` e o corpo só é lido como JSON; um formulário de outro site não envia JSON nem, num `POST`, o cookie. Não foi testado com um site externo. | — | Hipótese |
 
 **Impacto e contexto:**
@@ -124,12 +126,12 @@ Não há ESLint, Semgrep nem SonarQube configurados no projeto; não foram acres
 
 | # | Ponto | Decisão |
 |---|---|---|
-| 1 | Correções aplicadas | SEG-01 corrigido (RV-35, commit `8aaeb44`). As restantes correções estão decididas (08/11/2026) e por implementar. |
+| 1 | Correções aplicadas | Todas aplicadas a 8 de novembro de 2026, depois de decididas: SEG-01 (RV-35, commit `8aaeb44`); SEG-03, SEG-05 a SEG-08 (commit `75776d1`); SEG-02, SEG-04, SEG-09 e SEG-10 (commit `ca266de`); CR-02 a CR-04 (commit `6b325a4`); CR-01 (commit `2fdb9bf`). Os testes de regressão estão na secção 8.1. |
 | 2 | SEG-01, limite de tentativas de entrada | **Decidido (RV-35, 08/11/2026):** 5 tentativas falhadas por conta em 15 minutos; à 5.ª, a entrada nessa conta fica bloqueada durante 15 minutos (duração confirmada); uma entrada com sucesso repõe o contador. **Implementado** (EC-57, P29). |
 | 3 | SEG-02, cabeçalhos de segurança | **Decidido (08/11/2026) e implementado (P35):** o backend acrescenta `X-Content-Type-Options`, `X-Frame-Options` e uma `Content-Security-Policy` às suas respostas, sem dependência nova. Os cabeçalhos da interface publicada continuam a depender do alojamento. |
 | 4 | CR-01, testes do frontend | **Decidido (08/11/2026) e implementado (P41):** testes de componentes no frontend (Vitest, Testing Library, jsdom) para EC-51, EC-50 e CR-03; `npm test` corre-os com os do backend. |
 | 5 | CR-02, espaços nas pontas do título; CR-03, linha da tarefa eliminada; CR-04, isolamento do E2E | **Decidido (08/11/2026) e corrigido:** CR-02 (P38), CR-03 (P39) e CR-04 (P40). |
-| 6 | Script de IDOR da secção 3 | Passou a teste automático (`backend/testes/seguranca-acessos.test.ts`), aprovado na revisão humana; corre com `npm test`. Não é um teste de regressão de uma correção, porque nenhuma foi aplicada: protege a matriz de permissões contra regressões futuras. |
+| 6 | Script de IDOR da secção 3 | Passou a teste automático (`backend/testes/seguranca-acessos.test.ts`), aprovado na revisão humana; corre com `npm test`. Não é um teste de regressão de uma correção, porque não se encontrou nenhuma falha de acesso: protege a matriz de permissões contra regressões futuras. |
 | 7 | SEG-03 a SEG-10 (segunda revisão) | Decididos; ver secção 7.5. |
 
 ## 7. Segunda revisão de segurança (SEG-03 a SEG-10)
@@ -173,7 +175,7 @@ Os pontos foram confirmados com scripts executados fora do repositório, contra 
 - Medição do bloqueio do bcryptjs nas versões síncrona e assíncrona.
 
 **Por validar:**
-- `npm run test:e2e` e `npm run build`: não executados nesta revisão.
+- `npm run test:e2e` e `npm run build`: não executados nesta revisão. Executados depois das correções, na verificação final (secção 8.2).
 - CSRF com um site externo real (secção 3.4).
 - SEG-03 e SEG-10: dependem de como o piloto vai ser instalado.
 - Concorrência entre vários processos do backend: o arranque atual usa um só processo.
@@ -185,5 +187,49 @@ Os pontos foram confirmados com scripts executados fora do repositório, contra 
 | 1 | Correções aplicadas | Todas decididas a 08/11/2026. Todas implementadas (SEG-02 a SEG-10). |
 | 2 | SEG-03, arranque do piloto | **Decidido (RV-37) e implementado (P30):** `npm run bd:primeiro-admin` cria a primeira conta de Administrador; o seed recusa correr sem `NODE_ENV=development` e com o valor de exemplo. |
 | 3 | SEG-04, bloqueio na entrada | O limite de RV-35 reduz o abuso numa só conta, mas não o resolve: é por conta, e pedidos para muitos emails diferentes continuam a ocupar o servidor. **Decidido (08/11/2026) e implementado (P34):** a palavra-passe é verificada numa worker thread (`node:worker_threads`, sem dependência nova). Com 30 entradas em paralelo, `GET /api/saude` passou de 2554 ms para 7 ms. |
-| 4 | SEG-05, RV-31 ao retirar o perfil Gestor | **Decidido (RV-36) e implementado (EC-58, P31):** recusado com 422 `GESTOR_EM_VARIOS_PROJETOS` enquanto a pessoa for membro de mais de um projeto ativo. Fica por decidir o caso da anonimização: apaga os perfis de um ex-Gestor que continua membro de vários projetos ativos (RV-34). |
+| 4 | SEG-05, RV-31 ao retirar o perfil Gestor | **Decidido (RV-36) e implementado (EC-58, P31):** recusado com 422 `GESTOR_EM_VARIOS_PROJETOS` enquanto a pessoa for membro de mais de um projeto ativo. Fica por decidir o caso da anonimização: apaga os perfis de um ex-Gestor que continua membro de vários projetos ativos (RV-34). Registado como Q-23 em [constraints.md](constraints.md#questões-por-decidir). |
 | 5 | SEG-06 a SEG-10 | **Decididos (08/11/2026) e corrigidos:** SEG-06 (RV-40: domínio `.invalid` recusado e anonimização conta a conta, P31, P33), SEG-07 (RV-38: máximo de 72 bytes, P31) e SEG-08 (RV-39: email em minúsculas, incluindo acentos, P32) estão implementados; SEG-09 (400 `PEDIDO_INVALIDO` para pedidos ilegíveis, sem registo, P36) e SEG-10 (`Secure` por omissão, exceto com `NODE_ENV=development`, P37) também. |
+
+## 8. Estado final
+
+Verificação de 8 de novembro de 2026, feita na revisão de conformidade com as Fichas 1 a 4. O código verificado é o da tag `entrega-ficha4`: o commit da tag só altera documentação em relação a `2fdb9bf`.
+
+### 8.1 Testes de regressão das correções
+
+| Correção | Teste ou verificação de regressão | Ficheiro |
+|---|---|---|
+| SEG-01 (RV-35, P29) | "RV-35, EC-57: limite de tentativas de entrada" | `backend/testes/sessao.test.ts` |
+| SEG-02 (P35) | "SEG-02, P35: cabeçalhos de segurança" | `backend/testes/endurecimento-http.test.ts` |
+| SEG-03 (RV-37, P30) | "RV-37, CA-02.2: primeira conta e seed de demonstração" | `backend/testes/contas.test.ts` |
+| SEG-04 (P34) | "SEG-04, P34: verificação da palavra-passe fora da thread principal", que inclui "RV-35: pedidos em simultâneo não ultrapassam o limite de 5 tentativas" | `backend/testes/endurecimento-http.test.ts` |
+| SEG-05 (RV-36, P31) | "RV-36, EC-58: retirar o perfil Gestor a quem está em vários projetos ativos" | `backend/testes/contas.test.ts` |
+| SEG-06 (RV-40, P31, P33) | "RV-40: o domínio .invalid fica reservado às contas anonimizadas" | `backend/testes/contas.test.ts` |
+| SEG-07 (RV-38, P31) | "RV-38: palavra-passe com no máximo 72 bytes" | `backend/testes/contas.test.ts` |
+| SEG-08 (RV-39, P32) | "RV-39: email em minúsculas, incluindo as letras acentuadas" e "RV-39: migration 004, emails em minúsculas" | `backend/testes/contas.test.ts`, `backend/testes/bd.test.ts` |
+| SEG-09 (P36) | "SEG-09, P36: pedidos que não se conseguem ler" | `backend/testes/endurecimento-http.test.ts` |
+| SEG-10 (P37) | "SEG-10, P37: cookie com Secure fora do desenvolvimento" | `backend/testes/endurecimento-http.test.ts` |
+| CR-01 (P41) | Os próprios testes de componentes, em especial "EC-51: submissão repetida" e "EC-50, P1: mensagem de sucesso" | `frontend/testes/tarefas-projeto.test.tsx` |
+| CR-02 (P38) | "CR-02, P38: o título guarda-se sem espaços nas pontas" | `backend/testes/integracao-tarefa.test.ts` |
+| CR-03 (P39) | "CR-03, P39: tarefa eliminada noutro pedido" | `frontend/testes/tarefas-projeto.test.tsx` |
+| CR-04 (P40) | Verificação de regressão manual e reproduzível (abaixo) | `playwright.config.ts`, `e2e/limpar-bases.ts` |
+
+**CR-04.** A correção está na configuração do Playwright, que só corre dentro do próprio Playwright: um teste automático exigiria uma configuração de testes nova. Por isso, a regressão foi verificada a correr o E2E em duas situações:
+
+| Verificação | Passos | Resultado esperado | Resultado (8/11/2026) |
+|---|---|---|---|
+| Um `MATRIZ_E2E_BD` vindo do ambiente é ignorado | `MATRIZ_E2E_BD=<outra pasta>/isca.sqlite npm run test:e2e` | O teste passa e o ficheiro `isca.sqlite` não é criado | Como esperado |
+| A limpeza só apaga as bases com mais de um dia | Criar na pasta temporária do sistema `matriz-e2e-verif-antiga.sqlite`, com a data de há 2 dias, e `matriz-e2e-verif-recente.sqlite`; correr `npm run test:e2e` | A antiga é apagada e a recente fica | Como esperado; a recente foi apagada à mão no fim |
+
+### 8.2 Execução final
+
+A execução final de todos os testes e verificações está em [test-plan.md](test-plan.md), secção 9: todos passam, incluindo o E2E e o build, que a secção 7.4 deixava por executar.
+
+### 8.3 Por validar e pendentes
+
+- **Testes não executados:** nenhum dos testes do repositório. Continuam por fazer as verificações das secções 5 e 7.4: CSRF com um site externo real; cabeçalhos e HTTPS em produção, que dependem do alojamento, por definir; concorrência entre Gestores e entre vários processos do backend; Semgrep ou SonarQube, que não estão disponíveis no projeto.
+- **Problemas pendentes:** nenhum defeito conhecido por corrigir. Fica por decidir a questão Q-23 ([constraints.md](constraints.md#questões-por-decidir)) e se os ficheiros do E2E passam a ter uma verificação de tipos própria ([test-plan.md](test-plan.md), secção 7.4).
+- **Extensão opcional:** a execução dos testes e da análise estática num workflow de CI/CD não foi feita.
+
+### 8.4 Versão final
+
+A versão final da Ficha 4 é a tag anotada `entrega-ficha4`, que aponta para o commit desta atualização. A tag `entrega-ficha3` continua a identificar a entrega da Ficha 3.

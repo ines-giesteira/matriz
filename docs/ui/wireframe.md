@@ -1,8 +1,8 @@
 # Matriz — Wireframe da página do projeto
 
-Versão 0.3 · 2 de novembro de 2026 · Ficha Prática 02, Exercícios 4 e 5 · a 0.2 aplica a revisão crítica (RV-27, RV-28, Q-12, Q-13); a 0.3 atualiza a validação face ao MVP (secção 4) ao âmbito conciliado com a Ficha 3 e ao contrato completo. A imagem não foi redesenhada (secção 7).
+Versão 0.4 · 8 de novembro de 2026 · Ficha Prática 02, Exercícios 4 e 5 · a 0.2 aplica a revisão crítica (RV-27, RV-28, Q-12, Q-13); a 0.3 atualiza a validação face ao MVP (secção 4) ao âmbito conciliado com a Ficha 3 e ao contrato completo; a 0.4 (8 de novembro de 2026) regista a aprovação do wireframe (RV-41) e assinala na secção 1 o painel inicial, que entrou no MVP depois. A imagem não foi redesenhada (secção 7).
 
-> **Estado: proposta, por aprovar pela dona do produto (R-06).** Wireframe de baixa fidelidade de um ecrã do MVP. Não define cores, tipografia nem tecnologia. Os pressupostos de navegação e de interação estão na secção 5, separados dos requisitos.
+> **Estado: aprovado pela dona do produto a 8 de novembro de 2026 (RV-41), com as diferenças da secção 7.** Wireframe de baixa fidelidade de um ecrã do MVP. Não define cores, tipografia nem tecnologia. Os pressupostos de navegação e de interação estão na secção 5, separados dos requisitos, e continuam por aprovar.
 
 ![Wireframe da página do projeto](wireframe.png)
 
@@ -11,7 +11,7 @@ Versão 0.3 · 2 de novembro de 2026 · Ficha Prática 02, Exercícios 4 e 5 · 
 
 ## 1. Escolha do ecrã
 
-A ficha sugere o dashboard como exemplo. No MVP não há um dashboard com vários projetos: a visão geral do Gestor é o RF-20, fora do âmbito. Por isso, o ecrã escolhido é a **página do projeto**, que junta o progresso (RF-16 a RF-18) e a lista de tarefas (RF-15). É o ecrã central da primeira versão (R-03).
+A ficha sugere o dashboard como exemplo. Quando o wireframe foi desenhado, o MVP não tinha um dashboard com vários projetos: a visão geral do Gestor é o RF-20, fora do âmbito. Por isso, o ecrã escolhido é a **página do projeto**, que junta o progresso (RF-16 a RF-18) e a lista de tarefas (RF-15). É o ecrã central da primeira versão (R-03). O painel inicial (RF-35) entrou no MVP depois, na conciliação com a Ficha 3 (Q-17, secção 7).
 
 O wireframe mostra o ecrã **visto pelo Gestor do projeto**, que é quem tem mais ações disponíveis. A secção 3 descreve o que muda para os outros papéis.
 

@@ -1,6 +1,6 @@
 # Matriz — Restrições, pressupostos e pendentes
 
-Versão 1.8 · 8 de novembro de 2026 · a 1.3 acrescentou Q-12, Q-13 e a revisão crítica do Architecture Pack (RV-24 a RV-30); a 1.4 acrescenta a conciliação com a Ficha 3 (Q-14 a Q-22); a 1.5 (1 de novembro de 2026) acrescenta RV-31, que altera R-07 e D-09, RV-32, sobre o papel do Administrador, RV-33, sobre a remoção de contas desativadas, e RV-34, com os detalhes das duas; a 1.6 (2 de novembro de 2026) corrige incoerências: o estado da implementação, as regras das palavras-passe e da sessão (já aprovadas em P2 e P3) e o título que agrupava RV-31 a RV-34 com a revisão do Architecture Pack; a 1.7 (8 de novembro de 2026) acrescenta RV-35, o limite de tentativas de entrada (SEG-01); a 1.8 (8 de novembro de 2026) confirma a duração do bloqueio de RV-35 e acrescenta RV-36 a RV-40, decisões sobre a segunda revisão de segurança (SEG-03 a SEG-08).
+Versão 1.9 · 8 de novembro de 2026 · a 1.3 acrescentou Q-12, Q-13 e a revisão crítica do Architecture Pack (RV-24 a RV-30); a 1.4 acrescenta a conciliação com a Ficha 3 (Q-14 a Q-22); a 1.5 (1 de novembro de 2026) acrescenta RV-31, que altera R-07 e D-09, RV-32, sobre o papel do Administrador, RV-33, sobre a remoção de contas desativadas, e RV-34, com os detalhes das duas; a 1.6 (2 de novembro de 2026) corrige incoerências: o estado da implementação, as regras das palavras-passe e da sessão (já aprovadas em P2 e P3) e o título que agrupava RV-31 a RV-34 com a revisão do Architecture Pack; a 1.7 (8 de novembro de 2026) acrescenta RV-35, o limite de tentativas de entrada (SEG-01); a 1.8 (8 de novembro de 2026) confirma a duração do bloqueio de RV-35 e acrescenta RV-36 a RV-40, decisões sobre a segunda revisão de segurança (SEG-03 a SEG-08); a 1.9 (8 de novembro de 2026) acrescenta RV-41, a aprovação do Architecture Pack, e a questão Q-23, por decidir.
 
 > **Origem da informação.** O cliente é fictício. A única informação confirmada é a frase original do cliente (C-00). Todos os outros pontos são pressupostos da dona do produto: estão aprovados para orientar o desenvolvimento, mas **não são requisitos confirmados pelo cliente**.
 >
@@ -12,7 +12,7 @@ Versão 1.8 · 8 de novembro de 2026 · a 1.3 acrescentou Q-12, Q-13 e a revisã
 ## 1. Restrições conhecidas
 
 - **Cliente fictício.** Só a frase original (C-00) está confirmada. A dona do produto assume o papel de cliente e é a única responsável pela aprovação (R-06).
-- **Implementação concluída.** O MVP foi implementado nos incrementos I0 a I10 de [implementation-plan.md](implementation-plan.md) e verificado em [verification.md](verification.md); a versão entregue tem a tag `entrega-ficha3`.
+- **Implementação concluída.** O MVP foi implementado nos incrementos I0 a I10 de [implementation-plan.md](implementation-plan.md) e verificado em [verification.md](verification.md); a versão entregue tem a tag `entrega-ficha3`. Os testes e a revisão de qualidade e de segurança da Ficha 4 estão em [test-plan.md](test-plan.md) e [quality-security-review.md](quality-security-review.md); a versão final tem a tag `entrega-ficha4`.
 - **Stack.** Node.js e TypeScript, Express, React e SQLite (Q-14), sobre a arquitetura de monólito modular ([architecture.md](architecture.md)). Os requisitos e as User Stories continuam sem referir tecnologias.
 - **Prazo.** O piloto tem um prazo de 3 meses (R-05).
 - **IDs estáveis.** Os IDs (C, RF, RNF, US, CA, EC, R, G, D, A, Q, RV) não são renumerados. IDs novos são acrescentados no fim de cada série.
@@ -25,7 +25,7 @@ Versão 1.8 · 8 de novembro de 2026 · a 1.3 acrescentou Q-12, Q-13 e a revisã
 |---|---|---|
 | C-00 | *"Precisamos de uma aplicação onde as nossas equipas possam organizar projetos, gerir tarefas e acompanhar o progresso do trabalho."* | Confirmado pelo cliente |
 
-**Estados possíveis:** Aprovado · Aprovado (alterado) · Aprovado (complementado por A-xx, Q-xx ou RV-xx) · Decidido · Rejeitado.
+**Estados possíveis:** Aprovado · Aprovado (alterado) · Aprovado (complementado por A-xx, Q-xx ou RV-xx) · Decidido · Rejeitado · Por decidir.
 
 ### Respostas às perguntas de clarificação
 
@@ -144,6 +144,14 @@ A Ficha Prática 03 define um âmbito funcional que tinha de ser conciliado com 
 | Q-21 | Que valores usa a API para o estado e a prioridade? | Códigos técnicos: `TODO`, `IN_PROGRESS`, `DONE` e `LOW`, `MEDIUM`, `HIGH`. A interface mostra Por fazer, Em curso, Concluída e Baixa, Média, Alta (RNF-01). | RF-09, RF-11, openapi.yaml, database.md | Decidido |
 | Q-22 | Como funciona a autenticação? | Email e palavra-passe, guardada só como hash. Sessão guardada no servidor e identificada por um cookie httpOnly; cada pedido relê o estado atual da conta (RV-09). O Administrador define a palavra-passe inicial ao criar a conta. Contas de demonstração criadas por seed. | RF-01, RF-02, US-01, openapi.yaml, database.md | Decidido |
 
+### Questões por decidir
+
+Levantadas depois da conciliação com a Ficha 3. Ficam registadas até a dona do produto as decidir; até lá, a implementação mantém o comportamento descrito.
+
+| ID | Questão | Situação atual | Onde se aplica | Estado |
+|---|---|---|---|---|
+| Q-23 | Uma conta anonimizada perde os perfis (P27), incluindo o perfil Gestor, mas continua membro dos seus projetos (RV-34). Se era membro de mais de um projeto ativo, fica fora da regra de RV-31 (um só projeto ativo para quem não tem o perfil Gestor). O que deve acontecer? Levantada na segunda revisão de segurança (SEG-05, [quality-security-review.md](quality-security-review.md), secção 7.5). | A conta anonimizada continua membro de todos os projetos. Não tem acesso, porque já não consegue entrar, mas, se um desses projetos for arquivado, desarquivá-lo é recusado (409 `MEMBRO_NOUTRO_PROJETO`, EC-53) até o Gestor remover a "Conta removida". | RV-31, RV-34, RV-36, EC-53, EC-56, database.md (regras 19 e 21) | Por decidir |
+
 ### Decisões da revisão crítica
 
 Resultado da revisão independente da documentação (Exercício 6). A dona do produto decidiu cada ponto; nem todas as correções propostas foram aceites.
@@ -190,7 +198,7 @@ Resultado da revisão da coerência entre requisitos, arquitetura, dados, API e 
 
 ### Revisões da dona do produto durante a implementação
 
-Decisões de 1 de novembro de 2026, tomadas durante a implementação (Ficha 3), depois da revisão do Architecture Pack, e de 8 de novembro de 2026, depois da revisão de segurança (Ficha 4, RV-35 a RV-40). Continuam a série RV.
+Decisões de 1 de novembro de 2026, tomadas durante a implementação (Ficha 3), depois da revisão do Architecture Pack, e de 8 de novembro de 2026, depois da revisão de segurança (Ficha 4, RV-35 a RV-40) e na revisão de conformidade com as Fichas 1 a 4 (RV-41). Continuam a série RV.
 
 | ID | Problema | Decisão | Onde se aplica | Estado |
 |---|---|---|---|---|
@@ -204,6 +212,7 @@ Decisões de 1 de novembro de 2026, tomadas durante a implementação (Ficha 3),
 | RV-38 | O bcrypt só usa os primeiros 72 bytes da palavra-passe: o resto era ignorado sem aviso (SEG-07). | Decisão da dona do produto (08/11/2026): a palavra-passe tem no máximo 72 bytes em UTF-8; acima disso, a criação da conta é recusada (422) com o limite. Complementa P3. | P3, RF-02, P31, SEG-07 | Decidido (implementado) |
 | RV-39 | A unicidade do email só ignorava maiúsculas em letras sem acento (Q-10, SEG-08). | Decisão da dona do produto (08/11/2026): o email guarda-se e procura-se em minúsculas, incluindo as letras acentuadas; as contas existentes são convertidas. | Q-10, RV-18, EC-33, P32, SEG-08 | Decidido (implementado) |
 | RV-40 | Uma conta com um email `removida-<id>@matriz.invalid` impedia a anonimização das contas desativadas (SEG-06). | Decisão da dona do produto (08/11/2026): não se criam contas com emails do domínio reservado `.invalid` (422); a anonimização trata cada conta em separado, para uma falha não impedir as outras. | RV-33, P25, P27, P31, P33, SEG-06 | Decidido (implementado) |
+| RV-41 | A arquitetura, o modelo de dados, o contrato OpenAPI e o wireframe continuavam como proposta, por aprovar (R-06), embora a implementação já assentasse neles. | Decisão da dona do produto (08/11/2026): os quatro artefactos ficam aprovados, na versão em vigor nesta data. Os pressupostos que cada documento assinala como por aprovar continuam por aprovar. | R-06, architecture.md, database.md, openapi.yaml, docs/ui/wireframe.md | Decidido |
 
 ## 3. Segurança e privacidade
 

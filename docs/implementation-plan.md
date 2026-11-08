@@ -1,8 +1,8 @@
 # Matriz — Plano de implementação
 
-Versão 0.1 · 29 de outubro de 2026 · Ficha Prática 03, Exercício 1
+Versão 0.2 · 8 de novembro de 2026 · Ficha Prática 03, Exercício 1 · a 0.1 (29 de outubro de 2026) foi atualizada ao longo da implementação; a 0.2 regista as propostas P29 a P41 da Ficha 4 no estado do plano, acrescenta os testes End-to-End e de componentes à estratégia de testes (secção 5) e o estado da Ficha 4 (secção 8).
 
-> **Estado: plano aprovado pela dona do produto: decisões Q-14 a Q-22 e propostas técnicas P1 a P28 (secção 2).** Este plano transforma a documentação num conjunto de incrementos executáveis. Cada incremento indica os RF e as US que cobre, os componentes e ficheiros previstos, as dependências, os critérios de aceitação e a forma de verificação. O estado de cada incremento é atualizado ao longo da implementação (secção 8).
+> **Estado: plano aprovado pela dona do produto: decisões Q-14 a Q-22 e propostas técnicas P1 a P41 (secção 2; P29 a P41 aprovadas a 8 de novembro de 2026, na Ficha 4).** Este plano transforma a documentação num conjunto de incrementos executáveis. Cada incremento indica os RF e as US que cobre, os componentes e ficheiros previstos, as dependências, os critérios de aceitação e a forma de verificação. O estado de cada incremento é atualizado ao longo da implementação (secção 8).
 
 **Fontes:** [requirements.md](requirements.md), [user-stories.md](user-stories.md), [constraints.md](constraints.md), [architecture.md](architecture.md), [database.md](database.md), [openapi.yaml](../openapi.yaml) e [ui/wireframe.md](ui/wireframe.md).
 
@@ -127,7 +127,9 @@ matriz/
 
 Cada módulo do backend tem rotas, serviço (regras de negócio) e repositório (SQL), conforme [architecture.md](architecture.md#4-componentes-e-responsabilidades).
 
-**Comandos previstos** (a confirmar no Exercício 2 e a registar no README):
+Na versão final, a estrutura tem também as migrations `002` a `004` (P27, P29, P32), o comando `bd/cli-primeiro-admin.ts` (P30), os testes de componentes em `frontend/testes/` (P41) e o teste End-to-End em `e2e/`, com `playwright.config.ts` na raiz (Ficha 4).
+
+**Comandos previstos** (a confirmar no Exercício 2 e a registar no README; a lista final, com `npm run bd:primeiro-admin` e `npm run test:e2e`, está no README e no `AGENTS.md`):
 
 | Comando | O que faz |
 |---|---|
@@ -239,7 +241,11 @@ Cada incremento é vertical: base de dados, API, interface e testes. Para cada u
 |---|---|---|
 | Unitários | Vitest | Regras puras: cálculo do progresso, atraso, validação de textos, ordem das listas. |
 | Integração da API | Vitest e Supertest, com uma base SQLite temporária por teste | Cada operação do contrato: códigos HTTP, autorização com utilizadores diferentes, regras de negócio e persistência. |
+| Componentes do frontend (Ficha 4, P41) | Vitest, Testing Library e jsdom, com a API simulada | Comportamentos da interface sem backend: submissão repetida (EC-51), mensagem de sucesso (EC-50) e lista após 404 (CR-03). |
+| End-to-End (Ficha 4) | Playwright, com o Edge do sistema e uma base temporária própria | Percurso completo pela interface: entrar, abrir um projeto, criar uma tarefa e vê-la na lista. |
 | Manuais | Navegador | Percursos completos na interface, registados em `docs/verification.md`. |
+
+Os cenários escolhidos na Ficha 4, os resultados e a execução final estão em [test-plan.md](test-plan.md).
 
 - O relógio de negócio é substituído nos testes para fixar o dia de hoje (A-08).
 - Cada teste indica no nome o CA ou EC que verifica (por exemplo, `EC-43: recusa responsável repetido`).
@@ -275,3 +281,4 @@ Cada incremento é vertical: base de dados, API, interface e testes. Para cada u
 | I8 | Concluído (02/11/2026) | Revisão de todos os ecrãs (carregamento, lista vazia, sucesso, erro, EC-50, EC-51, ecrã estreito, sem mocks) e percurso manual completo com a API e a base de dados reais, registado em [verification.md](verification.md): Administrador, Gestor e Membro, incluindo os casos recusados (EC-23, EC-27, EC-33, EC-38, EC-55) e as regras de RV-31 e RV-32. Três correções: rótulo solto em ecrãs estreitos (C1); tarefas e progresso atualizados ao remover um membro (C2, EC-19); depois de "Sair", a entrada leva ao painel (C3). EC-31 e CA-04.2 ficaram só com teste automático. A base de desenvolvimento foi recriada a partir do seed no fim. 234 testes. |
 | I9 | Concluído (02/11/2026) | Cenários 01 a 09 da Ficha 3 registados em [verification.md](verification.md#6-verificação-do-mvp-i9), com o resultado esperado, o observado e a evidência: percurso na interface e pedidos diretos à API com as contas do seed, numa base separada (`dados/verificacao.sqlite`); reinício do backend no caso 03 e consulta à base no caso 09 (sem registos órfãos). Os três testes mínimos (EC-02, EC-18, CA-24.3 e CA-12.5) já existiam e passam. 234 testes, typecheck e build sem erros. Um problema encontrado e corrigido, P1 (mensagem de sucesso antiga visível quando uma ação seguinte falha, contra EC-50), em `AdminProjetos.tsx`, `AdminContas.tsx`, `TarefasProjeto.tsx` e `SeletorEstado.tsx`, com verificação de regressão manual (R1 a R3). |
 | I10 | Concluído (02/11/2026) | Registado em [verification.md](verification.md#7-revisão-e-entrega-i10). Revisão do código da Ficha 3 (permissões, validações, erros, segurança e âmbito), sem defeitos, com duas observações sem alteração. Refatoração num passo separado: hook `usarAcao` em cinco componentes, com o comportamento verificado no navegador. Contrato: 35 operações e estados de sucesso coincidentes; `ERRO_INTERNO` (500) acrescentado. `AGENTS.md` com `npm start`, `/api/saude` e a base separada para verificações. Cópia limpa executada só com o README, sem correções. Três exemplos de uso da IA, um deles com uma conclusão corrigida. Versão entregue identificada com a tag `entrega-ficha3`. |
+| Ficha 4 | Concluída (08/11/2026) | Fora da sequência de incrementos. Plano de testes, testes unitários, de integração, End-to-End e de componentes ([test-plan.md](test-plan.md)); revisão de código e de segurança ([quality-security-review.md](quality-security-review.md)), sem IDOR nem escalada de privilégios. Correções CR-01 a CR-04 e SEG-01 a SEG-10, com as propostas P29 a P41 e as decisões RV-35 a RV-40, cada uma com teste ou verificação de regressão. Execução final: 282 testes no backend e 3 no frontend, E2E, typecheck e build sem erros. Fica por decidir a Q-23. Versão final identificada com a tag `entrega-ficha4`. |
