@@ -118,6 +118,89 @@ describe('sessão', () => {
     expect((await request(app).post('/api/sessao').send({ email: 1, palavraPasse: 2 })).status).toBe(400);
   });
 
+  describe('RV-35, EC-57: limite de tentativas de entrada', () => {
+    const MINUTO_MS = 60 * 1000;
+    const BLOQUEADA = {
+      codigo: 'ENTRADA_BLOQUEADA',
+      mensagem: 'Demasiadas tentativas de entrada. Tente novamente dentro de 15 minutos.',
+    };
+    const avancar = (minutos: number) => {
+      agora = new Date(agora.getTime() + minutos * MINUTO_MS);
+    };
+    async function falhar(email: string, vezes: number) {
+      for (let i = 0; i < vezes; i++) {
+        expect((await entrar(request(app), email, 'errada-123')).status).toBe(401);
+      }
+    }
+
+    it('4 falhas e depois a palavra-passe certa: entra, e o contador volta a zero', async () => {
+      await falhar('ana.silva@matriz.test', 4);
+      expect((await entrar(request(app), 'ana.silva@matriz.test')).status).toBe(200);
+      await falhar('ana.silva@matriz.test', 4);
+      expect((await entrar(request(app), 'ana.silva@matriz.test')).status).toBe(200);
+    });
+
+    it('5 falhas: a 6.ª tentativa é recusada com 429, mesmo com a palavra-passe certa, sem criar sessão', async () => {
+      await falhar('ana.silva@matriz.test', 5);
+      const resposta = await entrar(request(app), 'ana.silva@matriz.test');
+      expect(resposta.status).toBe(429);
+      expect(resposta.body).toEqual(BLOQUEADA);
+      expect(resposta.headers['set-cookie']).toBeUndefined();
+      expect(contarSessoes(bd)).toBe(0);
+    });
+
+    it('o bloqueio dura 15 minutos a contar da última falha e depois a entrada volta a ser possível', async () => {
+      await falhar('ana.silva@matriz.test', 5);
+      avancar(14);
+      expect((await entrar(request(app), 'ana.silva@matriz.test')).status).toBe(429);
+      avancar(1);
+      expect((await entrar(request(app), 'ana.silva@matriz.test')).status).toBe(200);
+    });
+
+    it('durante o bloqueio, as tentativas não contam nem prolongam o bloqueio', async () => {
+      await falhar('ana.silva@matriz.test', 5);
+      avancar(10);
+      expect((await entrar(request(app), 'ana.silva@matriz.test', 'errada-123')).status).toBe(429);
+      avancar(5);
+      expect((await entrar(request(app), 'ana.silva@matriz.test')).status).toBe(200);
+    });
+
+    it('depois do bloqueio, uma nova falha não volta a bloquear: são precisas outras 5', async () => {
+      await falhar('ana.silva@matriz.test', 5);
+      avancar(15);
+      await falhar('ana.silva@matriz.test', 4);
+      expect((await entrar(request(app), 'ana.silva@matriz.test')).status).toBe(200);
+    });
+
+    it('só contam as falhas dos últimos 15 minutos', async () => {
+      await falhar('ana.silva@matriz.test', 4);
+      avancar(15);
+      await falhar('ana.silva@matriz.test', 1);
+      expect((await entrar(request(app), 'ana.silva@matriz.test')).status).toBe(200);
+    });
+
+    it('as falhas contam por conta: outra conta continua a entrar, e o email não distingue maiúsculas', async () => {
+      await falhar('ana.silva@matriz.test', 3);
+      await falhar(' ANA.Silva@matriz.test ', 2);
+      expect((await entrar(request(app), 'ana.silva@matriz.test')).status).toBe(429);
+      expect((await entrar(request(app), 'paulo.reis@matriz.test')).status).toBe(200);
+    });
+
+    it('CA-01.3, EC-20: um email sem conta e uma conta desativada são bloqueados como uma conta ativa', async () => {
+      await falhar('ninguem@matriz.test', 5);
+      expect((await entrar(request(app), 'ninguem@matriz.test')).body).toEqual(BLOQUEADA);
+      await falhar('rui.costa@matriz.test', 5);
+      expect((await entrar(request(app), 'rui.costa@matriz.test')).body).toEqual(BLOQUEADA);
+    });
+
+    it('a sessão já aberta não é afetada pelo bloqueio da conta', async () => {
+      const agente = request.agent(app);
+      expect((await entrar(agente, 'ana.silva@matriz.test')).status).toBe(200);
+      await falhar('ana.silva@matriz.test', 5);
+      expect((await agente.get('/api/sessao')).status).toBe(200);
+    });
+  });
+
   it('CA-01.2: sem cookie, as operações protegidas respondem 401', async () => {
     for (const resposta of [
       await request(app).get('/api/sessao'),

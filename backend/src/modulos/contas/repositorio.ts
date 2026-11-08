@@ -63,6 +63,30 @@ export function apagarSessoesExpiradas(bd: Bd, agora: string): void {
   bd.prepare('DELETE FROM sessao WHERE expira_em <= ?').run(agora);
 }
 
+// ---------------------------------------------------------------- Tentativas de entrada falhadas (RV-35, P29)
+
+export function registarFalhaEntrada(bd: Bd, email: string, ocorridaEm: string): void {
+  bd.prepare('INSERT INTO falha_entrada (email, ocorrida_em) VALUES (?, ?)').run(email, ocorridaEm);
+}
+
+/** As `n` falhas mais recentes de um email, da mais recente para a mais antiga. */
+export function falhasRecentes(bd: Bd, email: string, n: number): string[] {
+  return bd
+    .prepare('SELECT ocorrida_em FROM falha_entrada WHERE email = ? ORDER BY ocorrida_em DESC, id DESC LIMIT ?')
+    .all(email, n)
+    .map((l) => String(l.ocorrida_em));
+}
+
+/** Uma entrada com sucesso repõe o contador desse email. */
+export function apagarFalhasEntrada(bd: Bd, email: string): void {
+  bd.prepare('DELETE FROM falha_entrada WHERE email = ?').run(email);
+}
+
+/** Limpa as falhas que já não contam para nenhum bloqueio, para a tabela não crescer sem limite. */
+export function apagarFalhasAntigas(bd: Bd, antesDe: string): void {
+  bd.prepare('DELETE FROM falha_entrada WHERE ocorrida_em <= ?').run(antesDe);
+}
+
 // ---------------------------------------------------------------- Gestão de contas (I3, RF-02, RF-03)
 
 export type LinhaConta = Conta & { perfis: Perfil[]; removida: boolean };

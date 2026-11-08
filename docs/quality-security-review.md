@@ -1,8 +1,8 @@
 # Matriz — Revisão de qualidade e de segurança
 
-Versão 0.1 · 8 de novembro de 2026 · Ficha Prática 04, Exercício 5
+Versão 0.2 · 8 de novembro de 2026 · Ficha Prática 04, Exercício 5 · a 0.2 acrescenta a segunda revisão de segurança (secção 7, SEG-03 a SEG-10)
 
-> **Estado:** Code Review do último incremento de código (I10) e do diff da Ficha 4, Security Review do acesso a projetos e tarefas com contas de demonstração, e análise estática com as ferramentas disponíveis. **Nenhuma vulnerabilidade confirmada.** Há dois pontos de segurança e três de qualidade por decidir (secção 6); nenhuma correção foi aplicada, à espera de revisão humana.
+> **Estado:** Code Review do último incremento de código (I10) e do diff da Ficha 4, Security Review do acesso a projetos e tarefas com contas de demonstração, e análise estática com as ferramentas disponíveis. **Nenhum IDOR nem escalada de privilégios.** A segunda revisão (secção 7) encontrou 8 pontos novos (3 de severidade Média e 5 de Baixa), sete confirmados por execução; há pontos de segurança e de qualidade por decidir (secções 6 e 7.5). Nenhuma correção foi aplicada, à espera de revisão humana.
 
 **Fontes:** [requirements.md](requirements.md) (matriz de permissões, RNF-04), [constraints.md](constraints.md) (secção 3, segurança e privacidade), [`openapi.yaml`](../openapi.yaml) (códigos de erro e ordem de verificação, RV-25), [verification.md](verification.md) (caso 08), [test-plan.md](test-plan.md).
 
@@ -89,7 +89,7 @@ Contas de demonstração: **Marta** (Membro de "Lançamento do novo site", proje
 | — | Pedidos entre sites (CSRF) | `SameSite=Lax` e o corpo só é lido como JSON; um formulário de outro site não envia JSON nem, num `POST`, o cookie. Não foi testado com um site externo. | — | Hipótese |
 
 **Impacto e contexto:**
-- **SEG-01:** permite adivinhar palavras-passe por tentativa e erro sem limite. O piloto é interno, com 10 a 20 pessoas (RNF-05, RNF-06), e as palavras-passe têm pelo menos 8 caracteres (P3), o que reduz o risco, mas não o elimina. **Não há requisito** sobre o número de tentativas: acrescentar um limite é uma regra nova e precisa de decisão da dona do produto (AGENTS.md, regra 2).
+- **SEG-01:** permite adivinhar palavras-passe por tentativa e erro sem limite. O piloto é interno, com 10 a 20 pessoas (RNF-05, RNF-06), e as palavras-passe têm pelo menos 8 caracteres (P3), o que reduz o risco, mas não o elimina. Não havia requisito sobre o número de tentativas; a dona do produto decidiu-o a 8 de novembro de 2026 (RV-35, [constraints.md](constraints.md)): 5 falhas por conta em 15 minutos bloqueiam a entrada nessa conta durante 15 minutos.
 - **SEG-02:** sem `X-Frame-Options` ou `frame-ancestors`, a interface pode ser incluída numa página de outro site (clickjacking), por exemplo para levar a carregar em "Eliminar". O impacto depende de como a interface é servida em produção, que não está definido.
 
 ## 4. Análise estática
@@ -125,8 +125,65 @@ Não há ESLint, Semgrep nem SonarQube configurados no projeto; não foram acres
 | # | Ponto | Decisão |
 |---|---|---|
 | 1 | Correções aplicadas | **Nenhuma.** Não há vulnerabilidades confirmadas nem violações da matriz de permissões; o Exercício 5 só pede a correção de problemas confirmados e prioritários, depois de revisão humana. |
-| 2 | SEG-01, limite de tentativas de entrada | Por decidir pela dona do produto: é uma regra nova (número de tentativas, duração do bloqueio). Recomendado antes de expor a aplicação fora da rede interna. |
+| 2 | SEG-01, limite de tentativas de entrada | **Decidido (RV-35, 08/11/2026):** 5 tentativas falhadas por conta em 15 minutos; à 5.ª, a entrada nessa conta fica bloqueada durante 15 minutos (duração por confirmar); uma entrada com sucesso repõe o contador. Implementação por aprovar (plano proposto). |
 | 3 | SEG-02, cabeçalhos de segurança | Por decidir, com o modo de publicação da interface em produção. |
 | 4 | CR-01, testes do frontend | Por decidir: implica uma dependência nova. |
 | 5 | CR-02, espaços nas pontas do título; CR-03, linha da tarefa eliminada; CR-04, isolamento do E2E | Baixa severidade; por decidir. |
 | 6 | Script de IDOR da secção 3 | Passou a teste automático (`backend/testes/seguranca-acessos.test.ts`), aprovado na revisão humana; corre com `npm test`. Não é um teste de regressão de uma correção, porque nenhuma foi aplicada: protege a matriz de permissões contra regressões futuras. |
+| 7 | SEG-03 a SEG-10 (segunda revisão) | Por decidir; ver secção 7.5. |
+
+## 7. Segunda revisão de segurança (SEG-03 a SEG-10)
+
+### 7.1 Âmbito e método
+
+Revisão de segurança, feita a 8 de novembro de 2026, das regras de autorização e do código do backend (sessão, contas, projetos, membros, tarefas, responsáveis, comentários, progresso, anonimização e configuração), e do diff desde a tag `entrega-ficha3`. No código de produção, esse diff só exporta `validarDados`.
+
+Os pontos foram confirmados com scripts executados fora do repositório, contra a aplicação Express real (`criarApp`), com uma base SQLite em memória criada com os dados de demonstração. A base de desenvolvimento não foi usada e nenhum ficheiro do repositório foi alterado durante a revisão.
+
+### 7.2 Findings
+
+| ID | Ficheiro | Evidência | Impacto | Sev. | Tipo | Correção proposta | Teste de regressão sugerido |
+|---|---|---|---|---|---|---|---|
+| SEG-03 | `backend/src/bd/cli-seed.ts`, `backend/src/bd/seed.ts`, `.env.example` | A primeira conta de Administrador só pode ser criada pelo seed de demonstração (CA-02.2 "pelo seed", [implementation-plan.md](implementation-plan.md), I3). O seed cria 6 contas, com os emails do README e todos com a mesma palavra-passe; o valor de exemplo dessa palavra-passe está no `.env.example`, que está no Git. O `cli-seed.ts` não verifica `NODE_ENV` nem recusa o valor de exemplo. | Se o piloto for instalado como o README indica (`.env` copiado do exemplo e seed), quem leu o repositório entra como Administradora e controla contas, perfis e projetos; os dados fictícios ficam na base do piloto. | Média (Alta se o piloto for instalado assim) | Facto (código); impacto hipotético | Já: o seed recusa correr com `NODE_ENV=production` ou com o valor de exemplo. Depois, por decisão da dona do produto: um comando que cria só a primeira conta de Administrador (RV-11), sem dados de demonstração. | Com `NODE_ENV=production`, o seed termina com erro e a tabela `utilizador` fica vazia. |
+| SEG-04 | `backend/src/modulos/contas/servico.ts` (`entrar`, `bcrypt.compareSync`) | Cada comparação demora cerca de 57 ms e o servidor não responde a mais nada nesse tempo. Com 30 entradas erradas em paralelo, sem sessão, `GET /api/saude` passou de 2 ms para 2554 ms. A versão assíncrona do bcryptjs (`compare`) bloqueia o mesmo: um temporizador de 0 ms esperou cerca de 1,1 s durante 20 comparações. | Cerca de 20 pedidos por segundo, sem sessão, degradam a aplicação para todos. Agrava SEG-01. | Média | Facto (medido) | Principal: o limite de tentativas, que depende da decisão de SEG-01. Complementar: verificar a palavra-passe fora da thread principal (`node:worker_threads`, sem dependência nova). Mudar para `compare` não resolve. | Com 10 entradas erradas em curso, `GET /api/saude` responde antes de terminar a última. |
+| SEG-05 | `backend/src/modulos/contas/gestao.ts` (`alterar`); `backend/src/modulos/contas/repositorio.ts` (`anonimizarConta`) | Uma conta com o perfil Gestor foi adicionada a 2 projetos ativos (201, 201); `PATCH {perfis: []}` respondeu 200 e a conta ficou sem perfis e membro de 2 projetos ativos. A seguir, a Gestora arquivou o projeto 1 e desarquivá-lo deu 409 `MEMBRO_NOUTRO_PROJETO`. O mesmo estado aparece ao desativar e anonimizar a conta: os perfis são apagados (P27) e a pertença mantém-se (RV-34). Ao retirar o perfil Gestor só se verifica se a pessoa ainda gere projetos. | RV-31 fica quebrado por uma ação normal do Administrador; o Gestor só desarquiva depois de remover a pessoa. Sem acesso indevido. | Média | Facto | Regra em falta, a decidir pela dona do produto: (a) recusar com 422 retirar o perfil Gestor a quem está em mais de um projeto ativo, como no EC-55; ou (b) aceitar e documentar. Clarificar também RV-34 (2) face a RV-31 nas contas anonimizadas. | Com a opção (a): retirar o perfil Gestor a quem está em 2 projetos ativos responde 422 e os perfis ficam iguais. |
+| SEG-06 | `backend/src/modulos/contas/anonimizacao.ts` (ciclo de `anonimizarContasExpiradas`); `repositorio.ts` (`anonimizarConta`); `gestao.ts` (`EMAIL_VALIDO`) | O Administrador criou uma conta com o email `removida-{id}@matriz.invalid` de uma conta desativada (201). A rotina de anonimização falhou com `UNIQUE constraint failed` e parou: essa conta e a seguinte ficaram por anonimizar. Em produção, o erro só vai para o registo e repete-se todos os dias. | O nome e o email de contas desativadas ficam guardados além de um ano, sem aviso (RV-33). Exige uma conta criada pelo Administrador com esse email. | Baixa | Facto | Recusar na criação de contas o domínio reservado `.invalid`; tratar cada conta em separado no ciclo, para uma falha não bloquear as outras. | Com essa conta criada, as outras contas desativadas há mais de um ano continuam a ser anonimizadas. |
+| SEG-07 | `backend/src/modulos/contas/gestao.ts` (`criar`); `servico.ts` (`entrar`) | Conta criada com uma palavra-passe de 36 caracteres "ç" (72 bytes em UTF-8) mais um sufixo: entrar com outro sufixo deu 200, e só com os 36 caracteres também. O bcrypt usa apenas os primeiros 72 bytes. | Nas palavras-passe longas, sobretudo com acentos, a parte final é ignorada. Só o Administrador as define (P3). | Baixa | Facto | Recusar com 422 palavras-passe acima de 72 bytes (limite novo, precisa de aprovação); o bcryptjs 3 tem `truncates()`. | Criar uma conta com uma palavra-passe de mais de 72 bytes responde 422. |
+| SEG-08 | `backend/migrations/001_esquema_inicial.sql` (`email ... COLLATE NOCASE`) | `élia@…` e `ÉLIA@…` foram ambos aceites (201, 201); `ANA.SILVA@…` foi recusado (422 `EMAIL_REPETIDO`). O `NOCASE` do SQLite só ignora maiúsculas de A a Z. | Podem existir duas contas com o mesmo email segundo Q-10; confusão ao entrar. Raro. | Baixa | Facto | Por decidir: normalizar o email para minúsculas antes de guardar e de procurar, ou recusar emails com caracteres fora do ASCII (P25). | Criar `ÉLIA@x` depois de `élia@x` responde 422 `EMAIL_REPETIDO` (EC-33). |
+| SEG-09 | `backend/src/app.ts` (`tratarErros`) | `POST /api/sessao` com 200 kB, sem sessão, respondeu 500 `ERRO_INTERNO` e escreveu o erro completo no registo. Só o JSON mal formado é tratado; os outros erros da leitura do pedido caem no 500. | Código de resposta errado; qualquer pessoa sem sessão consegue encher o registo e esconder erros reais. | Baixa | Facto | Responder 400 `PEDIDO_INVALIDO` (já no contrato) aos erros de leitura do pedido com estado 4xx, sem os registar. | Um pedido com 200 kB responde 400 e não escreve no registo. |
+| SEG-10 | `backend/src/config.ts` (`cookieSeguro`); `backend/package.json` (`start`); `.env.example` | O atributo `Secure` do cookie só fica ativo com `NODE_ENV=production`; o `npm start` não define `NODE_ENV`, e o `.env.example` também não. | Depende do alojamento, por definir: com algum acesso por HTTP, o cookie de sessão pode passar sem cifra. | Baixa | Hipótese | Ativar o `Secure` por omissão, exceto em desenvolvimento, ou acrescentar `NODE_ENV` ao `.env.example`. | Sem `NODE_ENV` definido, a configuração ativa o `Secure`. |
+
+### 7.3 Revisto sem problemas
+
+- **Broken Access Control e IDOR:** os 9 testes de `seguranca-acessos.test.ts` passam. Foram acrescentadas 15 verificações por script, todas com o resultado esperado: um Membro junta outra pessoa a uma tarefa ou remove-a (403); um Membro responsável edita a descrição e o título (403); um Gestor indica como responsável alguém de outro projeto (422) ou mexe numa tarefa de outro projeto pelo caminho do seu (404); o Administrador tenta ver tarefas, progresso ou comentários (404); um Gestor usa as rotas `/admin` (403); pedidos sem sessão ou com um cookie inventado (401).
+- **SQL:** todas as consultas usam parâmetros; as listas `IN (...)` só levam marcadores `?`.
+- **Atribuição em massa:** os esquemas recusam campos desconhecidos; o autor e a data dos comentários vêm da sessão e do servidor.
+- **Sessão:** identificador aleatório de 256 bits; na base guarda-se só o hash SHA-256; a expiração é decidida no servidor; cada pedido relê a conta e os perfis (RV-09).
+- **Exposição de dados:** o hash da palavra-passe nunca é devolvido; um Membro vê só o nome dos colegas, sem email (Q-13).
+- **Segredos:** nenhum no código nem no histórico; o `.env` nunca entrou no Git. Os resultados da procura são palavras-passe fictícias dos testes e do E2E.
+- **Frontend:** sem `dangerouslySetInnerHTML`, `innerHTML` nem `eval`.
+
+### 7.4 Verificações executadas e por validar
+
+**Executadas a 8 de novembro de 2026:**
+- `npm test`: 12 ficheiros e 252 testes, todos a passar.
+- `npm run typecheck -w backend` e `tsc --noEmit` do frontend: sem erros.
+- `npm audit`: 0 vulnerabilidades.
+- Scripts de confirmação de SEG-04 a SEG-09 e das 15 verificações de IDOR (secção 7.3), com base em memória.
+- Medição do bloqueio do bcryptjs nas versões síncrona e assíncrona.
+
+**Por validar:**
+- `npm run test:e2e` e `npm run build`: não executados nesta revisão.
+- CSRF com um site externo real (secção 3.4).
+- SEG-03 e SEG-10: dependem de como o piloto vai ser instalado.
+- Concorrência entre vários processos do backend: o arranque atual usa um só processo.
+
+### 7.5 Decisões
+
+| # | Ponto | Decisão |
+|---|---|---|
+| 1 | Correções aplicadas | **Nenhuma**, à espera de revisão humana. |
+| 2 | SEG-03, arranque do piloto | Por decidir pela dona do produto: comando para criar a primeira conta de Administrador (RV-11). A proteção do seed em produção é técnica e pode ser aplicada antes. |
+| 3 | SEG-04, bloqueio na entrada | O limite de RV-35 reduz o abuso numa só conta, mas não o resolve: é por conta, e pedidos para muitos emails diferentes continuam a ocupar o servidor. Continua por decidir verificar a palavra-passe fora da thread principal. |
+| 4 | SEG-05, RV-31 ao retirar o perfil Gestor | Por decidir pela dona do produto: regra em falta (AGENTS.md, regra 2). |
+| 5 | SEG-06 a SEG-10 | Baixa severidade; por decidir. SEG-07 e SEG-08 mudam regras de validação (P3, P25). |

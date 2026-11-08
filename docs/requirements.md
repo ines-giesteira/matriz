@@ -1,6 +1,6 @@
 # Matriz — Requisitos
 
-Versão 1.5 · 1 de novembro de 2026 · consolida o "Âmbito funcional e MVP" v0.1, o "Backlog inicial do MVP" v0.1 (versões de trabalho anteriores, não incluídas no repositório), as decisões da dona do produto, as revisões críticas (RV-xx) e as decisões Q-09 a Q-22. A versão 1.3 acrescentou a ordem das listas (Q-12) e a visibilidade dos membros (Q-13); a 1.4 aplica a conciliação com a Ficha 3 (Q-15 a Q-22): comentários, pesquisa, filtros, painel inicial, criação e eliminação de projetos pelo Administrador, vários responsáveis e autenticação; a 1.5 (1 de novembro de 2026) aplica RV-31 (um só projeto ativo para quem não tem o perfil Gestor e remoção de membros num projeto arquivado), RV-32 (o Administrador nunca é membro e gere os membros de qualquer projeto) e RV-33 (remoção das contas desativadas ao fim de um ano).
+Versão 1.6 · 8 de novembro de 2026 · consolida o "Âmbito funcional e MVP" v0.1, o "Backlog inicial do MVP" v0.1 (versões de trabalho anteriores, não incluídas no repositório), as decisões da dona do produto, as revisões críticas (RV-xx) e as decisões Q-09 a Q-22. A versão 1.3 acrescentou a ordem das listas (Q-12) e a visibilidade dos membros (Q-13); a 1.4 aplica a conciliação com a Ficha 3 (Q-15 a Q-22): comentários, pesquisa, filtros, painel inicial, criação e eliminação de projetos pelo Administrador, vários responsáveis e autenticação; a 1.5 (1 de novembro de 2026) aplica RV-31 (um só projeto ativo para quem não tem o perfil Gestor e remoção de membros num projeto arquivado), RV-32 (o Administrador nunca é membro e gere os membros de qualquer projeto) e RV-33 (remoção das contas desativadas ao fim de um ano); a 1.6 (8 de novembro de 2026) aplica RV-35 (limite de tentativas de entrada, RF-01).
 
 > **Origem da informação.** O cliente é fictício. A única informação confirmada é a frase original do cliente:
 >
@@ -103,6 +103,7 @@ Os estados e as prioridades aparecem na interface em português. Na API e na bas
 - Uma conta desativada não tem acesso (RF-03).
 - Desativar uma conta, remover um membro de um projeto ou retirar um perfil produz efeito no pedido seguinte do utilizador, incluindo em sessões já abertas (RV-09).
 - Quando a sessão deixa de ser válida, o utilizador é encaminhado para a entrada com uma mensagem compreensível (Q-22).
+- Só são permitidas 5 tentativas de entrada falhadas por conta em 15 minutos; à 5.ª, a entrada nessa conta fica bloqueada durante 15 minutos, mesmo com a palavra-passe certa. Uma entrada com sucesso repõe o contador (RV-35, EC-57).
 
 **RF-02 — Criar contas e gerir perfis.** O Administrador cria contas e atribui ou altera o perfil de cada utilizador (R-08).
 - A primeira conta é criada pela dona do produto e fica com o perfil Administrador (RV-11).

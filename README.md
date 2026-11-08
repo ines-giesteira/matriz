@@ -111,6 +111,8 @@ Entra-se em `http://localhost:5173` com o email e a palavra-passe de uma conta d
 2. Cada pedido relê a conta e os perfis e renova a sessão: expira após `SESSAO_HORAS` horas sem atividade.
 3. A sessão termina com "Sair", quando expira ou quando a conta é desativada. A interface volta então à entrada com a mensagem "A sessão terminou. Entre novamente.".
 
+Depois de 5 tentativas de entrada falhadas com o mesmo email em 15 minutos, a entrada com esse email fica bloqueada durante 15 minutos, mesmo com a palavra-passe certa (RV-35).
+
 As palavras-passe são guardadas só como hash (`bcryptjs`). O contrato da sessão está em [`openapi.yaml`](openapi.yaml) (`/sessao`).
 
 ### Arranque

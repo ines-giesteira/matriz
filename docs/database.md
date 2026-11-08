@@ -1,6 +1,6 @@
 # Matriz — Modelo de dados
 
-Versão 0.6 · 2 de novembro de 2026 · Ficha Prática 02, Exercício 2 · a 0.2 acrescentou a regra 15 (Q-12) e clarificou o email no diagrama (RV-30); a 0.3 aplica a conciliação com a Ficha 3: palavra-passe e sessões (Q-22), vários responsáveis (Q-20), comentários (Q-15), eliminação de projetos (Q-19), códigos técnicos (Q-21) e o mapeamento para SQLite (Q-14); a 0.4 (1 de novembro de 2026) aplica RV-31: um só projeto ativo para quem não tem o perfil Gestor (regra 19) e remoção de membros num projeto arquivado (regra 11); aplica RV-32: o Administrador nunca é membro (regra 20) e não acumula perfis; regista RV-33 (anonimização das contas desativadas, a implementar no I3); a 0.5 acrescenta `desativado_em` e `anonimizado_em` a UTILIZADOR (I3, migration 002, P27); a 0.6 corrige a cardinalidade dos perfis para 0..1 (RV-32), acrescenta ao diagrama ER as colunas da 0.5 e atualiza as referências ao I3, já concluído.
+Versão 0.7 · 8 de novembro de 2026 · Ficha Prática 02, Exercício 2 · a 0.2 acrescentou a regra 15 (Q-12) e clarificou o email no diagrama (RV-30); a 0.3 aplica a conciliação com a Ficha 3: palavra-passe e sessões (Q-22), vários responsáveis (Q-20), comentários (Q-15), eliminação de projetos (Q-19), códigos técnicos (Q-21) e o mapeamento para SQLite (Q-14); a 0.4 (1 de novembro de 2026) aplica RV-31: um só projeto ativo para quem não tem o perfil Gestor (regra 19) e remoção de membros num projeto arquivado (regra 11); aplica RV-32: o Administrador nunca é membro (regra 20) e não acumula perfis; regista RV-33 (anonimização das contas desativadas, a implementar no I3); a 0.5 acrescenta `desativado_em` e `anonimizado_em` a UTILIZADOR (I3, migration 002, P27); a 0.6 corrige a cardinalidade dos perfis para 0..1 (RV-32), acrescenta ao diagrama ER as colunas da 0.5 e atualiza as referências ao I3, já concluído; a 0.7 (8 de novembro de 2026) acrescenta FALHA_ENTRADA e a regra 22 (RV-35, migration 003, P29).
 
 > **Estado: proposta, por aprovar pela dona do produto (R-06).** Modelo dos dados do MVP (RF-01 a RF-18, RF-22, RF-24, RF-30, RF-32 a RF-35), coerente com a arquitetura de [architecture.md](architecture.md): uma base de dados única (SQLite, Q-14), partilhada pelos módulos Contas, Projetos e Tarefas. As secções 1 a 4 são o modelo conceptual; a secção 5 mapeia-o para SQLite. Os pressupostos por aprovar estão na secção 6; as questões já decididas, na secção 7.
 
@@ -39,6 +39,16 @@ O perfil **Membro** não é guardado: todos os utilizadores, exceto os Administr
 | `expira_em` | data e hora | Sim | Renovada a cada pedido; expira após 8 horas sem atividade (P2). | Q-22 |
 
 Terminar a sessão apaga a linha. A sessão só identifica o utilizador: a conta, os perfis e os papéis são relidos em cada pedido (RV-09).
+
+### FALHA_ENTRADA — tentativas de entrada falhadas (RF-01, RV-35)
+
+| Atributo | Tipo | Obrigatório | Regras | Origem |
+|---|---|---|---|---|
+| `id` | identificador | Sim | Identificador técnico, chave primária. | — |
+| `email` | texto | Sim | Email indicado no pedido, sem espaços nas pontas e em minúsculas. Não é chave estrangeira: conta também emails sem conta, para o bloqueio não revelar que contas existem (CA-01.3, EC-20). | RV-35, P29 |
+| `ocorrida_em` | data e hora | Sim | Obtida no servidor. | RV-35, P29 |
+
+Não se relaciona com as outras entidades. As regras estão na secção 4 (regra 22).
 
 ### PROJETO (RF-04 a RF-08, RF-30, RF-32)
 
@@ -220,11 +230,15 @@ Regras que o diagrama não mostra e que têm de ser garantidas pelos módulos ou
 20. Um utilizador com o perfil Administrador nunca tem linhas em MEMBRO_PROJETO. É garantido pelo módulo Projetos ao adicionar membros (EC-30) e pelo módulo Contas ao atribuir perfis, através da interface `ConsultaProjetos` (EC-55, RV-32, RV-34).
 21. Um ano depois de `desativado_em`, a conta é anonimizada: `nome` passa a "Conta removida", `email` a `removida-<id>@matriz.invalid`, `palavra_passe_hash` a um valor que não corresponde a nenhuma palavra-passe, e os perfis e as sessões são apagados; `anonimizado_em` fica preenchido. As linhas de MEMBRO_PROJETO, ATRIBUICAO e COMENTARIO mantêm-se. Reativar a conta limpa `desativado_em` (RV-33, RV-34, P27).
 
+**Tentativas de entrada**
+
+22. Cada entrada recusada (credenciais erradas, email sem conta ou conta desativada) acrescenta uma linha em FALHA_ENTRADA. Se as 5 falhas mais recentes de um email aconteceram em menos de 15 minutos, a entrada com esse email fica bloqueada durante 15 minutos a contar da última; durante o bloqueio não se acrescentam linhas. Uma entrada com sucesso apaga as linhas desse email; as linhas com mais de 30 minutos já não contam e são apagadas (RV-35, EC-57, P29).
+
 ## 5. Mapeamento para SQLite (Q-14)
 
 | Conceito | Em SQLite |
 |---|---|
-| Nomes | Tabelas e colunas em minúsculas: `utilizador`, `perfil_atribuido`, `sessao`, `projeto`, `membro_projeto`, `tarefa`, `atribuicao`, `comentario`. |
+| Nomes | Tabelas e colunas em minúsculas: `utilizador`, `perfil_atribuido`, `sessao`, `projeto`, `membro_projeto`, `tarefa`, `atribuicao`, `comentario`, `falha_entrada`. |
 | Identificador | `INTEGER PRIMARY KEY` (exceto `sessao.id`, `TEXT`). A API trata-os como números inteiros. |
 | Booleano | `INTEGER` com `CHECK (valor IN (0, 1))`. |
 | Data | `TEXT` no formato `AAAA-MM-DD`. |

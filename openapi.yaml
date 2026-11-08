@@ -41,6 +41,7 @@ info:
     - 422: os dados do pedido violam uma regra de negócio, com o campo e o motivo (Q-03).
       Por isso os textos obrigatórios e os limites de tamanho não são declarados no schema do pedido
       (um validador automático responderia 400): são verificados como regras de negócio.
+    - 429: só em `POST /sessao`, com a entrada bloqueada por demasiadas tentativas falhadas (RV-35).
     - 500: erro inesperado no servidor, com o código `ERRO_INTERNO` e uma mensagem genérica, sem
       detalhes internos. Não é declarado em cada operação, porque pode acontecer em qualquer uma.
 
@@ -123,6 +124,11 @@ paths:
         Credenciais erradas, email inexistente e conta desativada recebem a mesma resposta 401, para não revelar
         que a conta existe (CA-01.3, EC-20). O email não distingue maiúsculas. Ver o ciclo da sessão na descrição
         geral do contrato.
+
+        Limite de tentativas (RV-35, EC-57, P29): 5 tentativas falhadas no mesmo email em 15 minutos bloqueiam
+        a entrada nessa conta durante 15 minutos a contar da última falha; durante o bloqueio, a resposta é 429,
+        mesmo com a palavra-passe certa. Uma entrada com sucesso repõe o contador. Os emails sem conta contam da
+        mesma forma, para o bloqueio não revelar que a conta existe.
       security: []
       requestBody:
         required: true
@@ -156,6 +162,15 @@ paths:
               example:
                 codigo: CREDENCIAIS_INVALIDAS
                 mensagem: Email ou palavra-passe incorretos.
+        '429':
+          description: Entrada bloqueada depois de 5 tentativas falhadas em 15 minutos (RV-35, EC-57, P29).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+              example:
+                codigo: ENTRADA_BLOQUEADA
+                mensagem: Demasiadas tentativas de entrada. Tente novamente dentro de 15 minutos.
     get:
       tags: [Sessão]
       operationId: obterSessao

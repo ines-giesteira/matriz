@@ -13,6 +13,7 @@ const PALAVRA_PASSE_TESTE = 'palavra-passe-de-teste';
 const TABELAS = [
   'atribuicao',
   'comentario',
+  'falha_entrada',
   'membro_projeto',
   'perfil_atribuido',
   'projeto',
@@ -32,7 +33,7 @@ describe('migrations', () => {
   });
   afterEach(() => bd.close());
 
-  it('criam as 8 tabelas do modelo de dados', () => {
+  it('criam as 9 tabelas do modelo de dados', () => {
     aplicarMigrations(bd);
     const tabelas = bd
       .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT IN ('migracao_aplicada') ORDER BY name")
@@ -42,9 +43,9 @@ describe('migrations', () => {
   });
 
   it('são aplicadas uma só vez, mesmo correndo várias vezes', () => {
-    expect(aplicarMigrations(bd)).toEqual(['001_esquema_inicial.sql', '002_desativacao_e_anonimizacao.sql']);
+    expect(aplicarMigrations(bd)).toEqual(['001_esquema_inicial.sql', '002_desativacao_e_anonimizacao.sql', '003_falhas_de_entrada.sql']);
     expect(aplicarMigrations(bd)).toEqual([]);
-    expect(contar(bd, 'SELECT COUNT(*) AS n FROM migracao_aplicada')).toBe(2);
+    expect(contar(bd, 'SELECT COUNT(*) AS n FROM migracao_aplicada')).toBe(3);
   });
 
   it('ativam as chaves estrangeiras', () => {

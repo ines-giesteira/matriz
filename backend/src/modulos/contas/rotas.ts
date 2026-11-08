@@ -23,7 +23,15 @@ export function rotasSessao(bd: Bd, opcoes: OpcoesSessao, cookieSeguro: boolean,
       return;
     }
     const resultado = entrar(bd, opcoes, dados.data.email, dados.data.palavraPasse);
-    if (!resultado) {
+    if (resultado.tipo === 'bloqueada') {
+      // RV-35, EC-57, P29
+      resposta.status(429).json({
+        codigo: 'ENTRADA_BLOQUEADA',
+        mensagem: 'Demasiadas tentativas de entrada. Tente novamente dentro de 15 minutos.',
+      });
+      return;
+    }
+    if (resultado.tipo === 'recusada') {
       resposta.status(401).json({ codigo: 'CREDENCIAIS_INVALIDAS', mensagem: 'Email ou palavra-passe incorretos.' });
       return;
     }
