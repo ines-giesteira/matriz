@@ -1,0 +1,54 @@
+# Execução integrada da Matriz com Docker Compose (P42 a P45).
+#   docker compose up -d --build   →   interface em http://localhost:${PORTA_DOCKER:-8080}
+# Do .env só se leem PORTA_DOCKER e SESSAO_HORAS. O NODE_ENV do .env nunca chega aos containers:
+# correm sempre em modo de produção (cookie Secure, seed recusado; RV-37, P37, P44).
+name: matriz
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: matriz-backend
+    environment:
+      SESSAO_HORAS: ${SESSAO_HORAS:-8}
+    volumes:
+      - matriz-dados:/app/dados
+    networks:
+      - interna
+    # Sem portas publicadas: só o frontend (nginx) chega ao backend, pelo nome "backend" (frontend/nginx.conf).
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/saude').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    image: matriz-frontend
+    ports:
+      # Só neste computador: o cookie de sessão é Secure e os navegadores só o aceitam sem HTTPS em localhost.
+      - "127.0.0.1:${PORTA_DOCKER:-8080}:80"
+    networks:
+      - interna
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 5s
+      retries: 3
+    restart: unless-stopped
+
+networks:
+  interna: {}
+
+volumes:
+  # Base de dados SQLite; mantém-se quando os containers são recriados (docker compose down sem -v).
+  matriz-dados: {}

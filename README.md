@@ -69,6 +69,7 @@ O `.env` fica fora do Git. Os valores de `.env.example` são fictícios e servem
 | `PORTA` | Porta do backend | `3000` |
 | `CAMINHO_BD` | Ficheiro SQLite, relativo à raiz do repositório | `dados/matriz.sqlite` |
 | `SESSAO_HORAS` | Horas sem atividade até a sessão expirar (P2) | `8` |
+| `PORTA_DOCKER` | Porta deste computador onde o Docker Compose publica a interface (P45); só o compose a usa | `8080` |
 | `SEED_PALAVRA_PASSE` | Palavra-passe das contas de demonstração (P10), com pelo menos 8 caracteres. **Mude-a no `.env`:** o valor do `.env.example` é público e o seed recusa-o (RV-37) | um valor seu |
 
 O npm 11 avisa que o pacote `esbuild` tem um script de instalação por aprovar. Não é preciso aprová-lo: o `esbuild` funciona sem ele.
@@ -162,7 +163,45 @@ Para confirmar que o backend e a base de dados respondem, abre-se `http://localh
 
 ### Com Docker
 
-Há duas imagens (P42 a P44): `backend/Dockerfile` (a API) e `frontend/Dockerfile` (a interface servida pelo nginx, que encaminha `/api` para o backend). Ambas se constroem a partir da raiz do repositório. É preciso o Docker instalado; o Node.js não.
+Há duas imagens (P42 a P44): `backend/Dockerfile` (a API) e `frontend/Dockerfile` (a interface servida pelo nginx, que encaminha `/api` para o backend). O `compose.yaml` junta-as (P45). É preciso o Docker instalado; o Node.js não.
+
+Do `.env`, o compose só lê `PORTA_DOCKER` (porta da interface neste computador, 8080 por omissão) e `SESSAO_HORAS`; sem `.env`, usa esses valores por omissão. Os containers correm sempre em modo de produção, mesmo com `NODE_ENV=development` no `.env`.
+
+Validar a configuração, construir as imagens e arrancar:
+
+```bash
+docker compose config -q
+```
+
+```bash
+docker compose build
+```
+
+```bash
+docker compose up -d
+```
+
+A interface fica em `http://localhost:8080` e a API em `http://localhost:8080/api` (por exemplo, `/api/saude`). A porta só fica acessível neste computador (`127.0.0.1`), porque o cookie de sessão é `Secure` e, sem HTTPS, os navegadores só o aceitam em `localhost`. O frontend só arranca depois de o backend responder (*healthy*). Estado e registos:
+
+```bash
+docker compose ps
+```
+
+```bash
+docker compose logs --tail=50
+```
+
+A base de dados fica no volume `matriz-dados`, que se mantém quando os containers são recriados. `docker compose down` para os containers e mantém os dados; `docker compose down -v` apaga também o volume, com todos os dados.
+
+O container corre em modo de produção e a base começa sem contas. As imagens não incluem o `.env` nem o `.env.example`, por isso o seed de demonstração não corre no container (RV-37, P44). Para criar a primeira conta de Administrador:
+
+```bash
+docker compose exec backend node backend/dist/bd/cli-primeiro-admin.js
+```
+
+#### Sem o Compose
+
+As imagens também se constroem e correm uma a uma, a partir da raiz do repositório:
 
 ```bash
 docker build -f backend/Dockerfile -t matriz-backend .
@@ -186,13 +225,7 @@ docker run -d --name backend --network matriz -v matriz-dados:/app/dados matriz-
 docker run -d --name matriz-frontend --network matriz -p 8080:80 matriz-frontend
 ```
 
-A interface fica em `http://localhost:8080` e a API em `http://localhost:8080/api` (por exemplo, `/api/saude`). `docker ps` mostra o estado dos containers (*healthy* quando respondem) e `docker logs backend` mostra o registo do backend.
-
-O container corre em modo de produção e a base começa sem contas. As imagens não incluem o `.env` nem o `.env.example`, por isso o seed de demonstração não corre no container (RV-37, P44). Para criar a primeira conta de Administrador:
-
-```bash
-docker exec -it backend node backend/dist/bd/cli-primeiro-admin.js
-```
+`docker ps` mostra o estado dos containers e `docker logs backend` o registo do backend. A primeira conta cria-se com `docker exec -it backend node backend/dist/bd/cli-primeiro-admin.js`.
 
 ## Estado atual
 
