@@ -1,0 +1,22 @@
+# Contexto de build dos Dockerfiles (raiz do repositório): só entra o necessário para construir as imagens.
+
+# Dependências e builds locais (as imagens instalam e compilam de novo)
+**/node_modules
+**/dist
+
+# Configuração local e base de dados: podem ter segredos ou dados reais
+.env
+.env.*
+dados
+**/*.sqlite
+**/*.sqlite-*
+
+# Repositório, ferramentas e ficheiros que as imagens não usam
+.git
+.github
+.claude
+docs
+e2e
+test-results
+playwright-report
+*.log

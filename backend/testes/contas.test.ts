@@ -504,4 +504,10 @@ describe('RV-37, CA-02.2: primeira conta e seed de demonstração', () => {
     expect(motivo(true, exemplo)).toMatch(/valor de exemplo/);
     expect(motivo(true, 'outra-1234')).toBeNull();
   });
+
+  it('RV-37, P44: sem o valor de exemplo do .env.example, o seed recusa correr', () => {
+    expect(
+      motivoParaRecusarSeed({ desenvolvimento: true, palavraPasse: 'outra-1234', palavraPasseDeExemplo: undefined }),
+    ).toMatch(/\.env\.example/);
+  });
 });
