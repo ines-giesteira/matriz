@@ -26,8 +26,6 @@ COPY frontend/package.json frontend/
 RUN npm ci --omit=dev -w backend && npm cache clean --force
 COPY --from=build /app/backend/dist backend/dist
 COPY backend/migrations backend/migrations
-# Valores fictícios: o seed compara-os para recusar a palavra-passe de exemplo (RV-37).
-COPY .env.example ./
 # Pasta da base de dados (CAMINHO_BD=dados/matriz.sqlite), onde se monta o volume; pertence ao utilizador node.
 RUN mkdir -p dados && chown node:node dados
 USER node

@@ -7,7 +7,6 @@
 # Configuração local e base de dados: podem ter segredos ou dados reais
 .env
 .env.*
-!.env.example
 dados
 **/*.sqlite
 **/*.sqlite-*

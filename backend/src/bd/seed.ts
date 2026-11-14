@@ -13,7 +13,12 @@ export function motivoParaRecusarSeed(opcoes: {
   if (!opcoes.desenvolvimento) {
     return 'O seed de demonstração só corre com NODE_ENV=development. Para criar a primeira conta, use npm run bd:primeiro-admin.';
   }
-  if (opcoes.palavraPasseDeExemplo !== undefined && opcoes.palavraPasse === opcoes.palavraPasseDeExemplo) {
+  // Sem o valor de exemplo (por exemplo, na imagem Docker, que não inclui o .env.example) não se pode confirmar
+  // que a palavra-passe é outra: o seed recusa (RV-37, P44).
+  if (opcoes.palavraPasseDeExemplo === undefined) {
+    return 'Não foi possível ler SEED_PALAVRA_PASSE do .env.example, para confirmar que o valor escolhido é outro. Corra o seed a partir do repositório.';
+  }
+  if (opcoes.palavraPasse === opcoes.palavraPasseDeExemplo) {
     return 'SEED_PALAVRA_PASSE tem o valor de exemplo do .env.example, que é público. Escolha outro valor no .env.';
   }
   return null;

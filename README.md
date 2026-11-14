@@ -162,7 +162,7 @@ Para confirmar que o backend e a base de dados respondem, abre-se `http://localh
 
 ### Com Docker
 
-Há duas imagens (P42, P43): `backend/Dockerfile` (a API) e `frontend/Dockerfile` (a interface servida pelo nginx, que encaminha `/api` para o backend). Ambas se constroem a partir da raiz do repositório. É preciso o Docker instalado; o Node.js não.
+Há duas imagens (P42 a P44): `backend/Dockerfile` (a API) e `frontend/Dockerfile` (a interface servida pelo nginx, que encaminha `/api` para o backend). Ambas se constroem a partir da raiz do repositório. É preciso o Docker instalado; o Node.js não.
 
 ```bash
 docker build -f backend/Dockerfile -t matriz-backend .
@@ -188,16 +188,10 @@ docker run -d --name matriz-frontend --network matriz -p 8080:80 matriz-frontend
 
 A interface fica em `http://localhost:8080` e a API em `http://localhost:8080/api` (por exemplo, `/api/saude`). `docker ps` mostra o estado dos containers (*healthy* quando respondem) e `docker logs backend` mostra o registo do backend.
 
-O container corre em modo de produção: a base começa sem contas e o seed recusa correr. Para criar a primeira conta de Administrador (RV-37):
+O container corre em modo de produção e a base começa sem contas. As imagens não incluem o `.env` nem o `.env.example`, por isso o seed de demonstração não corre no container (RV-37, P44). Para criar a primeira conta de Administrador:
 
 ```bash
 docker exec -it backend node backend/dist/bd/cli-primeiro-admin.js
-```
-
-Para experimentar com os dados de demonstração, só numa base de teste, o seed pode correr uma vez com os valores passados no próprio comando, nunca guardados na imagem (`SEED_PALAVRA_PASSE` diferente da do `.env.example`):
-
-```bash
-docker exec -e NODE_ENV=development -e SEED_PALAVRA_PASSE=<um valor seu> backend node backend/dist/bd/cli-seed.js
 ```
 
 ## Estado atual
