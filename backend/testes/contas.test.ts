@@ -508,6 +508,6 @@ describe('RV-37, CA-02.2: primeira conta e seed de demonstração', () => {
   it('RV-37, P44: sem o valor de exemplo do .env.example, o seed recusa correr', () => {
     expect(
       motivoParaRecusarSeed({ desenvolvimento: true, palavraPasse: 'outra-1234', palavraPasseDeExemplo: undefined }),
-    ).toBeNull(); // FALHA CONTROLADA TEMPORÁRIA (Ficha 5, Exercício 4): a revogar no commit seguinte
+    ).toMatch(/\.env\.example/);
   });
 });
