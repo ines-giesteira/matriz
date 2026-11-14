@@ -1,0 +1,88 @@
+# Integração contínua da Matriz (Ficha 5, Exercício 4, P46).
+# Verificações (typecheck, testes, build) → teste End-to-End → imagens Docker. Cada etapa só corre se a anterior passar.
+# Sem segredos: o seed do E2E usa valores fictícios (e2e/dados.ts) e as imagens não recebem credenciais.
+name: CI
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+# Permissões mínimas: o workflow só lê o repositório.
+permissions:
+  contents: read
+
+# Um novo push no mesmo ramo cancela a execução anterior, que já não interessa.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: Typecheck, testes e build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      - name: Typecheck do backend
+        run: npm run typecheck -w backend
+      - name: Testes do backend e de componentes do frontend
+        run: npm test
+      - name: Build (backend e frontend, com os tipos do frontend)
+        run: npm run build
+
+  e2e:
+    name: Teste End-to-End
+    needs: verificar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      # Usa o Microsoft Edge que já vem no runner (playwright.config.ts, channel: 'msedge') e uma base temporária.
+      - name: Playwright
+        run: npm run test:e2e
+      - name: Guardar o trace e o screenshot da falha
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: resultados-e2e
+          path: test-results/
+          retention-days: 7
+
+  docker:
+    name: Imagens Docker
+    needs: [verificar, e2e]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validar o compose.yaml
+        run: docker compose config -q
+      - name: Construir as imagens
+        run: docker compose build
+      - name: Arrancar e esperar pelos healthchecks
+        run: docker compose up -d --wait --wait-timeout 120
+      - name: Confirmar a API através do nginx
+        run: curl --fail --silent --show-error http://127.0.0.1:8080/api/saude
+      - name: Registos dos containers
+        if: always()
+        run: docker compose logs --tail=50
+      - name: Parar e apagar os containers e o volume
+        if: always()
+        run: docker compose down -v

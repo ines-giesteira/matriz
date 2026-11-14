@@ -227,6 +227,16 @@ docker run -d --name matriz-frontend --network matriz -p 8080:80 matriz-frontend
 
 `docker ps` mostra o estado dos containers e `docker logs backend` o registo do backend. A primeira conta cria-se com `docker exec -it backend node backend/dist/bd/cli-primeiro-admin.js`.
 
+### Integração contínua
+
+O workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (GitHub Actions, P46) corre em cada push e em cada pull request para o `main`. Tem três jobs, e cada um só corre se os anteriores passarem:
+
+1. **Typecheck, testes e build:** `npm ci`, `npm run typecheck -w backend`, `npm test` e `npm run build`.
+2. **Teste End-to-End:** `npm run test:e2e`, com o Microsoft Edge do runner. Se falhar, o trace e o screenshot ficam nos artefactos da execução durante 7 dias.
+3. **Imagens Docker:** `docker compose config -q`, `build` e `up -d --wait`, um pedido a `/api/saude` através do nginx e `down -v`.
+
+O workflow só tem permissão de leitura sobre o repositório e não usa segredos. Os resultados estão no separador **Actions** do GitHub.
+
 ## Estado atual
 
 - **Specification Pack (Aula 1):** concluído e revisto (RV-01 a RV-23).
