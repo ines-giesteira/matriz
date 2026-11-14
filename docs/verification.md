@@ -1,8 +1,8 @@
 # Matriz — Verificação
 
-Versão 0.4 · 8 de novembro de 2026 · Ficha Prática 03, Exercícios 7 (incremento I8), 8 (incremento I9) e 9 (incremento I10) · a 0.4 acrescenta notas sobre o que a Ficha 4 mudou depois (secções 3, 6.5, 6.6 e 7.1), sem alterar os resultados registados a 1 e 2 de novembro.
+Versão 0.5 · 14 de novembro de 2026 · Ficha Prática 03, Exercícios 7 (incremento I8), 8 (incremento I9) e 9 (incremento I10) · a 0.4 acrescenta notas sobre o que a Ficha 4 mudou depois (secções 3, 6.5, 6.6 e 7.1), sem alterar os resultados registados a 1 e 2 de novembro; a 0.5 (14 de novembro de 2026) acrescenta a validação final da entrega da Ficha 5 (secção 8).
 
-> **Estado:** percurso manual completo do I8 (secções 1 a 5), cenários 01 a 09 da Ficha 3 do I9 (secção 6) e revisão para a entrega do I10 (secção 7), feitos na interface e em pedidos diretos à API, com a base de dados real. As verificações manuais estão separadas dos testes automáticos (secções 3 e 6.3).
+> **Estado:** percurso manual completo do I8 (secções 1 a 5), cenários 01 a 09 da Ficha 3 do I9 (secção 6) , revisão para a entrega do I10 (secção 7) e validação final da entrega da Ficha 5 (secção 8), feitos na interface e em pedidos diretos à API, com a base de dados real. As verificações manuais estão separadas dos testes automáticos (secções 3 e 6.3).
 
 **Fontes:** [user-stories.md](user-stories.md) (CA e EC), [requirements.md](requirements.md) (RF), [constraints.md](constraints.md) (RV), [implementation-plan.md](implementation-plan.md) (I8 a I10).
 
@@ -267,3 +267,72 @@ O README não precisou de correções. O `npm run dev` (interface e backend junt
 | IA1 | Verificar se o projeto estava conforme as Fichas 1, 2 e 3 | A IA indicou a tabela das contas de demonstração partida no README (uma linha separada da tabela por uma nota). Aceite, e o resto da análise foi usado para planear o I9 e o I10 | A tabela passou a ter todas as contas; commit `b956b24` |
 | IA2 | Executar os cenários 01 a 09 (I9) | A IA encontrou o P1 (mensagem de sucesso antiga visível depois de uma recusa, contra EC-50) e propôs uma correção. O programador só aprovou a correção depois de ver o diagnóstico, e escolheu a verificação de regressão manual em vez de acrescentar uma dependência de testes de interface | Casos R1 a R3 (secção 6.5) antes e depois da correção; commit `b2d3d1b` |
 | IA3 (sugestão corrigida) | Durante o I9, verificar a pesquisa de projetos pela API | A IA concluiu primeiro que a pesquisa devolvia projetos que não correspondiam ao texto. Antes de o registar como problema, consultou o contrato: tinha usado o parâmetro `pesquisa` em vez de `nome`, e o backend ignora parâmetros que não conhece. A conclusão foi corrigida e não houve alteração ao código | Com `?nome=`, a pesquisa deu os resultados esperados (caso 02 da secção 6.2) |
+
+## 8. Validação final da entrega (Ficha 5)
+
+Ficha Prática 05, Exercício 6, a 14 de novembro de 2026. Verifica a versão candidata 1.0.0-rc.1 (commit `305a571` do `main`), executada a partir das instruções do README. Todos os dados criados eram fictícios e ficaram num projeto Docker Compose temporário, apagado no fim (`docker compose down -v`), tal como o clone e as palavras-passe geradas.
+
+### 8.1 Ambiente
+
+| Elemento | Valor |
+|---|---|
+| Código | Clone limpo de `https://github.com/ines-giesteira/matriz.git` (`main`, `305a571`), sem `.env` |
+| Docker | Docker 29.9.3 e Docker Compose v5.7.0 (Docker Desktop, Windows 11) |
+| Node.js (testes locais) | 26.13.0 |
+| Navegador | Browser da app Claude (Chromium), em `http://localhost:8080` |
+| Contas | Administrador criado com `cli-primeiro-admin.js` e uma Gestora criada na interface; palavras-passe geradas ao acaso, não registadas |
+
+### 8.2 Resultados
+
+| # | Tarefa da ficha | Verificação | Resultado |
+|---|---|---|---|
+| 1 | Executar a aplicação a partir do README | No clone limpo, os comandos da secção "Com Docker": `docker compose config -q`, `docker compose build`, `docker compose up -d` | Sem erros. As duas imagens foram construídas e o frontend só arrancou com o backend *healthy* |
+| 2 | Confirmar o estado dos containers | `docker compose ps`; `GET /api/saude` | `backend` e `frontend` *healthy*; só o frontend publica a porta, em `127.0.0.1:8080`. `{"estado":"ok","baseDeDados":"ok","migrations":4}` |
+| 3 | Testar as funcionalidades essenciais | No navegador, sem pedidos diretos à API:<br/>1. Entrada como Administrador (o painel mostra só a administração).<br/>2. "Administração de contas": cria uma Gestora.<br/>3. "Administração de projetos": cria um projeto com essa Gestora.<br/>4. "Sair"; entrada como Gestora: o painel mostra o projeto com 0, 0 e 0.<br/>5. "Nova tarefa" com prioridade Alta: a lista e o progresso atualizam-se (1 por fazer, 0,0%).<br/>6. Muda o estado para "Concluída": progresso 0, 0, 1 e 100% concluída.<br/>7. `docker compose down` (sem `-v`) e `up -d`; recarregar a página do projeto. | Tudo como esperado. Depois de recriar os containers, a sessão continua válida (está na base de dados, Q-22), o volume mantém-se e a tarefa continua "Concluída" com 100% |
+| 4 | Confirmar os resultados da pipeline CI/CD | API pública do GitHub Actions, execuções no `main` | [#6](https://github.com/ines-giesteira/matriz/actions/runs/43623888944) (`6fa71fa`, Ex. 4) e [#9](https://github.com/ines-giesteira/matriz/actions/runs/43626392176) (`305a571`, Ex. 5): *success* nos três jobs. A falha controlada do Ex. 4 está em [implementation-plan.md](implementation-plan.md#8-estado-do-plano) |
+| 5 | Consultar os logs | `docker compose logs` depois da recriação; consola do navegador | Backend: só a linha de arranque. nginx: sem `[warn]`, `[error]` nem respostas 4xx/5xx. Consola: um 401 ao abrir a página de entrada, que é o `GET /api/sessao` sem sessão, esperado (CA-01.2). Os registos anteriores à recriação perdem-se com `docker compose down` |
+| 6 | Verificar a ausência de credenciais nos ficheiros versionados | `git ls-files` e todo o histórico (`git log --all`): ficheiros `.env`, `.sqlite`, chaves e certificados; `git grep` e `git log -p` com padrões de tokens (GitHub, AWS, Slack, chaves privadas, JWT); atribuições literais de palavras-passe | O único ficheiro de configuração versionado é o `.env.example`, só com valores fictícios. Nenhum token nem chave, no estado atual nem no histórico. As palavras-passe literais estão só nos testes (bases em memória) e nos dados do E2E (`e2e/dados.ts`, base temporária), todas fictícias |
+| 7 | Testes automáticos | Local, no `main`: `npm ci`, `npm test`, `npm run typecheck -w backend`, `npm run build`, `npm run test:e2e` | 285 testes no backend e 3 no frontend a passar; typecheck e build sem erros; E2E a passar (1 teste) |
+| — | Documentação no GitHub | `docs/architecture.md` aberto no GitHub | Os três diagramas Mermaid são carregados pelo visualizador do GitHub; o da secção 7.1 foi visto renderizado. O da 7.2 foi carregado, mas não ficou visível no ecrã captado |
+
+### 8.3 Problemas encontrados e correções (Ficha 5)
+
+| # | Exercício | Problema | Correção |
+|---|---|---|---|
+| F1 | 2 | Para o seed continuar a recusar a palavra-passe de exemplo (RV-37), a primeira versão da imagem do backend incluía o `.env.example`. Sem ele, o seed não fazia a comparação e aceitaria a palavra-passe pública | O programador não aprovou o `.env.example` na imagem. O seed passou a recusar quando não consegue ler o valor de exemplo (P44), com um teste novo ("RV-37, P44") confirmado a falhar sem a correção. A imagem já não inclui o ficheiro |
+| F2 | 4 | Ao reverter a falha controlada, um `git revert` com uma opção inválida falhou e o `commit --amend` seguinte alterou a mensagem do commit local da falha | O push foi recusado, por isso nada chegou ao GitHub. O ramo local foi reposto no estado remoto (`git reset --keep`) e o revert foi refeito (`1f40c11`). O histórico publicado ficou limpo |
+| F3 | 5 | O cabeçalho do `implementation-plan.md` dizia "Versão 0.3" apesar das notas das versões 0.4 a 0.6; a secção 8.3 do `quality-security-review.md` dizia que a CI não tinha sido feita | Corrigidos (plano 0.7, revisão 0.5) |
+| F4 | 5 | Uma substituição com `sed` converteu as quebras de linha do `AGENTS.md` de CRLF para LF (diff de 176 linhas) | Quebras de linha originais repostas antes do commit; o diff ficou com uma linha |
+
+Ambiente: o Docker Desktop instala os comandos numa pasta que só fica no PATH das sessões novas; nesta sessão, a pasta foi acrescentada a cada comando. Não houve alterações ao sistema.
+
+### 8.4 Revisão final
+
+Feita pela IA, a pedido da Ficha 5, e verificada pelo programador nos resultados da secção 8.2.
+
+| Área | Conclusão |
+|---|---|
+| Documentação | O README cobre a descrição, as funcionalidades, as tecnologias, os pré-requisitos, a instalação, a execução (local e Docker), os testes, a CI e as referências. Os comandos da secção "Com Docker" funcionaram sem alterações num clone limpo. As ligações relativas apontam para ficheiros que existem. O `openapi.yaml` corresponde às 35 rotas do backend |
+| Docker | Imagens sem credenciais e sem `.env`; backend sem root; healthchecks nos dois serviços; volume persistente; porta só em `127.0.0.1` |
+| Pipeline | Verificações, E2E e imagens em sequência; permissões só de leitura; sem segredos; actions fixadas por SHA; falha confirmada com um teste falhado (Ex. 4) |
+| Testes | Todos a passar, localmente e na CI |
+
+**Observações sem correção** (por decidir):
+- A tabela "Comandos" do `AGENTS.md` não tem os comandos do Docker Compose; estão no README.
+- A versão 1.0.0-rc.1 ainda não tem tag. A convenção do `AGENTS.md` é a tag anotada `entrega-fichaN`.
+
+### 8.5 Limitações por resolver
+
+- Alojamento, HTTPS e cabeçalhos de segurança da interface em produção, por definir ([constraints.md](constraints.md#4-decisões-técnicas-pendentes)). Até lá, a aplicação em containers só funciona em `localhost`, porque o cookie é `Secure` (P37).
+- Cópias de segurança do volume `matriz-dados`, registo de auditoria e requisitos legais de proteção de dados (RV-04), por definir.
+- Análise estática (Semgrep ou SonarQube), CSRF com um site externo real e concorrência entre vários processos do backend, por verificar ([quality-security-review.md](quality-security-review.md#83-por-validar-e-pendentes)).
+- O seed de demonstração não corre nos containers (P44).
+
+### 8.6 Uso da IA na Ficha 5
+
+| # | Objetivo | Decisão do programador | Verificação |
+|---|---|---|---|
+| IA4 | Analisar o projeto e propor o plano de entrega (Ex. 1) | Aceitou a Opção A (backend + nginx) em vez de servir a interface pelo Express, para não alterar a CSP de P35; pediu que o plano não mencionasse os exercícios seguintes | [delivery-plan.md](delivery-plan.md) |
+| IA5 (sugestão corrigida) | Containerizar o backend (Ex. 2) | A IA propôs incluir o `.env.example` na imagem. O programador recusou e a IA assinalou a contradição com RV-37; o programador escolheu alterar o seed (P44) | F1; teste "RV-37, P44" |
+| IA6 | CI e falha controlada (Ex. 4) | Aprovou o plano com o E2E na CI; a IA confirmou primeiro que o runner tem o Edge | Execuções #1 a #4 |
+| IA7 | Validação final (Ex. 6) | Aprovou o percurso no navegador para cobrir a limitação "só validado por HTTP" dos Ex. 2 e 3 | Secção 8.2 |
