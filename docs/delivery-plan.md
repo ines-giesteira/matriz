@@ -1,8 +1,8 @@
 # Matriz — Plano de preparação para entrega
 
-Versão 0.1 · 14 de novembro de 2026 · Ficha Prática 05, Exercício 1 (análise e preparação do projeto).
+Versão 0.2 · 14 de novembro de 2026 · Ficha Prática 05, Exercício 1 (análise e preparação do projeto) · a 0.2 (14 de novembro de 2026) regista a aprovação das propostas e o que ficou decidido em cada ponto da secção 9.
 
-> **Estado: proposta por aprovar.** Este documento analisa o estado atual da Matriz e propõe como preparar a entrega com Docker, Docker Compose e GitHub Actions. Nenhum ficheiro de código ou de configuração foi alterado nesta análise. As decisões e os pressupostos por aprovar estão na secção 9.
+> **Estado: propostas aprovadas pela dona do produto a 14 de novembro de 2026 e implementadas (P42 a P46, [implementation-plan.md](implementation-plan.md#2-propostas-técnicas-aprovadas)).** Este documento mantém a análise feita antes de qualquer alteração: o estado da Matriz nessa altura e a proposta para preparar a entrega com Docker, Docker Compose e GitHub Actions. Nenhum ficheiro de código ou de configuração foi alterado na análise. O que ficou decidido em cada ponto está na secção 9; o estado da implementação, em [implementation-plan.md](implementation-plan.md#8-estado-do-plano).
 
 ## 1. Componentes da aplicação
 
@@ -93,12 +93,14 @@ As alterações ao `README.md` e a `docs/` precisam de aprovação ([AGENTS.md](
 3. **Integração contínua:** criar o `ci.yml` e fazer push no ramo; introduzir uma falha controlada num teste, confirmar que a pipeline falha, reverter e confirmar que passa.
 4. **Documentação e versão:** atualizar a documentação e o CHANGELOG e propor uma versão segundo Semantic Versioning (por exemplo, `v1.0.0-rc.1`).
 
-## 9. Pressupostos e pontos por decidir
+## 9. Pressupostos e pontos decididos
+
+Todos os pontos ficaram decididos a 14 de novembro de 2026. A coluna "Proposta" mantém o texto da análise; a coluna "Estado" indica a decisão e a proposta técnica onde ficou registada ([implementation-plan.md](implementation-plan.md#2-propostas-técnicas-aprovadas)).
 
 | Ponto | Proposta | Estado |
 |---|---|---|
-| Como servir a interface | Opção A, backend + nginx (secção 6). | Por decidir |
-| Imagem base | `node:26.13-alpine`, alinhada com a versão de desenvolvimento 26.13.0. | Pressuposto por aprovar |
-| Dados para validar no compose | O seed exige `NODE_ENV=development` (RV-37). Proposta: correr o seed uma única vez numa base de verificação, com os valores passados só nesse comando (`docker compose run --rm -e NODE_ENV=development -e SEED_PALAVRA_PASSE=… backend node backend/dist/bd/cli-seed.js`). Alternativa: criar só a primeira conta com `cli-primeiro-admin.js`, como no piloto. | Por decidir |
-| Teste E2E na CI | O Playwright usa `channel: 'msedge'`. Proposta: incluí-lo num job separado só depois de confirmar que o Edge existe no runner `ubuntu-latest`; caso contrário, fica fora da CI e registado como limitação. | Por confirmar |
-| Docker no computador de desenvolvimento | O Docker não está instalado (não está no PATH nem há Docker Desktop). Tem de ser instalado antes de construir as imagens. | Pré-requisito em falta |
+| Como servir a interface | Opção A, backend + nginx (secção 6). | Decidido: Opção A (P42) |
+| Imagem base | `node:26.13-alpine`, alinhada com a versão de desenvolvimento 26.13.0. | Aprovado (P43) |
+| Dados para validar no compose | O seed exige `NODE_ENV=development` (RV-37). Proposta: correr o seed uma única vez numa base de verificação, com os valores passados só nesse comando (`docker compose run --rm -e NODE_ENV=development -e SEED_PALAVRA_PASSE=… backend node backend/dist/bd/cli-seed.js`). Alternativa: criar só a primeira conta com `cli-primeiro-admin.js`, como no piloto. | Decidido: a alternativa. A primeira conta cria-se com `cli-primeiro-admin.js`; o seed não corre nos containers (P44) |
+| Teste E2E na CI | O Playwright usa `channel: 'msedge'`. Proposta: incluí-lo num job separado só depois de confirmar que o Edge existe no runner `ubuntu-latest`; caso contrário, fica fora da CI e registado como limitação. | Confirmado e incluído: o runner `ubuntu-24.04` tem o Edge (P46) |
+| Docker no computador de desenvolvimento | O Docker não está instalado (não está no PATH nem há Docker Desktop). Tem de ser instalado antes de construir as imagens. | Resolvido: Docker 29.9.3 e Docker Compose v5.7.0 instalados |

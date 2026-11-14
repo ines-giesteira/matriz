@@ -1,6 +1,6 @@
 # Matriz — Verificação
 
-Versão 0.5 · 14 de novembro de 2026 · Ficha Prática 03, Exercícios 7 (incremento I8), 8 (incremento I9) e 9 (incremento I10) · a 0.4 acrescenta notas sobre o que a Ficha 4 mudou depois (secções 3, 6.5, 6.6 e 7.1), sem alterar os resultados registados a 1 e 2 de novembro; a 0.5 (14 de novembro de 2026) acrescenta a validação final da entrega da Ficha 5 (secção 8).
+Versão 0.6 · 14 de novembro de 2026 · Ficha Prática 03, Exercícios 7 (incremento I8), 8 (incremento I9) e 9 (incremento I10) · a 0.4 acrescenta notas sobre o que a Ficha 4 mudou depois (secções 3, 6.5, 6.6 e 7.1), sem alterar os resultados registados a 1 e 2 de novembro; a 0.5 (14 de novembro de 2026) acrescenta a validação final da entrega da Ficha 5 (secção 8); a 0.6 (14 de novembro de 2026) indica na secção 8 onde está cada ponto do relatório pedido pela Ficha 5.
 
 > **Estado:** percurso manual completo do I8 (secções 1 a 5), cenários 01 a 09 da Ficha 3 do I9 (secção 6) , revisão para a entrega do I10 (secção 7) e validação final da entrega da Ficha 5 (secção 8), feitos na interface e em pedidos diretos à API, com a base de dados real. As verificações manuais estão separadas dos testes automáticos (secções 3 e 6.3).
 
@@ -271,6 +271,8 @@ O README não precisou de correções. O `npm run dev` (interface e backend junt
 ## 8. Validação final da entrega (Ficha 5)
 
 Ficha Prática 05, Exercício 6, a 14 de novembro de 2026. Verifica a versão candidata 1.0.0-rc.1 (commit `305a571` do `main`), executada a partir das instruções do README. Todos os dados criados eram fictícios e ficaram num projeto Docker Compose temporário, apagado no fim (`docker compose down -v`), tal como o clone e as palavras-passe geradas.
+
+**Relatório da entrega.** Os cinco pontos do relatório pedido pela Ficha 5 estão em: alterações implementadas, no [CHANGELOG](../CHANGELOG.md) (versão 1.0.0-rc.1) e nas [notas da versão](release-notes-1.0.0-rc.1.md), secção 2; resultados dos testes e da pipeline, na secção 8.2; problemas encontrados e soluções aplicadas, na 8.3; utilização dos agentes de IA, na 8.6; limitações e funcionalidades pendentes, na 8.5.
 
 ### 8.1 Ambiente
 
