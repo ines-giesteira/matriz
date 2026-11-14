@@ -1,8 +1,8 @@
 # Matriz 1.0.0-rc.1 — Notas da versão candidata
 
-14 de novembro de 2026 · Ficha Prática 05, Exercício 5.
+14 de novembro de 2026 · Ficha Prática 05, Exercício 5 · atualizadas no mesmo dia, depois da validação final (Exercício 6), com a tag `entrega-ficha5` e o percurso no navegador nos containers.
 
-> **Estado: versão candidata, por publicar.** Ainda não tem tag nem release no GitHub. É a candidata à primeira versão estável da Matriz: o âmbito do MVP está implementado e o contrato da API está fechado. Para chegar à 1.0.0 faltam o piloto e as decisões pendentes da secção 5.
+> **Estado: versão candidata, por publicar.** Está identificada com a tag anotada `entrega-ficha5` (commit `34f39be`); ainda não tem release no GitHub. É a candidata à primeira versão estável da Matriz: o âmbito do MVP está implementado e o contrato da API está fechado. Para chegar à 1.0.0 faltam o piloto e as decisões pendentes da secção 5.
 
 ## 1. Resumo
 
@@ -55,6 +55,7 @@ O desenvolvimento local com Node.js 26, a configuração e os dados de demonstra
 | Typecheck do backend e build | Sem erros |
 | Contrato da API | As 35 operações do `openapi.yaml` correspondem às 35 rotas do backend (34 nos módulos e `GET /saude`), confirmado a 14/11/2026 |
 | Docker | Imagens construídas e containers *healthy*. Através do nginx: entrada, criação de projeto e de tarefa, e o Administrador sem acesso ao conteúdo dos projetos (RV-32). Os dados mantêm-se depois de recriar os containers ([implementation-plan.md](implementation-plan.md#8-estado-do-plano), Ficha 5, Ex. 2 e 3) |
+| Percurso no navegador, nos containers | Feito na validação final ([verification.md](verification.md#8-validação-final-da-entrega-ficha-5), secção 8.2): o Administrador cria uma Gestora e um projeto; a Gestora cria uma tarefa e conclui-a, com o progresso a 100%; tudo se mantém depois de recriar os containers |
 | Integração contínua | Execuções [#1](https://github.com/ines-giesteira/matriz/actions/runs/43621925866), [#3](https://github.com/ines-giesteira/matriz/actions/runs/43622336023) e [#4](https://github.com/ines-giesteira/matriz/actions/runs/43622613088) a passar nos três jobs; a [#2](https://github.com/ines-giesteira/matriz/actions/runs/43622202285), com uma falha controlada num teste, falhou e não construiu as imagens |
 
 Os testes por perfil, as revisões de código e de segurança e as respetivas evidências estão em [test-plan.md](test-plan.md) e [quality-security-review.md](quality-security-review.md).
@@ -71,4 +72,3 @@ Os testes por perfil, as revisões de código e de segurança e as respetivas ev
   - cabeçalhos e HTTPS em produção;
   - concorrência entre vários processos do backend;
   - análise estática (Semgrep ou SonarQube).
-- **Interface nos containers:** só foi validada por pedidos HTTP; o percurso completo no navegador não foi feito.
