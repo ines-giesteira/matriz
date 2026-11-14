@@ -319,7 +319,7 @@ Feita pela IA, a pedido da Ficha 5, e verificada pelo programador nos resultados
 
 **Observações sem correção** (por decidir):
 - A tabela "Comandos" do `AGENTS.md` não tem os comandos do Docker Compose; estão no README.
-- A versão 1.0.0-rc.1 ainda não tem tag. A convenção do `AGENTS.md` é a tag anotada `entrega-fichaN`.
+- A versão 1.0.0-rc.1 ainda não tinha tag. A convenção do `AGENTS.md` é a tag anotada `entrega-fichaN`. Resolvido a 14/11/2026: tag anotada `entrega-ficha5` no commit `34f39be`.
 
 ### 8.5 Limitações por resolver
 

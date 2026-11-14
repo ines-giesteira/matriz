@@ -4,7 +4,7 @@ Alterações de cada versão da Matriz. O formato segue o [Keep a Changelog](htt
 
 ## [1.0.0-rc.1] — 2026-11-14
 
-Versão candidata da Ficha 5, ainda sem tag e por publicar. Notas da versão: [docs/release-notes-1.0.0-rc.1.md](docs/release-notes-1.0.0-rc.1.md).
+Versão candidata da Ficha 5, com a tag `entrega-ficha5` e por publicar. Notas da versão: [docs/release-notes-1.0.0-rc.1.md](docs/release-notes-1.0.0-rc.1.md).
 
 ### Acrescentado
 
