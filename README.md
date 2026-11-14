@@ -56,7 +56,7 @@ A arquitetura (monólito modular) está em [docs/architecture.md](docs/architect
 | [`docs/architecture.md`](docs/architecture.md) | Arquitetura do MVP (monólito modular): comparação das alternativas, decisão, componentes e stack. |
 | [`docs/database.md`](docs/database.md) | Modelo de dados, diagrama ER (Mermaid) e mapeamento para SQLite. |
 | [`openapi.yaml`](openapi.yaml) | Contrato REST (OpenAPI 3.1) com todas as operações do MVP. |
-| [`docs/verification.md`](docs/verification.md) | Percurso manual com a API e a base de dados reais (I8), cenários 01 a 09 da Ficha 3 com evidência (I9), revisão para a entrega e exemplos de uso da IA (I10), testes automáticos e problemas encontrados. |
+| [`docs/verification.md`](docs/verification.md) | Percurso manual com a API e a base de dados reais (I8), cenários 01 a 09 da Ficha 3 com evidência (I9), revisão para a entrega e exemplos de uso da IA (I10), testes automáticos e problemas encontrados, e validação final da entrega da Ficha 5 (secção 8). |
 | [`docs/implementation-plan.md`](docs/implementation-plan.md) | Conciliação com a Ficha 3, propostas técnicas, estrutura prevista, incrementos e estado da implementação. |
 | [`docs/test-plan.md`](docs/test-plan.md) | Plano de testes das tarefas e permissões (TP-01 a TP-06), testes unitários, de integração, End-to-End e de componentes, e execução final. |
 | [`docs/quality-security-review.md`](docs/quality-security-review.md) | Revisão de código (CR-01 a CR-04) e de segurança (SEG-01 a SEG-10), com evidências, decisões e estado final. |
