@@ -1,5 +1,6 @@
 {
   "name": "matriz",
+  "version": "1.0.0-rc.1",
   "private": true,
   "description": "Matriz: gestão de projetos e tarefas para equipas (MVP).",
   "workspaces": [
