@@ -1,6 +1,6 @@
 # Matriz — Arquitetura
 
-Versão 0.6 · 8 de novembro de 2026 · Ficha Prática 02, Exercício 1 · a 0.3 retirou o acesso direto do Progresso à base de dados (RV-24); a 0.4 regista a stack (Q-14) e a autenticação (Q-22) e ajusta os componentes às decisões da Ficha 3 (Q-15 a Q-20); a 0.5 retira dos pendentes as regras das palavras-passe e a duração da sessão, aprovadas em P2 e P3; a 0.6 (8 de novembro de 2026) regista a aprovação da arquitetura (RV-41).
+Versão 0.7 · 14 de novembro de 2026 · Ficha Prática 02, Exercício 1 · a 0.3 retirou o acesso direto do Progresso à base de dados (RV-24); a 0.4 regista a stack (Q-14) e a autenticação (Q-22) e ajusta os componentes às decisões da Ficha 3 (Q-15 a Q-20); a 0.5 retira dos pendentes as regras das palavras-passe e a duração da sessão, aprovadas em P2 e P3; a 0.6 (8 de novembro de 2026) regista a aprovação da arquitetura (RV-41); a 0.7 (14 de novembro de 2026) acrescenta a execução em containers e a integração contínua da Ficha 5 (secção 3.1 e secção 7).
 
 > **Estado: aprovado pela dona do produto a 8 de novembro de 2026 (RV-41).** Este documento decide o estilo de arquitetura, os componentes do MVP e a stack (secção 3.1). O alojamento continua pendente ([constraints.md](constraints.md#4-decisões-técnicas-pendentes)). Os pressupostos novos estão na secção 6, separados dos requisitos confirmados, e continuam por aprovar.
 
@@ -58,6 +58,9 @@ Decidida na conciliação com a Ficha 3. Escolhida por ser simples de instalar (
 | Validação dos pedidos | `zod` | Aprovado (P1) |
 | Hash da palavra-passe | `bcryptjs` | Aprovado (P1) |
 | Navegação no frontend | React Router | Aprovado (P1) |
+| Execução em containers | Docker: uma imagem para o backend e outra para a interface, servida pelo nginx | Aprovado (P42 a P44) |
+| Execução integrada | Docker Compose, com uma rede interna e um volume para a base de dados | Aprovado (P45) |
+| Integração contínua | GitHub Actions | Aprovado (P46) |
 
 **Autenticação (Q-22).** Email e palavra-passe. Ao entrar, o backend cria uma linha em SESSAO e devolve um cookie httpOnly com um identificador aleatório; na base de dados guarda-se só o hash desse identificador. Em cada pedido, a camada de API lê o cookie, encontra a sessão e passa o utilizador à Autorização, que relê a conta, os perfis e os papéis. Assim, desativar uma conta ou perder um papel tem efeito no pedido seguinte (RV-09). Terminar a sessão apaga a linha.
 
@@ -121,3 +124,43 @@ Continuam pendentes, conforme [constraints.md](constraints.md#4-decisões-técni
 - A verificação de A-16/A-17 usa uma interface definida por Contas e implementada por Projetos, para manter as dependências num só sentido (secção 4).
 - Da mesma forma, para eliminar um projeto (Q-19), o módulo de Projetos define a interface "este projeto tem tarefas?" e o módulo de Tarefas implementa-a. A chave estrangeira `RESTRICT` de [database.md](database.md#5-mapeamento-para-sqlite-q-14) é uma segunda barreira.
 - O backend serve a API em `/api`; em desenvolvimento, o Vite encaminha `/api` para o backend, para que o cookie de sessão funcione sem configurar CORS.
+
+## 7. Execução e entrega
+
+Acrescentada na Ficha 5 (propostas P42 a P46 de [implementation-plan.md](implementation-plan.md#2-propostas-técnicas-aprovadas)). Não muda a arquitetura da secção 3: o monólito modular continua a ser um só backend com uma só base de dados. O alojamento continua pendente (secção 5); o Docker garante que a aplicação se constrói e executa da mesma forma em qualquer máquina.
+
+### 7.1 Containers (Docker Compose)
+
+```mermaid
+flowchart LR
+    N[Navegador] -->|"http://localhost:8080<br/>(só 127.0.0.1)"| F
+
+    subgraph C[Docker Compose — rede interna]
+        F["frontend<br/>nginx 1.30<br/>interface (frontend/dist)"] -->|"/api → backend:3000"| BK["backend<br/>Node.js 26<br/>API Express"]
+    end
+
+    BK --> V[("volume matriz-dados<br/>/app/dados/matriz.sqlite")]
+```
+
+| Elemento | Detalhe |
+|---|---|
+| `frontend` | Imagem `frontend/Dockerfile`: o build do Vite servido pelo nginx (`frontend/nginx.conf`). Devolve o `index.html` nas rotas da interface e encaminha `/api` para o backend. A interface e a API ficam na mesma origem, como em desenvolvimento (secção 6), por isso o cookie de sessão funciona sem CORS. Só ele publica uma porta, e só neste computador (`PORTA_DOCKER`, 8080 por omissão). |
+| `backend` | Imagem `backend/Dockerfile`: a API compilada, só com as dependências de produção, a correr como o utilizador `node`, em modo de produção (cookie `Secure`, P37). Aplica as migrations ao arrancar. Não publica portas. |
+| Rede `interna` | Só os dois serviços a usam; o nginx encontra o backend pelo nome `backend`. |
+| Volume `matriz-dados` | O ficheiro SQLite. Mantém-se quando os containers são recriados; só `docker compose down -v` o apaga. |
+| Healthchecks | Backend: `GET /api/saude` (API e base de dados). Frontend: pedido à página inicial. O frontend só arranca com o backend *healthy*. |
+| Configuração | Do `.env`, o compose só lê `PORTA_DOCKER` e `SESSAO_HORAS`. As imagens não têm credenciais, nem o `.env`, nem o `.env.example`: o seed de demonstração não corre nos containers (RV-37, P44) e a primeira conta cria-se com `cli-primeiro-admin.js`. |
+
+### 7.2 Integração contínua (GitHub Actions)
+
+```mermaid
+flowchart LR
+    E["push ou<br/>pull request para o main"] --> V["Typecheck, testes e build<br/>npm ci · typecheck · npm test · npm run build"]
+    V -->|passa| T["Teste End-to-End<br/>Playwright com o Edge do runner"]
+    T -->|passa| D["Imagens Docker<br/>compose build · up --wait · /api/saude · down -v"]
+    V -->|falha| X[Pipeline falha]
+    T -->|falha| X
+    D -->|falha| X
+```
+
+O workflow está em `.github/workflows/ci.yml`. Só lê o repositório (`permissions: contents: read`), não usa segredos e fixa as actions pelo SHA do commit. Cada job só corre se os anteriores passarem, por isso as imagens só se constroem depois de os testes passarem.

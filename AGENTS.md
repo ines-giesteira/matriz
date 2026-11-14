@@ -15,7 +15,7 @@ Antes de qualquer tarefa, lê o `README.md` e o ficheiro indicado para o tipo de
 | Dados, entidades e regras de integridade | `docs/database.md` |
 | Endpoints, pedidos, respostas e códigos de erro | `openapi.yaml` |
 | Ecrãs, navegação e elementos da interface | `docs/ui/wireframe.md` |
-| Implementar um incremento: sequência, ficheiros, verificações e estado | `docs/implementation-plan.md` (I0 a I10, propostas P1 a P41) |
+| Implementar um incremento: sequência, ficheiros, verificações e estado | `docs/implementation-plan.md` (I0 a I10, propostas P1 a P46) |
 | Verificar, registar resultados ou investigar um problema | `docs/verification.md` (percurso manual, cenários 01 a 09, testes automáticos, problemas e correções) |
 | Planear, escrever ou executar testes | `docs/test-plan.md` (cenários TP-01 a TP-06, testes unitários, de integração, E2E e de componentes, execução final) |
 | Rever código ou segurança | `docs/quality-security-review.md` (CR-01 a CR-04, SEG-01 a SEG-10, verificações e decisões) |

@@ -2,6 +2,8 @@
 
 A Matriz é uma aplicação interna de gestão de projetos e tarefas para equipas. É desenvolvida no contexto de aulas, para um **cliente fictício**.
 
+**Versão candidata:** 1.0.0-rc.1 ([notas da versão](docs/release-notes-1.0.0-rc.1.md), [CHANGELOG](CHANGELOG.md)).
+
 A única informação confirmada pelo cliente é esta frase:
 
 > *"Precisamos de uma aplicação onde as nossas equipas possam organizar projetos, gerir tarefas e acompanhar o progresso do trabalho."*
@@ -18,7 +20,9 @@ Pressuposto R-02:
 - Todas as tarefas ativas da equipa piloto estão registadas na Matriz.
 - Os gestores deixam de pedir pontos de situação por email.
 
-## Funcionalidades previstas para o MVP
+## Funcionalidades
+
+O âmbito do MVP está implementado (incrementos I0 a I10, [docs/implementation-plan.md](docs/implementation-plan.md#8-estado-do-plano)):
 
 - **Contas e perfis:** Administrador, Gestor e Membro, com entrada por email e palavra-passe e possibilidade de desativar contas. Uma conta desativada há mais de um ano é anonimizada automaticamente (RV-33).
 - **Projetos:** o Administrador cria projetos e indica o Gestor, elimina projetos sem tarefas, transfere projetos entre Gestores e gere os membros de qualquer projeto, mas nunca é membro (RV-32). O Gestor edita, gere os membros, arquiva e desarquiva. Quem não tem o perfil Gestor só é membro de um projeto ativo de cada vez (RV-31). Pesquisa de projetos pelo nome.
@@ -26,6 +30,20 @@ Pressuposto R-02:
 - **Progresso:** painel inicial com os projetos do utilizador e as contagens por estado; em cada projeto, percentagem concluída e tarefas em atraso.
 
 O detalhe, as regras de negócio e a matriz de permissões estão em [docs/requirements.md](docs/requirements.md).
+
+## Tecnologias
+
+| Área | Tecnologia |
+|---|---|
+| Runtime e linguagem | Node.js 26 e TypeScript, no backend e no frontend (Q-14) |
+| Backend | Express 5, `zod` (validação), `bcryptjs` (hash das palavras-passe) |
+| Base de dados | SQLite através de `node:sqlite`, incluído no Node, com migrations em SQL |
+| Frontend | React 19, React Router e Vite |
+| Testes | Vitest e Supertest (backend), Testing Library e jsdom (componentes), Playwright (End-to-End) |
+| Contentores | Docker e Docker Compose; nginx a servir a interface (P42 a P45) |
+| Integração contínua | GitHub Actions (P46) |
+
+A arquitetura (monólito modular) está em [docs/architecture.md](docs/architecture.md).
 
 ## Organização da documentação
 
@@ -43,6 +61,9 @@ O detalhe, as regras de negócio e a matriz de permissões estão em [docs/requi
 | [`docs/test-plan.md`](docs/test-plan.md) | Plano de testes das tarefas e permissões (TP-01 a TP-06), testes unitários, de integração, End-to-End e de componentes, e execução final. |
 | [`docs/quality-security-review.md`](docs/quality-security-review.md) | Revisão de código (CR-01 a CR-04) e de segurança (SEG-01 a SEG-10), com evidências, decisões e estado final. |
 | [`docs/ui/`](docs/ui/wireframe.md) | Wireframe de baixa fidelidade da página do projeto (`wireframe.png`), com a validação face ao MVP. |
+| [`docs/delivery-plan.md`](docs/delivery-plan.md) | Análise do projeto e plano de preparação para entrega com Docker, Docker Compose e GitHub Actions (Ficha 5). |
+| [`CHANGELOG.md`](CHANGELOG.md) | Alterações de cada versão entregue. |
+| [`docs/release-notes-1.0.0-rc.1.md`](docs/release-notes-1.0.0-rc.1.md) | Notas da versão candidata 1.0.0-rc.1. |
 | [`AGENTS.md`](AGENTS.md) | Instruções persistentes para agentes de desenvolvimento. |
 
 ## Como executar
@@ -50,6 +71,8 @@ O detalhe, as regras de negócio e a matriz de permissões estão em [docs/requi
 ### Requisitos
 
 - **Node.js 26** (inclui o npm e o módulo `node:sqlite`, usado como base de dados). Não é preciso instalar nenhum servidor de base de dados nem ferramentas de compilação.
+- **Microsoft Edge**, só para o teste End-to-End (`npm run test:e2e`).
+- **Docker com Docker Compose**, só para correr a aplicação em containers (secção [Com Docker](#com-docker)); dispensa o Node.js.
 
 ### Instalação e configuração
 
@@ -241,10 +264,11 @@ O workflow só tem permissão de leitura sobre o repositório e não usa segredo
 
 - **Specification Pack (Aula 1):** concluído e revisto (RV-01 a RV-23).
 - **Architecture Pack (Aula 2):** concluído e revisto (RV-24 a RV-30). A arquitetura, o modelo de dados, o contrato OpenAPI e o wireframe foram aprovados pela dona do produto a 08/11/2026 (RV-41); os pressupostos que cada documento assinala continuam por aprovar.
-- **Implementação (Aula 3):** plano consolidado em [docs/implementation-plan.md](docs/implementation-plan.md); âmbito conciliado com a Ficha 3 (Q-14 a Q-22). As propostas técnicas do plano estão aprovadas: P1 a P28 na Ficha 3 e P29 a P41 na Ficha 4.
+- **Implementação (Aula 3):** plano consolidado em [docs/implementation-plan.md](docs/implementation-plan.md); âmbito conciliado com a Ficha 3 (Q-14 a Q-22). As propostas técnicas do plano estão aprovadas: P1 a P28 na Ficha 3, P29 a P41 na Ficha 4 e P42 a P46 na Ficha 5.
 - **Testes e qualidade (Aula 4):** plano de testes, testes unitários, de integração, End-to-End e de componentes do frontend em [docs/test-plan.md](docs/test-plan.md); revisão de código e de segurança em [docs/quality-security-review.md](docs/quality-security-review.md), sem IDOR nem escalada de privilégios, com CR-01 a CR-04 e SEG-01 a SEG-10 corrigidos.
 - **Questões:** todas decididas (Q-01 a Q-23). A Q-23 (08/11/2026): as contas anonimizadas não contam para a regra de um só projeto ativo. Revisões da dona do produto a 01/11/2026: RV-31 (um só projeto ativo sem o perfil Gestor), RV-32 (o Administrador nunca é membro e gere os membros) e RV-33 (anonimização das contas desativadas ao fim de um ano, implementada no I3); a 08/11/2026: RV-35 a RV-40 (segunda revisão de segurança) e RV-41 (aprovação do Architecture Pack).
+- **Entrega (Aula 5):** análise e plano em [docs/delivery-plan.md](docs/delivery-plan.md); imagens Docker do backend e da interface (P42 a P44), Docker Compose (P45) e integração contínua com GitHub Actions (P46); documentação técnica, [CHANGELOG](CHANGELOG.md) e [notas da versão candidata 1.0.0-rc.1](docs/release-notes-1.0.0-rc.1.md).
 - **Stack:** Node.js 26 e TypeScript, Express, React com Vite, SQLite através de `node:sqlite` (Q-14).
 - **Código:** incrementos I0 (estrutura, configuração, esquema, migrations, seed e testes), I1 (sessão e autorização base), I2 (projetos e administração de projetos), I3 (contas e perfis, com a anonimização de RV-33), I4 (membros), I5 (tarefas, estado e filtros), I6 (responsáveis e comentários), I7 (progresso e painel inicial), I8 (consolidação do frontend, com o percurso manual em [docs/verification.md](docs/verification.md)), I9 (verificação do MVP: cenários 01 a 09 da Ficha 3 e correção do problema P1) e I10 (revisão e entrega: revisão do código, refatoração, contrato atualizado, execução a partir de uma cópia limpa e exemplos de uso da IA) concluídos, com as regras de RV-31 e RV-32 aplicadas. O estado de cada incremento está em [docs/implementation-plan.md](docs/implementation-plan.md#8-estado-do-plano).
-- **Versões entregues:** Ficha 3, tag `entrega-ficha3`; Ficha 4, tag `entrega-ficha4`.
+- **Versões entregues:** Ficha 3, tag `entrega-ficha3`; Ficha 4, tag `entrega-ficha4`. Versão candidata: 1.0.0-rc.1 (Ficha 5), ainda sem tag.
 - **Pendente:** decisões técnicas e requisitos de segurança por definir, em [docs/constraints.md](docs/constraints.md#4-decisões-técnicas-pendentes). As verificações por fazer estão em [docs/quality-security-review.md](docs/quality-security-review.md#8-estado-final).

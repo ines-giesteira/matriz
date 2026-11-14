@@ -1,6 +1,6 @@
 # Matriz — Revisão de qualidade e de segurança
 
-Versão 0.4 · 8 de novembro de 2026 · Ficha Prática 04, Exercício 5 · a 0.2 acrescenta a segunda revisão de segurança (secção 7, SEG-03 a SEG-10); a 0.3 corrige a decisão 1 da secção 6 e a tabela da secção 3.2, regista a questão Q-23 e acrescenta o estado final (secção 8), com a verificação de regressão do CR-04; a 0.4 regista a decisão da Q-23 (EC-59), tomada depois da tag `entrega-ficha4`.
+Versão 0.5 · 14 de novembro de 2026 · Ficha Prática 04, Exercício 5 · a 0.2 acrescenta a segunda revisão de segurança (secção 7, SEG-03 a SEG-10); a 0.3 corrige a decisão 1 da secção 6 e a tabela da secção 3.2, regista a questão Q-23 e acrescenta o estado final (secção 8), com a verificação de regressão do CR-04; a 0.4 regista a decisão da Q-23 (EC-59), tomada depois da tag `entrega-ficha4`; a 0.5 (14 de novembro de 2026) regista na secção 8.3 a integração contínua da Ficha 5 (P46).
 
 > **Estado:** Code Review do último incremento de código (I10) e do diff da Ficha 4, Security Review do acesso a projetos e tarefas com contas de demonstração, e análise estática com as ferramentas disponíveis. **Nenhum IDOR nem escalada de privilégios.** A segunda revisão (secção 7) encontrou 8 pontos novos (3 de severidade Média e 5 de Baixa), sete confirmados por execução; todos os pontos estão decididos desde 8 de novembro de 2026 (secções 6 e 7.5). SEG-01 a SEG-10 estão corrigidos; CR-01 a CR-04 também, cada um com um teste ou uma verificação de regressão (secção 8.1). A versão final tem a tag `entrega-ficha4` (secção 8). A questão Q-23, levantada a partir do SEG-05, ficou por decidir nessa versão e foi decidida e implementada depois (EC-59, secção 8.3).
 
@@ -228,7 +228,7 @@ A execução final de todos os testes e verificações está em [test-plan.md](t
 
 - **Testes não executados:** nenhum dos testes do repositório. Continuam por fazer as verificações das secções 5 e 7.4: CSRF com um site externo real; cabeçalhos e HTTPS em produção, que dependem do alojamento, por definir; concorrência entre Gestores e entre vários processos do backend; Semgrep ou SonarQube, que não estão disponíveis no projeto.
 - **Problemas pendentes:** nenhum defeito conhecido por corrigir. Fica por decidir se os ficheiros do E2E passam a ter uma verificação de tipos própria ([test-plan.md](test-plan.md), secção 7.4). A questão Q-23 ficou por decidir na tag `entrega-ficha4` e foi decidida e implementada no commit seguinte: as contas anonimizadas não contam para RV-31 (EC-59, teste "Q-23, EC-59" em `backend/testes/membros.test.ts`; [constraints.md](constraints.md#questões-levantadas-na-ficha-4)).
-- **Extensão opcional:** a execução dos testes e da análise estática num workflow de CI/CD não foi feita.
+- **Extensão opcional:** os testes passaram a correr num workflow de GitHub Actions na Ficha 5 (`.github/workflows/ci.yml`, P46): typecheck, testes do backend e de componentes, build, teste End-to-End e imagens Docker, em cada push e em cada pull request para o `main`. A análise estática (Semgrep ou SonarQube) continua por fazer.
 
 ### 8.4 Versão final
 
