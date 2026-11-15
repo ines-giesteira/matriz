@@ -2,6 +2,12 @@
 
 Alterações de cada versão da Matriz. O formato segue o [Keep a Changelog](https://keepachangelog.com/pt-PT/1.1.0/) e as versões seguem o [Semantic Versioning](https://semver.org/lang/pt-PT/). As versões das Fichas 3 e 4 foram identificadas por tags de entrega (`entrega-fichaN`), antes de o projeto ter um número de versão. Os IDs (RF, RV, P, SEG, CR, EC, Q) estão na pasta [`docs/`](docs/).
 
+## [Por lançar]
+
+### Segurança
+
+- A pipeline analisa as dependências com `npm audit --audit-level=high` e falha com vulnerabilidades altas ou críticas (P47, Desafio A da Ficha 5).
+
 ## [1.0.0-rc.1] — 2026-11-14
 
 Versão candidata da Ficha 5, com a tag `entrega-ficha5` e por publicar. Notas da versão: [docs/release-notes-1.0.0-rc.1.md](docs/release-notes-1.0.0-rc.1.md).
