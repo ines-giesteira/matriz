@@ -4,6 +4,10 @@ Alterações de cada versão da Matriz. O formato segue o [Keep a Changelog](htt
 
 ## [Por lançar]
 
+### Acrescentado
+
+- Registo estruturado no backend: uma linha JSON por evento e por pedido, sem dados pessoais, e a operação `GET /saude/vivo`, que confirma que o processo responde sem aceder à base de dados (P48, Desafio B da Ficha 5).
+
 ### Segurança
 
 - A pipeline analisa as dependências com `npm audit --audit-level=high` e falha com vulnerabilidades altas ou críticas (P47, Desafio A da Ficha 5).
