@@ -1,6 +1,6 @@
 # Matriz — Arquitetura
 
-Versão 0.7 · 14 de novembro de 2026 · Ficha Prática 02, Exercício 1 · a 0.3 retirou o acesso direto do Progresso à base de dados (RV-24); a 0.4 regista a stack (Q-14) e a autenticação (Q-22) e ajusta os componentes às decisões da Ficha 3 (Q-15 a Q-20); a 0.5 retira dos pendentes as regras das palavras-passe e a duração da sessão, aprovadas em P2 e P3; a 0.6 (8 de novembro de 2026) regista a aprovação da arquitetura (RV-41); a 0.7 (14 de novembro de 2026) acrescenta a execução em containers e a integração contínua da Ficha 5 (secção 3.1 e secção 7).
+Versão 0.8 · 15 de novembro de 2026 · Ficha Prática 02, Exercício 1 · a 0.3 retirou o acesso direto do Progresso à base de dados (RV-24); a 0.4 regista a stack (Q-14) e a autenticação (Q-22) e ajusta os componentes às decisões da Ficha 3 (Q-15 a Q-20); a 0.5 retira dos pendentes as regras das palavras-passe e a duração da sessão, aprovadas em P2 e P3; a 0.6 (8 de novembro de 2026) regista a aprovação da arquitetura (RV-41); a 0.7 (14 de novembro de 2026) acrescenta a execução em containers e a integração contínua da Ficha 5 (secção 3.1 e secção 7); a 0.8 (15 de novembro de 2026) acrescenta a análise de dependências à pipeline (P47, secção 7.2).
 
 > **Estado: aprovado pela dona do produto a 8 de novembro de 2026 (RV-41).** Este documento decide o estilo de arquitetura, os componentes do MVP e a stack (secção 3.1). O alojamento continua pendente ([constraints.md](constraints.md#4-decisões-técnicas-pendentes)). Os pressupostos novos estão na secção 6, separados dos requisitos confirmados, e continuam por aprovar.
 
@@ -155,7 +155,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    E["push ou<br/>pull request para o main"] --> V["Typecheck, testes e build<br/>npm ci · typecheck · npm test · npm run build"]
+    E["push ou<br/>pull request para o main"] --> V["Typecheck, testes e build<br/>npm ci · npm audit · typecheck · npm test · npm run build"]
     V -->|passa| T["Teste End-to-End<br/>Playwright com o Edge do runner"]
     T -->|passa| D["Imagens Docker<br/>compose build · up --wait · /api/saude · down -v"]
     V -->|falha| X[Pipeline falha]
@@ -163,4 +163,4 @@ flowchart LR
     D -->|falha| X
 ```
 
-O workflow está em `.github/workflows/ci.yml`. Só lê o repositório (`permissions: contents: read`), não usa segredos e fixa as actions pelo SHA do commit. Cada job só corre se os anteriores passarem, por isso as imagens só se constroem depois de os testes passarem.
+O workflow está em `.github/workflows/ci.yml`. Só lê o repositório (`permissions: contents: read`), não usa segredos e fixa as actions pelo SHA do commit. Cada job só corre se os anteriores passarem, por isso as imagens só se constroem depois de os testes passarem. O `npm audit` (P47) faz a pipeline falhar com vulnerabilidades altas ou críticas nas dependências.
