@@ -431,7 +431,10 @@ describe('RV-40: o domínio .invalid fica reservado às contas anonimizadas', ()
     const n = anonimizarContasExpiradas(bd, new Date(Date.now() + 2 * 365 * DIA_MS));
     expect(n).toBe(1);
     expect(erros).toHaveBeenCalledTimes(1);
-    expect(String(erros.mock.calls[0]?.[0])).toContain(`conta ${id('rui')}`);
+    // Registo estruturado (P48): só o identificador da conta, sem dados pessoais.
+    const linha = String(erros.mock.calls[0]?.[0]);
+    expect(JSON.parse(linha)).toMatchObject({ nivel: 'erro', contaId: id('rui') });
+    expect(linha).not.toContain('@');
     erros.mockRestore();
     const removida = (pessoaId: number) =>
       bd.prepare('SELECT anonimizado_em FROM utilizador WHERE id = ?').get(pessoaId)?.anonimizado_em !== null;

@@ -182,7 +182,11 @@ npm run test:e2e
 
 Em caso de falha, o screenshot e o trace ficam em `test-results/` (`npx playwright show-trace <ficheiro trace.zip>`). Os cenários, os resultados e as limitações estão em [docs/test-plan.md](docs/test-plan.md).
 
-Para confirmar que o backend e a base de dados respondem, abre-se `http://localhost:3000/api/saude`.
+Para confirmar que o backend e a base de dados respondem, abre-se `http://localhost:3000/api/saude`. `http://localhost:3000/api/saude/vivo` só confirma que o processo responde, sem aceder à base de dados (P48).
+
+### Registos
+
+O backend escreve uma linha JSON por evento (P48), com `momento`, `nivel`, `mensagem` e campos: o arranque, as migrations aplicadas, a anonimização, os erros inesperados e cada pedido (`pedidoId`, `metodo`, `caminho`, `estado` e `duracaoMs`). Os registos nunca têm o corpo dos pedidos, cookies, emails nem palavras-passe. Em desenvolvimento aparecem no terminal do `npm run dev`; com Docker, em `docker compose logs backend`.
 
 ### Com Docker
 

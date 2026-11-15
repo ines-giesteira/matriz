@@ -2,6 +2,7 @@ import express, { type ErrorRequestHandler, type Express } from 'express';
 import type { Bd } from './bd/ligacao.js';
 import { exigirPerfil } from './autorizacao/index.js';
 import { ErroHttp } from './http/erros.js';
+import { camposDoErro, criarRegisto, registarPedidos, type Registo } from './http/registo.js';
 import { exigirSessao } from './http/sessao.js';
 import { rotasContas, rotasSessao } from './modulos/contas/rotas.js';
 import { rotasAdminProjetos, rotasProjetos } from './modulos/projetos/rotas.js';
@@ -19,6 +20,10 @@ export type Dependencias = {
   cookieSeguro?: boolean;
   /** Dia de hoje em Europe/Lisbon (A-08); os testes fixam-no. */
   hoje?: Hoje;
+  /** Registo estruturado (P48); por omissão, linhas JSON na consola. */
+  registo?: Registo;
+  /** Regista cada pedido (P48). Só o servidor o ativa; nos testes fica desligado, salvo indicação. */
+  registarPedidos?: boolean;
 };
 
 const OITO_HORAS_MS = 8 * 60 * 60 * 1000;
@@ -34,7 +39,14 @@ function eErroDeLeituraDoPedido(erro: unknown): boolean {
  * Cria a aplicação Express. Recebe as dependências para os testes poderem usar uma base temporária.
  * Os módulos (contas, projetos, tarefas, progresso) são ligados aqui.
  */
-export function criarApp({ bd, sessao, cookieSeguro = false, hoje = () => hojeEmLisboa() }: Dependencias): Express {
+export function criarApp({
+  bd,
+  sessao,
+  cookieSeguro = false,
+  hoje = () => hojeEmLisboa(),
+  registo = criarRegisto(),
+  registarPedidos: comRegistoDePedidos = false,
+}: Dependencias): Express {
   const opcoesSessao: OpcoesSessao = {
     duracaoMs: sessao?.duracaoMs ?? OITO_HORAS_MS,
     agora: sessao?.agora ?? (() => new Date()),
@@ -43,6 +55,7 @@ export function criarApp({ bd, sessao, cookieSeguro = false, hoje = () => hojeEm
 
   const app = express();
   app.disable('x-powered-by');
+  if (comRegistoDePedidos) app.use(registarPedidos(registo));
   // Cabeçalhos de segurança em todas as respostas da API (SEG-02, P35). A API só devolve JSON:
   // não carrega recursos nem pode ser mostrada dentro de outra página (clickjacking).
   app.use((_pedido, resposta, seguinte) => {
@@ -55,7 +68,11 @@ export function criarApp({ bd, sessao, cookieSeguro = false, hoje = () => hojeEm
   });
   app.use(express.json({ limit: '100kb' }));
 
-  // Operações públicas: GET /saude e POST /sessao (openapi.yaml).
+  // Operações públicas: GET /saude, GET /saude/vivo e POST /sessao (openapi.yaml).
+  // Só confirma que o processo responde, sem tocar na base de dados (Ficha 5, Desafio B, P48).
+  app.get('/api/saude/vivo', (_pedido, resposta) => {
+    resposta.json({ estado: 'ok' });
+  });
   // Confirma que o backend responde e que a base de dados está acessível (Ficha 3, Exercício 2).
   app.get('/api/saude', (_pedido, resposta) => {
     const linha = bd.prepare('SELECT COUNT(*) AS n FROM migracao_aplicada').get();
@@ -89,7 +106,7 @@ export function criarApp({ bd, sessao, cookieSeguro = false, hoje = () => hojeEm
       resposta.status(400).json({ codigo: 'PEDIDO_INVALIDO', mensagem: 'O pedido tem um formato inválido.' });
       return;
     }
-    console.error(erro);
+    registo.erro('erro inesperado', { pedidoId: resposta.locals.pedidoId, ...camposDoErro(erro) });
     resposta.status(500).json({ codigo: 'ERRO_INTERNO', mensagem: 'Ocorreu um erro inesperado. Tente novamente.' });
   };
   app.use(tratarErros);

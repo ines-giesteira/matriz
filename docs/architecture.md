@@ -1,6 +1,6 @@
 # Matriz — Arquitetura
 
-Versão 0.8 · 15 de novembro de 2026 · Ficha Prática 02, Exercício 1 · a 0.3 retirou o acesso direto do Progresso à base de dados (RV-24); a 0.4 regista a stack (Q-14) e a autenticação (Q-22) e ajusta os componentes às decisões da Ficha 3 (Q-15 a Q-20); a 0.5 retira dos pendentes as regras das palavras-passe e a duração da sessão, aprovadas em P2 e P3; a 0.6 (8 de novembro de 2026) regista a aprovação da arquitetura (RV-41); a 0.7 (14 de novembro de 2026) acrescenta a execução em containers e a integração contínua da Ficha 5 (secção 3.1 e secção 7); a 0.8 (15 de novembro de 2026) acrescenta a análise de dependências à pipeline (P47, secção 7.2).
+Versão 0.9 · 15 de novembro de 2026 · Ficha Prática 02, Exercício 1 · a 0.3 retirou o acesso direto do Progresso à base de dados (RV-24); a 0.4 regista a stack (Q-14) e a autenticação (Q-22) e ajusta os componentes às decisões da Ficha 3 (Q-15 a Q-20); a 0.5 retira dos pendentes as regras das palavras-passe e a duração da sessão, aprovadas em P2 e P3; a 0.6 (8 de novembro de 2026) regista a aprovação da arquitetura (RV-41); a 0.7 (14 de novembro de 2026) acrescenta a execução em containers e a integração contínua da Ficha 5 (secção 3.1 e secção 7); a 0.8 (15 de novembro de 2026) acrescenta a análise de dependências à pipeline (P47, secção 7.2); a 0.9 (15 de novembro de 2026) acrescenta o registo estruturado e `GET /api/saude/vivo` (P48, secção 7.1).
 
 > **Estado: aprovado pela dona do produto a 8 de novembro de 2026 (RV-41).** Este documento decide o estilo de arquitetura, os componentes do MVP e a stack (secção 3.1). O alojamento continua pendente ([constraints.md](constraints.md#4-decisões-técnicas-pendentes)). Os pressupostos novos estão na secção 6, separados dos requisitos confirmados, e continuam por aprovar.
 
@@ -148,7 +148,8 @@ flowchart LR
 | `backend` | Imagem `backend/Dockerfile`: a API compilada, só com as dependências de produção, a correr como o utilizador `node`, em modo de produção (cookie `Secure`, P37). Aplica as migrations ao arrancar. Não publica portas. |
 | Rede `interna` | Só os dois serviços a usam; o nginx encontra o backend pelo nome `backend`. |
 | Volume `matriz-dados` | O ficheiro SQLite. Mantém-se quando os containers são recriados; só `docker compose down -v` o apaga. |
-| Healthchecks | Backend: `GET /api/saude` (API e base de dados). Frontend: pedido à página inicial. O frontend só arranca com o backend *healthy*. |
+| Healthchecks | Backend: `GET /api/saude` (API e base de dados). Frontend: pedido à página inicial. O frontend só arranca com o backend *healthy*. `GET /api/saude/vivo` confirma só que o processo responde (P48); os healthchecks não a usam. |
+| Registos | O backend escreve uma linha JSON por evento e por pedido, sem dados pessoais (P48); leem-se com `docker compose logs backend`. |
 | Configuração | Do `.env`, o compose só lê `PORTA_DOCKER` e `SESSAO_HORAS`. As imagens não têm credenciais, nem o `.env`, nem o `.env.example`: o seed de demonstração não corre nos containers (RV-37, P44) e a primeira conta cria-se com `cli-primeiro-admin.js`. |
 
 ### 7.2 Integração contínua (GitHub Actions)

@@ -14,7 +14,7 @@ info:
     - Arquitetura em `docs/architecture.md`; modelo de dados em `docs/database.md`;
       plano de implementação em `docs/implementation-plan.md`.
     - Autenticação por sessão (Q-22): `POST /sessao` devolve o cookie httpOnly `matriz_sessao`.
-      Todas as outras operações, exceto `GET /saude`, exigem esse cookie e uma conta ativa (RF-01, D-01).
+      Todas as outras operações, exceto `GET /saude` e `GET /saude/vivo`, exigem esse cookie e uma conta ativa (RF-01, D-01).
     - Ciclo da sessão (Q-22, P2):
       1. `POST /sessao` com credenciais corretas e conta ativa cria a sessão no servidor e devolve o cookie
          `matriz_sessao` (httpOnly, SameSite=Lax, Path=/; Secure exceto com `NODE_ENV=development`, P37). O cookie não tem
@@ -116,6 +116,30 @@ paths:
                 estado: ok
                 baseDeDados: ok
                 migrations: 1
+
+  /saude/vivo:
+    get:
+      tags: [Sessão]
+      operationId: obterSaudeVivo
+      summary: Confirmar que o processo do backend responde
+      description: |
+        Operação técnica, sem autenticação (Ficha 5, Desafio B, P48). Não acede à base de dados: responde enquanto o
+        processo estiver a correr. Para confirmar também a base de dados, usa-se `GET /saude`.
+      security: []
+      responses:
+        '200':
+          description: O processo do backend está a responder.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [estado]
+                properties:
+                  estado:
+                    type: string
+                    enum: [ok]
+              example:
+                estado: ok
 
   # ---------------------------------------------------------------- Sessão
   /sessao:
