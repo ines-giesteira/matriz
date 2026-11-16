@@ -1,6 +1,6 @@
 # Matriz — Arquitetura
 
-Versão 0.10 · 15 de novembro de 2026 · Ficha Prática 02, Exercício 1 · a 0.3 retirou o acesso direto do Progresso à base de dados (RV-24); a 0.4 regista a stack (Q-14) e a autenticação (Q-22) e ajusta os componentes às decisões da Ficha 3 (Q-15 a Q-20); a 0.5 retira dos pendentes as regras das palavras-passe e a duração da sessão, aprovadas em P2 e P3; a 0.6 (8 de novembro de 2026) regista a aprovação da arquitetura (RV-41); a 0.7 (14 de novembro de 2026) acrescenta a execução em containers e a integração contínua da Ficha 5 (secção 3.1 e secção 7); a 0.8 (15 de novembro de 2026) acrescenta a análise de dependências à pipeline (P47, secção 7.2); a 0.9 (15 de novembro de 2026) acrescenta o registo estruturado e `GET /api/saude/vivo` (P48, secção 7.1); a 0.10 (15 de novembro de 2026) acrescenta a publicação das imagens (P49, secção 7.3).
+Versão 0.11 · 16 de novembro de 2026 · Ficha Prática 02, Exercício 1 · a 0.3 retirou o acesso direto do Progresso à base de dados (RV-24); a 0.4 regista a stack (Q-14) e a autenticação (Q-22) e ajusta os componentes às decisões da Ficha 3 (Q-15 a Q-20); a 0.5 retira dos pendentes as regras das palavras-passe e a duração da sessão, aprovadas em P2 e P3; a 0.6 (8 de novembro de 2026) regista a aprovação da arquitetura (RV-41); a 0.7 (14 de novembro de 2026) acrescenta a execução em containers e a integração contínua da Ficha 5 (secção 3.1 e secção 7); a 0.8 (15 de novembro de 2026) acrescenta a análise de dependências à pipeline (P47, secção 7.2); a 0.9 (15 de novembro de 2026) acrescenta o registo estruturado e `GET /api/saude/vivo` (P48, secção 7.1); a 0.10 (15 de novembro de 2026) acrescenta a publicação das imagens (P49, secção 7.3); a 0.11 (16 de novembro de 2026) acrescenta a publicação de demonstração no Render (RV-42, secção 7.4).
 
 > **Estado: aprovado pela dona do produto a 8 de novembro de 2026 (RV-41).** Este documento decide o estilo de arquitetura, os componentes do MVP e a stack (secção 3.1). O alojamento continua pendente ([constraints.md](constraints.md#4-decisões-técnicas-pendentes)). Os pressupostos novos estão na secção 6, separados dos requisitos confirmados, e continuam por aprovar.
 
@@ -113,7 +113,7 @@ flowchart TB
 A stack, o método de autenticação e o mecanismo para RV-09 ficaram decididos na secção 3.1. As regras das palavras-passe e a duração da sessão foram aprovadas em P2 e P3 ([implementation-plan.md](implementation-plan.md#2-propostas-técnicas-aprovadas)), e a estratégia de testes está em [implementation-plan.md](implementation-plan.md#5-estratégia-de-testes).
 
 Continuam pendentes, conforme [constraints.md](constraints.md#4-decisões-técnicas-pendentes):
-- Alojamento da aplicação e localização dos dados.
+- Alojamento da aplicação e localização dos dados no piloto real (a versão de demonstração está decidida em RV-42; secção 7.4).
 - Valores de desempenho, disponibilidade e acessibilidade (RNF-08).
 - Registo de auditoria, cópias de segurança e requisitos legais de proteção de dados (RV-04).
 
@@ -128,7 +128,7 @@ Continuam pendentes, conforme [constraints.md](constraints.md#4-decisões-técni
 
 ## 7. Execução e entrega
 
-Acrescentada na Ficha 5 (propostas P42 a P46 de [implementation-plan.md](implementation-plan.md#2-propostas-técnicas-aprovadas)). Não muda a arquitetura da secção 3: o monólito modular continua a ser um só backend com uma só base de dados. O alojamento continua pendente (secção 5); o Docker garante que a aplicação se constrói e executa da mesma forma em qualquer máquina.
+Acrescentada na Ficha 5 (propostas P42 a P46 de [implementation-plan.md](implementation-plan.md#2-propostas-técnicas-aprovadas)). Não muda a arquitetura da secção 3: o monólito modular continua a ser um só backend com uma só base de dados. O alojamento do piloto real continua pendente (secção 5) e a versão de demonstração está publicada no Render (RV-42, secção 7.4); o Docker garante que a aplicação se constrói e executa da mesma forma em qualquer máquina.
 
 ### 7.1 Containers (Docker Compose)
 
@@ -147,7 +147,7 @@ flowchart LR
 |---|---|
 | `frontend` | Imagem `frontend/Dockerfile`: o build do Vite servido pelo nginx (`frontend/nginx.conf`). Devolve o `index.html` nas rotas da interface e encaminha `/api` para o backend. A interface e a API ficam na mesma origem, como em desenvolvimento (secção 6), por isso o cookie de sessão funciona sem CORS. Só ele publica uma porta, e só neste computador (`PORTA_DOCKER`, 8080 por omissão). |
 | `backend` | Imagem `backend/Dockerfile`: a API compilada, só com as dependências de produção, a correr como o utilizador `node`, em modo de produção (cookie `Secure`, P37). Aplica as migrations ao arrancar. Não publica portas. |
-| Rede `interna` | Só os dois serviços a usam; o nginx encontra o backend pelo nome `backend`. |
+| Rede `interna` | Só os dois serviços a usam; o nginx encontra o backend pelo nome `backend` (`BACKEND_ENDERECO`, por omissão `backend:3000`). |
 | Volume `matriz-dados` | O ficheiro SQLite. Mantém-se quando os containers são recriados; só `docker compose down -v` o apaga. |
 | Healthchecks | Backend: `GET /api/saude` (API e base de dados). Frontend: pedido à página inicial. O frontend só arranca com o backend *healthy*. `GET /api/saude/vivo` confirma só que o processo responde (P48); os healthchecks não a usam. |
 | Registos | O backend escreve uma linha JSON por evento e por pedido, sem dados pessoais (P48); leem-se com `docker compose logs backend`. |
@@ -170,3 +170,15 @@ O workflow está em `.github/workflows/ci.yml`. Só lê o repositório (`permiss
 ### 7.3 Publicação das imagens (GitHub Container Registry)
 
 O workflow `.github/workflows/release.yml` (P49) corre quando uma release é publicada no GitHub. Repete a construção e o arranque das imagens e só as publica se `/api/saude` responder. As imagens `matriz-backend` e `matriz-frontend` ficam em `ghcr.io`, com a tag da release. É o único workflow com `packages: write`; usa o token da execução, não tem segredos próprios nem actions de terceiros além do checkout, fixado pelo SHA. O alojamento continua pendente (secção 5): publicar as imagens não as põe a correr em lado nenhum.
+
+### 7.4 Publicação de demonstração (Render)
+
+Acrescentada com RV-42. A versão de demonstração do curso usa as mesmas duas imagens, descritas no Blueprint `render.yaml`, na região de Frankfurt (UE):
+
+| Elemento | Detalhe |
+|---|---|
+| `matriz-frontend` | Serviço web público, com a imagem `frontend/Dockerfile`. O Render termina o HTTPS e encaminha o tráfego para o nginx na porta `PORT` (10000). O `frontend/nginx.conf` é um template: `PORT` e `BACKEND_ENDERECO` vêm de variáveis de ambiente, com 80 e `backend:3000` por omissão, para o Docker Compose. A interface e a API continuam na mesma origem. |
+| `matriz-backend` | Serviço privado, sem acesso público, com a imagem `backend/Dockerfile`, sem alterações. O frontend chega a ele pela rede privada do Render (`BACKEND_ENDERECO` = `hostport` do serviço). |
+| Disco `matriz-dados` | Disco persistente de 1 GB montado em `/app/dados`, o mesmo caminho do volume do Compose. Um serviço com disco não escala para várias instâncias, o que está de acordo com uma só base SQLite. |
+
+O cookie continua `Secure` (P37), e agora funciona porque o acesso é feito por HTTPS. Os cabeçalhos de segurança da interface (SEG-02) continuam por definir.
