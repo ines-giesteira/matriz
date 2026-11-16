@@ -7,6 +7,7 @@ Alterações de cada versão da Matriz. O formato segue o [Keep a Changelog](htt
 ### Acrescentado
 
 - Registo estruturado no backend: uma linha JSON por evento e por pedido, sem dados pessoais, e a operação `GET /saude/vivo`, que confirma que o processo responde sem aceder à base de dados (P48, Desafio B da Ficha 5).
+- Publicação das imagens Docker no GitHub Container Registry quando uma release é publicada no GitHub (`.github/workflows/release.yml`, P49, Desafio C da Ficha 5).
 
 ### Segurança
 
