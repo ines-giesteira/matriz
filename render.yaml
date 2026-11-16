@@ -1,0 +1,43 @@
+# Blueprint do Render: publicação da Matriz para demonstração (RV-42 em docs/constraints.md).
+# Os mesmos dois containers do compose.yaml, na região de Frankfurt (UE):
+#   - matriz-backend: serviço privado (sem acesso público), com um disco persistente para o SQLite;
+#   - matriz-frontend: serviço web público; o Render dá o HTTPS e o nginx encaminha /api para o backend.
+# A interface e a API ficam na mesma origem, como no Docker Compose, e o cookie de sessão continua Secure (P37).
+# Sem credenciais: a primeira conta de Administrador cria-se depois, na Shell do backend (README, "Publicação no Render").
+services:
+  - type: pserv
+    name: matriz-backend
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    region: frankfurt
+    # Os discos persistentes só existem em planos pagos; os serviços privados não têm plano gratuito.
+    plan: starter
+    disk:
+      name: matriz-dados
+      # O mesmo caminho do volume do compose.yaml (CAMINHO_BD=dados/matriz.sqlite, relativo a /app).
+      mountPath: /app/dados
+      sizeGB: 1
+    envVars:
+      - key: SESSAO_HORAS
+        value: "8"
+
+  - type: web
+    name: matriz-frontend
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: .
+    region: frankfurt
+    # Plano gratuito: adormece sem utilização e o primeiro acesso demora alguns segundos.
+    plan: free
+    healthCheckPath: /
+    envVars:
+      # Porta onde o nginx escuta; o Render encaminha o tráfego HTTPS para ela.
+      - key: PORT
+        value: "10000"
+      # "host:porta" do backend na rede privada do Render (por exemplo, matriz-backend:3000).
+      - key: BACKEND_ENDERECO
+        fromService:
+          type: pserv
+          name: matriz-backend
+          property: hostport

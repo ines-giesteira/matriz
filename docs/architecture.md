@@ -112,7 +112,7 @@ flowchart TB
 A stack, o método de autenticação e o mecanismo para RV-09 ficaram decididos na secção 3.1. As regras das palavras-passe e a duração da sessão foram aprovadas em P2 e P3 ([implementation-plan.md](implementation-plan.md#2-propostas-técnicas-aprovadas)), e a estratégia de testes está em [implementation-plan.md](implementation-plan.md#5-estratégia-de-testes).
 
 Continuam pendentes, conforme [constraints.md](constraints.md#4-decisões-técnicas-pendentes):
-- Alojamento da aplicação e localização dos dados.
+- Alojamento da aplicação e localização dos dados no piloto real (a versão de demonstração está decidida em RV-42; secção 7.3).
 - Valores de desempenho, disponibilidade e acessibilidade (RNF-08).
 - Registo de auditoria, cópias de segurança e requisitos legais de proteção de dados (RV-04).
 
@@ -127,7 +127,7 @@ Continuam pendentes, conforme [constraints.md](constraints.md#4-decisões-técni
 
 ## 7. Execução e entrega
 
-Acrescentada na Ficha 5 (propostas P42 a P46 de [implementation-plan.md](implementation-plan.md#2-propostas-técnicas-aprovadas)). Não muda a arquitetura da secção 3: o monólito modular continua a ser um só backend com uma só base de dados. O alojamento continua pendente (secção 5); o Docker garante que a aplicação se constrói e executa da mesma forma em qualquer máquina.
+Acrescentada na Ficha 5 (propostas P42 a P46 de [implementation-plan.md](implementation-plan.md#2-propostas-técnicas-aprovadas)). Não muda a arquitetura da secção 3: o monólito modular continua a ser um só backend com uma só base de dados. O alojamento do piloto real continua pendente (secção 5) e a versão de demonstração está publicada no Render (RV-42, secção 7.3); o Docker garante que a aplicação se constrói e executa da mesma forma em qualquer máquina.
 
 ### 7.1 Containers (Docker Compose)
 
@@ -146,11 +146,23 @@ flowchart LR
 |---|---|
 | `frontend` | Imagem `frontend/Dockerfile`: o build do Vite servido pelo nginx (`frontend/nginx.conf`). Devolve o `index.html` nas rotas da interface e encaminha `/api` para o backend. A interface e a API ficam na mesma origem, como em desenvolvimento (secção 6), por isso o cookie de sessão funciona sem CORS. Só ele publica uma porta, e só neste computador (`PORTA_DOCKER`, 8080 por omissão). |
 | `backend` | Imagem `backend/Dockerfile`: a API compilada, só com as dependências de produção, a correr como o utilizador `node`, em modo de produção (cookie `Secure`, P37). Aplica as migrations ao arrancar. Não publica portas. |
-| Rede `interna` | Só os dois serviços a usam; o nginx encontra o backend pelo nome `backend`. |
+| Rede `interna` | Só os dois serviços a usam; o nginx encontra o backend pelo nome `backend` (`BACKEND_ENDERECO`, por omissão `backend:3000`). |
 | Volume `matriz-dados` | O ficheiro SQLite. Mantém-se quando os containers são recriados; só `docker compose down -v` o apaga. |
 | Healthchecks | Backend: `GET /api/saude` (API e base de dados). Frontend: pedido à página inicial. O frontend só arranca com o backend *healthy*. `GET /api/saude/vivo` confirma só que o processo responde (P48); os healthchecks não a usam. |
 | Registos | O backend escreve uma linha JSON por evento e por pedido, sem dados pessoais (P48); leem-se com `docker compose logs backend`. |
 | Configuração | Do `.env`, o compose só lê `PORTA_DOCKER` e `SESSAO_HORAS`. As imagens não têm credenciais, nem o `.env`, nem o `.env.example`: o seed de demonstração não corre nos containers (RV-37, P44) e a primeira conta cria-se com `cli-primeiro-admin.js`. |
+
+### 7.3 Publicação de demonstração (Render)
+
+Acrescentada com RV-42. A versão de demonstração do curso usa as mesmas duas imagens, descritas no Blueprint `render.yaml`, na região de Frankfurt (UE):
+
+| Elemento | Detalhe |
+|---|---|
+| `matriz-frontend` | Serviço web público, com a imagem `frontend/Dockerfile`. O Render termina o HTTPS e encaminha o tráfego para o nginx na porta `PORT` (10000). O `frontend/nginx.conf` é um template: `PORT` e `BACKEND_ENDERECO` vêm de variáveis de ambiente, com 80 e `backend:3000` por omissão, para o Docker Compose. A interface e a API continuam na mesma origem. |
+| `matriz-backend` | Serviço privado, sem acesso público, com a imagem `backend/Dockerfile`, sem alterações. O frontend chega a ele pela rede privada do Render (`BACKEND_ENDERECO` = `hostport` do serviço). |
+| Disco `matriz-dados` | Disco persistente de 1 GB montado em `/app/dados`, o mesmo caminho do volume do Compose. Um serviço com disco não escala para várias instâncias, o que está de acordo com uma só base SQLite. |
+
+O cookie continua `Secure` (P37), e agora funciona porque o acesso é feito por HTTPS. Os cabeçalhos de segurança da interface (SEG-02) continuam por definir.
 
 ### 7.2 Integração contínua (GitHub Actions)
 

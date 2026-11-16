@@ -42,6 +42,7 @@ O detalhe, as regras de negócio e a matriz de permissões estão em [docs/requi
 | Testes | Vitest e Supertest (backend), Testing Library e jsdom (componentes), Playwright (End-to-End) |
 | Contentores | Docker e Docker Compose; nginx a servir a interface (P42 a P45) |
 | Integração contínua | GitHub Actions (P46), com `npm audit` (P47) |
+| Publicação de demonstração | Render, região de Frankfurt, com o Blueprint `render.yaml` (RV-42) |
 
 A arquitetura (monólito modular) está em [docs/architecture.md](docs/architecture.md).
 
@@ -254,6 +255,26 @@ docker run -d --name matriz-frontend --network matriz -p 8080:80 matriz-frontend
 
 `docker ps` mostra o estado dos containers e `docker logs backend` o registo do backend. A primeira conta cria-se com `docker exec -it backend node backend/dist/bd/cli-primeiro-admin.js`.
 
+### Publicação no Render (demonstração)
+
+A versão de demonstração do curso publica-se no [Render](https://render.com), na região de Frankfurt (UE), com o Blueprint [`render.yaml`](render.yaml) (RV-42). Cria dois serviços a partir das mesmas imagens Docker:
+
+- `matriz-backend`: serviço privado, com um disco persistente de 1 GB em `/app/dados` para a base SQLite. Os discos só existem em planos pagos (plano `starter`);
+- `matriz-frontend`: serviço web público, no plano gratuito, com o HTTPS do Render. O nginx encaminha `/api` para o backend pela rede privada.
+
+Passos, feitos por quem gere a conta no Render:
+
+1. No Render, **New → Blueprint**, escolher este repositório no GitHub e o ramo `main`.
+2. Confirmar os dois serviços e o plano pago do backend, e aplicar. Os deploys seguintes fazem-se sozinhos a cada push para o `main`.
+3. Confirmar que `https://<endereço do matriz-frontend>/api/saude` responde `{"estado":"ok","baseDeDados":"ok",...}`.
+4. Criar a primeira conta de Administrador na **Shell** do serviço `matriz-backend`. O seed de demonstração não corre em produção (RV-37). As restantes contas criam-se na interface, só com dados fictícios:
+
+   ```bash
+   node backend/dist/bd/cli-primeiro-admin.js
+   ```
+
+O `frontend/nginx.conf` é um template: a porta (`PORT`) e o endereço do backend (`BACKEND_ENDERECO`) vêm de variáveis de ambiente, com `80` e `backend:3000` por omissão. Por isso, o Docker Compose funciona sem alterações. O plano gratuito adormece o frontend quando não tem uso, e o primeiro acesso demora alguns segundos. O alojamento do piloto real continua por decidir ([constraints.md](docs/constraints.md#4-decisões-técnicas-pendentes)).
+
 ### Integração contínua
 
 O workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (GitHub Actions, P46) corre em cada push e em cada pull request para o `main`. Tem três jobs, e cada um só corre se os anteriores passarem:
@@ -275,4 +296,5 @@ O workflow só tem permissão de leitura sobre o repositório e não usa segredo
 - **Stack:** Node.js 26 e TypeScript, Express, React com Vite, SQLite através de `node:sqlite` (Q-14).
 - **Código:** incrementos I0 (estrutura, configuração, esquema, migrations, seed e testes), I1 (sessão e autorização base), I2 (projetos e administração de projetos), I3 (contas e perfis, com a anonimização de RV-33), I4 (membros), I5 (tarefas, estado e filtros), I6 (responsáveis e comentários), I7 (progresso e painel inicial), I8 (consolidação do frontend, com o percurso manual em [docs/verification.md](docs/verification.md)), I9 (verificação do MVP: cenários 01 a 09 da Ficha 3 e correção do problema P1) e I10 (revisão e entrega: revisão do código, refatoração, contrato atualizado, execução a partir de uma cópia limpa e exemplos de uso da IA) concluídos, com as regras de RV-31 e RV-32 aplicadas. O estado de cada incremento está em [docs/implementation-plan.md](docs/implementation-plan.md#8-estado-do-plano).
 - **Versões entregues:** Ficha 3, tag `entrega-ficha3`; Ficha 4, tag `entrega-ficha4`. Versão candidata: 1.0.0-rc.1 (Ficha 5), tag `entrega-ficha5`.
+- **Publicação de demonstração:** Render, região de Frankfurt (RV-42), com o Blueprint `render.yaml`; ver [Publicação no Render](#publicação-no-render-demonstração).
 - **Pendente:** decisões técnicas e requisitos de segurança por definir, em [docs/constraints.md](docs/constraints.md#4-decisões-técnicas-pendentes). As verificações por fazer estão em [docs/quality-security-review.md](docs/quality-security-review.md#8-estado-final).

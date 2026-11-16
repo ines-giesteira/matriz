@@ -213,6 +213,7 @@ Decisões de 1 de novembro de 2026, tomadas durante a implementação (Ficha 3),
 | RV-39 | A unicidade do email só ignorava maiúsculas em letras sem acento (Q-10, SEG-08). | Decisão da dona do produto (08/11/2026): o email guarda-se e procura-se em minúsculas, incluindo as letras acentuadas; as contas existentes são convertidas. | Q-10, RV-18, EC-33, P32, SEG-08 | Decidido (implementado) |
 | RV-40 | Uma conta com um email `removida-<id>@matriz.invalid` impedia a anonimização das contas desativadas (SEG-06). | Decisão da dona do produto (08/11/2026): não se criam contas com emails do domínio reservado `.invalid` (422); a anonimização trata cada conta em separado, para uma falha não impedir as outras. | RV-33, P25, P27, P31, P33, SEG-06 | Decidido (implementado) |
 | RV-41 | A arquitetura, o modelo de dados, o contrato OpenAPI e o wireframe continuavam como proposta, por aprovar (R-06), embora a implementação já assentasse neles. | Decisão da dona do produto (08/11/2026): os quatro artefactos ficam aprovados, na versão em vigor nesta data. Os pressupostos que cada documento assinala como por aprovar continuam por aprovar. | R-06, architecture.md, database.md, openapi.yaml, docs/ui/wireframe.md | Decidido |
+| RV-42 | O alojamento estava por definir (secção 4), por isso a aplicação só funcionava em `localhost`: o cookie de sessão é `Secure` (P37) e precisa de HTTPS. | Decisão (16/11/2026): a versão de demonstração do curso é publicada no Render, na região de Frankfurt (UE), com o Blueprint `render.yaml`. Usa os mesmos dois containers do Docker Compose: o backend num serviço privado com disco persistente para o SQLite e a interface num serviço web público, com o HTTPS do Render. Só tem dados fictícios; o seed de demonstração continua a não correr (RV-37). O alojamento do piloto real, com dados reais, continua por decidir. | Secção 4, P37, RV-37, architecture.md secção 7.3, README.md | Decidido (demonstração) |
 
 ## 3. Segurança e privacidade
 
@@ -243,7 +244,7 @@ Decisões de 1 de novembro de 2026, tomadas durante a implementação (Ficha 3),
 Já decididos: a arquitetura (monólito modular, [architecture.md](architecture.md)), a stack (Q-14) e o método de autenticação (Q-22). O efeito imediato das alterações de acesso (RV-09) fica garantido porque a sessão está no servidor e cada pedido relê a conta, os perfis e os papéis. A estratégia de testes está em [implementation-plan.md](implementation-plan.md).
 
 Continuam pendentes:
-- Alojamento da aplicação e localização dos dados.
+- Alojamento da aplicação e localização dos dados no piloto real. A versão de demonstração do curso está decidida em RV-42 (Render, Frankfurt, só com dados fictícios).
 - Como cumprir os valores de desempenho, disponibilidade e acessibilidade, ainda por definir (RNF-08).
 
 ## 5. Limitações de âmbito
