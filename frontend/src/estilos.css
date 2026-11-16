@@ -21,6 +21,13 @@
   --sucesso-fundo: #e7f6ec;
   --sucesso-borda: #7cc795;
   --anel-foco: 0 0 0 3px rgb(47 111 228 / 35%);
+  --acento: #7b5ce6;
+  --gradiente-marca: linear-gradient(135deg, var(--principal), var(--acento));
+
+  /* Cores por estado da tarefa: Por fazer, Em curso, Concluída */
+  --estado-por-fazer: #64748b;
+  --estado-em-curso: #d97706;
+  --estado-concluida: #16a34a;
 
   --raio-pequeno: 6px;
   --raio: 10px;
@@ -60,6 +67,10 @@
     --sucesso-fundo: #1c3326;
     --sucesso-borda: #3f8a5a;
     --anel-foco: 0 0 0 3px rgb(91 143 240 / 45%);
+    --acento: #9a82f0;
+    --estado-por-fazer: #94a3b8;
+    --estado-em-curso: #f59e0b;
+    --estado-concluida: #34c272;
     --sombra-pequena: 0 1px 2px rgb(0 0 0 / 30%);
     --sombra: 0 1px 3px rgb(0 0 0 / 35%);
     --sombra-elevada: 0 10px 24px rgb(0 0 0 / 40%);
@@ -77,7 +88,48 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--fundo-pagina);
+  background:
+    radial-gradient(1200px 420px at 15% -120px, color-mix(in srgb, var(--principal) 9%, transparent), transparent),
+    radial-gradient(900px 380px at 95% -80px, color-mix(in srgb, var(--acento) 8%, transparent), transparent),
+    var(--fundo-pagina);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--principal) 25%, transparent);
+}
+
+@keyframes surgir {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+main.pagina {
+  animation: surgir 260ms ease-out;
+}
+
+/* Ligação de regresso no topo das páginas de detalhe ("← Projetos", "← Voltar ao projeto") */
+main.pagina > p:first-child > a:only-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px 4px 8px;
+  margin-left: -8px;
+  font-size: 0.9rem;
+  font-weight: 550;
+  color: var(--texto-suave);
+  text-decoration: none;
+  border-radius: 999px;
+  transition:
+    background-color var(--transicao),
+    color var(--transicao);
+}
+
+main.pagina > p:first-child > a:only-child:hover {
+  color: var(--principal);
+  background: var(--principal-suave);
 }
 
 h1,
@@ -175,8 +227,8 @@ a:hover {
     linear-gradient(var(--principal-texto), var(--principal-texto)) 5px 5px / 5px 5px no-repeat,
     linear-gradient(var(--principal-texto), var(--principal-texto)) 12px 5px / 5px 5px no-repeat,
     linear-gradient(var(--principal-texto), var(--principal-texto)) 5px 12px / 5px 5px no-repeat,
-    linear-gradient(135deg, var(--principal), #7b5ce6);
-  opacity: 0.95;
+    var(--gradiente-marca);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--principal) 35%, transparent);
 }
 
 .pagina-entrada > h1 {
@@ -197,7 +249,20 @@ a:hover {
     linear-gradient(#fff, #fff) 7px 7px / 7px 7px no-repeat,
     linear-gradient(#fff, #fff) 18px 7px / 7px 7px no-repeat,
     linear-gradient(#fff, #fff) 7px 18px / 7px 7px no-repeat,
-    linear-gradient(135deg, var(--principal), #7b5ce6);
+    var(--gradiente-marca);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--principal) 40%, transparent);
+}
+
+/* Página de entrada: fundo decorativo */
+body:has(.pagina-entrada) {
+  background:
+    radial-gradient(600px 400px at 20% 20%, color-mix(in srgb, var(--principal) 16%, transparent), transparent),
+    radial-gradient(600px 420px at 85% 85%, color-mix(in srgb, var(--acento) 16%, transparent), transparent),
+    var(--fundo-pagina);
+}
+
+.pagina-entrada .formulario h2 {
+  font-size: 1.35rem;
 }
 
 .cabecalho-utilizador {
@@ -360,14 +425,16 @@ button:disabled {
 .botao-principal {
   margin-top: 16px;
   color: var(--principal-texto);
-  background: var(--principal);
-  border: 1px solid var(--principal);
-  box-shadow: var(--sombra-pequena);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--principal) 88%, #fff), var(--principal));
+  border: 1px solid var(--principal-escuro);
+  box-shadow:
+    0 1px 2px rgb(16 24 40 / 10%),
+    inset 0 1px 0 rgb(255 255 255 / 18%);
 }
 
 .botao-principal:hover:not(:disabled) {
   background: var(--principal-escuro);
-  border-color: var(--principal-escuro);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--principal) 35%, transparent);
 }
 
 .botao-secundario {
@@ -567,8 +634,33 @@ button:disabled {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 14px;
+  margin-top: 14px !important;
+  padding-top: 12px;
+  border-top: 1px solid var(--borda);
   font-size: 0.875rem;
   color: var(--texto-suave);
+}
+
+.contagens > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.contagens > span::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cor-estado, var(--estado-por-fazer));
+}
+
+.contagens > span:nth-child(2) {
+  --cor-estado: var(--estado-em-curso);
+}
+
+.contagens > span:nth-child(3) {
+  --cor-estado: var(--estado-concluida);
 }
 
 /* ==========================================================================
@@ -597,11 +689,44 @@ button:disabled {
 }
 
 .indicador-numero {
-  font-size: 1.9rem;
-  font-weight: 700;
+  font-size: 2.1rem;
+  font-weight: 750;
   line-height: 1.1;
-  color: var(--texto);
+  color: var(--cor-estado, var(--texto));
   font-variant-numeric: tabular-nums;
+}
+
+/* Os três primeiros indicadores são os estados, pela ordem Por fazer, Em curso, Concluída */
+.progresso-grelha > .indicador:nth-child(-n + 3) {
+  position: relative;
+  overflow: hidden;
+  padding-top: 20px;
+  --cor-estado: var(--estado-por-fazer);
+}
+
+.progresso-grelha > .indicador:nth-child(2) {
+  --cor-estado: var(--estado-em-curso);
+}
+
+.progresso-grelha > .indicador:nth-child(3) {
+  --cor-estado: var(--estado-concluida);
+}
+
+.progresso-grelha > .indicador:nth-child(-n + 3)::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: var(--cor-estado);
+}
+
+.indicador-percentagem {
+  gap: 10px;
+}
+
+.indicador-percentagem strong {
+  font-size: 1.5rem;
+  color: var(--texto);
 }
 
 .indicador-percentagem,
@@ -626,13 +751,37 @@ button:disabled {
 }
 
 .indicador-percentagem progress::-webkit-progress-value {
-  background: linear-gradient(90deg, var(--principal), #7b5ce6);
+  background: linear-gradient(90deg, var(--principal), var(--estado-concluida));
   border-radius: 999px;
 }
 
 .indicador-percentagem progress::-moz-progress-bar {
-  background: linear-gradient(90deg, var(--principal), #7b5ce6);
+  background: linear-gradient(90deg, var(--principal), var(--estado-concluida));
   border-radius: 999px;
+}
+
+.indicador-atraso > strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--erro);
+}
+
+.indicador-atraso > strong::before {
+  content: '!';
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--erro);
+  border-radius: 50%;
+}
+
+.indicador-atraso li {
+  margin: 4px 0;
 }
 
 .indicador-atraso {
@@ -846,9 +995,26 @@ button:disabled {
    Secções do detalhe do projeto e membros
    ========================================================================== */
 .seccao {
-  margin-top: 36px;
-  padding-top: 20px;
-  border-top: 1px solid var(--borda);
+  margin-top: 40px;
+}
+
+.seccao h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.seccao h2::before {
+  content: '';
+  flex: none;
+  width: 4px;
+  height: 1.1em;
+  border-radius: 2px;
+  background: var(--gradiente-marca);
+}
+
+.titulo-com-acoes h2 {
+  margin: 0;
 }
 
 .lista-membros {
@@ -947,6 +1113,7 @@ button:disabled {
 }
 
 .etiqueta-atraso {
+  margin-left: 6px;
   color: var(--erro);
   border-color: color-mix(in srgb, var(--erro) 45%, transparent);
   background: var(--erro-suave);
@@ -989,6 +1156,7 @@ button:disabled {
   padding: 12px 16px;
   background: var(--fundo);
   border: 1px solid var(--borda);
+  border-left: 3px solid color-mix(in srgb, var(--principal) 55%, var(--borda));
   border-radius: var(--raio);
   box-shadow: var(--sombra-pequena);
 }
