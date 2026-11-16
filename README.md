@@ -42,6 +42,7 @@ O detalhe, as regras de negócio e a matriz de permissões estão em [docs/requi
 | Testes | Vitest e Supertest (backend), Testing Library e jsdom (componentes), Playwright (End-to-End) |
 | Contentores | Docker e Docker Compose; nginx a servir a interface (P42 a P45) |
 | Integração contínua | GitHub Actions (P46), com `npm audit` (P47) |
+| Publicação das imagens | GitHub Actions e GitHub Container Registry (P49) |
 | Publicação de demonstração | Render, região de Frankfurt, com o Blueprint `render.yaml` (RV-42) |
 
 A arquitetura (monólito modular) está em [docs/architecture.md](docs/architecture.md).
@@ -285,6 +286,9 @@ O workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (GitHub Action
 
 O workflow só tem permissão de leitura sobre o repositório e não usa segredos. Os resultados estão no separador **Actions** do GitHub.
 
+### Publicação das imagens
+
+O workflow [`.github/workflows/release.yml`](.github/workflows/release.yml) (P49) corre quando uma release é publicada no GitHub. Constrói as duas imagens, arranca-as, confirma `/api/saude` e só depois as publica no GitHub Container Registry, com a tag da release: `ghcr.io/<dono>/matriz-backend:<tag>` e `ghcr.io/<dono>/matriz-frontend:<tag>`. Só este workflow pode escrever pacotes (`packages: write`); autentica-se com o token da própria execução, sem segredos. Os pacotes ficam privados, salvo alteração nas definições de cada pacote no GitHub.
 ## Estado atual
 
 - **Specification Pack (Aula 1):** concluído e revisto (RV-01 a RV-23).
