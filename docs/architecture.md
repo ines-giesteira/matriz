@@ -1,6 +1,6 @@
 # Matriz — Arquitetura
 
-Versão 0.9 · 15 de novembro de 2026 · Ficha Prática 02, Exercício 1 · a 0.3 retirou o acesso direto do Progresso à base de dados (RV-24); a 0.4 regista a stack (Q-14) e a autenticação (Q-22) e ajusta os componentes às decisões da Ficha 3 (Q-15 a Q-20); a 0.5 retira dos pendentes as regras das palavras-passe e a duração da sessão, aprovadas em P2 e P3; a 0.6 (8 de novembro de 2026) regista a aprovação da arquitetura (RV-41); a 0.7 (14 de novembro de 2026) acrescenta a execução em containers e a integração contínua da Ficha 5 (secção 3.1 e secção 7); a 0.8 (15 de novembro de 2026) acrescenta a análise de dependências à pipeline (P47, secção 7.2); a 0.9 (15 de novembro de 2026) acrescenta o registo estruturado e `GET /api/saude/vivo` (P48, secção 7.1).
+Versão 0.10 · 15 de novembro de 2026 · Ficha Prática 02, Exercício 1 · a 0.3 retirou o acesso direto do Progresso à base de dados (RV-24); a 0.4 regista a stack (Q-14) e a autenticação (Q-22) e ajusta os componentes às decisões da Ficha 3 (Q-15 a Q-20); a 0.5 retira dos pendentes as regras das palavras-passe e a duração da sessão, aprovadas em P2 e P3; a 0.6 (8 de novembro de 2026) regista a aprovação da arquitetura (RV-41); a 0.7 (14 de novembro de 2026) acrescenta a execução em containers e a integração contínua da Ficha 5 (secção 3.1 e secção 7); a 0.8 (15 de novembro de 2026) acrescenta a análise de dependências à pipeline (P47, secção 7.2); a 0.9 (15 de novembro de 2026) acrescenta o registo estruturado e `GET /api/saude/vivo` (P48, secção 7.1); a 0.10 (15 de novembro de 2026) acrescenta a publicação das imagens (P49, secção 7.3).
 
 > **Estado: aprovado pela dona do produto a 8 de novembro de 2026 (RV-41).** Este documento decide o estilo de arquitetura, os componentes do MVP e a stack (secção 3.1). O alojamento continua pendente ([constraints.md](constraints.md#4-decisões-técnicas-pendentes)). Os pressupostos novos estão na secção 6, separados dos requisitos confirmados, e continuam por aprovar.
 
@@ -61,6 +61,7 @@ Decidida na conciliação com a Ficha 3. Escolhida por ser simples de instalar (
 | Execução em containers | Docker: uma imagem para o backend e outra para a interface, servida pelo nginx | Aprovado (P42 a P44) |
 | Execução integrada | Docker Compose, com uma rede interna e um volume para a base de dados | Aprovado (P45) |
 | Integração contínua | GitHub Actions | Aprovado (P46) |
+| Publicação das imagens | GitHub Actions e GitHub Container Registry | Aprovado (P49) |
 
 **Autenticação (Q-22).** Email e palavra-passe. Ao entrar, o backend cria uma linha em SESSAO e devolve um cookie httpOnly com um identificador aleatório; na base de dados guarda-se só o hash desse identificador. Em cada pedido, a camada de API lê o cookie, encontra a sessão e passa o utilizador à Autorização, que relê a conta, os perfis e os papéis. Assim, desativar uma conta ou perder um papel tem efeito no pedido seguinte (RV-09). Terminar a sessão apaga a linha.
 
@@ -165,3 +166,7 @@ flowchart LR
 ```
 
 O workflow está em `.github/workflows/ci.yml`. Só lê o repositório (`permissions: contents: read`), não usa segredos e fixa as actions pelo SHA do commit. Cada job só corre se os anteriores passarem, por isso as imagens só se constroem depois de os testes passarem. O `npm audit` (P47) faz a pipeline falhar com vulnerabilidades altas ou críticas nas dependências.
+
+### 7.3 Publicação das imagens (GitHub Container Registry)
+
+O workflow `.github/workflows/release.yml` (P49) corre quando uma release é publicada no GitHub. Repete a construção e o arranque das imagens e só as publica se `/api/saude` responder. As imagens `matriz-backend` e `matriz-frontend` ficam em `ghcr.io`, com a tag da release. É o único workflow com `packages: write`; usa o token da execução, não tem segredos próprios nem actions de terceiros além do checkout, fixado pelo SHA. O alojamento continua pendente (secção 5): publicar as imagens não as põe a correr em lado nenhum.

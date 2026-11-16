@@ -1,0 +1,60 @@
+# Publicação das imagens Docker da Matriz no GitHub Container Registry (Ficha 5, Desafio C, P49).
+# Corre quando uma release é publicada no GitHub. Constrói as imagens, confirma que arrancam e só depois as publica
+# em ghcr.io, com a etiqueta da release. Sem segredos próprios: usa o token da execução.
+name: Publicar imagens
+
+on:
+  release:
+    types: [published]
+
+# Só este workflow pode escrever pacotes; a CI (ci.yml) continua só com leitura.
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publicar:
+    name: Construir, verificar e publicar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      # Passados por variáveis de ambiente, e não escritos nos comandos, para o nome da tag não ser interpretado pela shell.
+      ETIQUETA: ${{ github.event.release.tag_name }}
+      REGISTO: ghcr.io
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validar a etiqueta
+        run: |
+          if ! printf '%s' "$ETIQUETA" | grep -Eq '^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$'; then
+            echo "A tag da release não serve de etiqueta de uma imagem Docker." >&2
+            exit 1
+          fi
+      - name: Validar o compose.yaml
+        run: docker compose config -q
+      - name: Construir as imagens
+        run: docker compose build
+      - name: Arrancar e esperar pelos healthchecks
+        run: docker compose up -d --wait --wait-timeout 120
+      - name: Confirmar a API através do nginx
+        run: curl --fail --silent --show-error http://127.0.0.1:8080/api/saude
+      - name: Parar e apagar os containers e o volume
+        if: always()
+        run: docker compose down -v
+      - name: Entrar no GitHub Container Registry
+        env:
+          TOKEN: ${{ github.token }}
+          UTILIZADOR: ${{ github.actor }}
+        run: printf '%s' "$TOKEN" | docker login "$REGISTO" --username "$UTILIZADOR" --password-stdin
+      - name: Publicar as imagens com a etiqueta da release
+        run: |
+          dono="${GITHUB_REPOSITORY_OWNER,,}"
+          for imagem in matriz-backend matriz-frontend; do
+            destino="$REGISTO/$dono/$imagem:$ETIQUETA"
+            docker tag "$imagem" "$destino"
+            docker push "$destino"
+          done
+      - name: Sair do GitHub Container Registry
+        if: always()
+        run: docker logout "$REGISTO"
