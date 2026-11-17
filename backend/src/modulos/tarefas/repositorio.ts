@@ -64,8 +64,12 @@ function paraTarefas(bd: Bd, linhas: Record<string, unknown>[]): LinhaTarefa[] {
 
 const COLUNAS = 'id, projeto_id, titulo, descricao, prioridade, data_limite, estado';
 
-/** Tarefas de um projeto, com os filtros opcionais de estado e prioridade (RF-34). A ordem é aplicada no serviço. */
-export function listarTarefas(bd: Bd, projetoId: number, filtros: { estado?: Estado; prioridade?: Prioridade }): LinhaTarefa[] {
+/** Tarefas de um projeto, com os filtros opcionais de estado, prioridade e responsável (RF-34, Q-24). A ordem é aplicada no serviço. */
+export function listarTarefas(
+  bd: Bd,
+  projetoId: number,
+  filtros: { estado?: Estado; prioridade?: Prioridade; responsavelId?: number },
+): LinhaTarefa[] {
   const condicoes = ['projeto_id = ?'];
   const parametros: (string | number)[] = [projetoId];
   if (filtros.estado) {
@@ -75,6 +79,10 @@ export function listarTarefas(bd: Bd, projetoId: number, filtros: { estado?: Est
   if (filtros.prioridade) {
     condicoes.push('prioridade = ?');
     parametros.push(filtros.prioridade);
+  }
+  if (filtros.responsavelId !== undefined) {
+    condicoes.push('EXISTS (SELECT 1 FROM atribuicao a WHERE a.tarefa_id = tarefa.id AND a.utilizador_id = ?)');
+    parametros.push(filtros.responsavelId);
   }
   const linhas = bd.prepare(`SELECT ${COLUNAS} FROM tarefa WHERE ${condicoes.join(' AND ')}`).all(...parametros);
   return paraTarefas(bd, linhas);

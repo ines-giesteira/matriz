@@ -42,7 +42,16 @@ const alteracaoTarefa = z
 
 const pedidoEstado = z.strictObject({ estado });
 
-const filtros = z.strictObject({ estado: estado.optional(), prioridade: prioridade.optional() });
+// Os parâmetros da query chegam como texto: o responsável tem de ser um inteiro positivo (Q-24, EC-48).
+const filtros = z.strictObject({
+  estado: estado.optional(),
+  prioridade: prioridade.optional(),
+  responsavelId: z
+    .string()
+    .regex(/^[1-9]\d{0,9}$/)
+    .transform(Number)
+    .optional(),
+});
 
 // ---------------------------------------------------------------- Regras de negócio (422)
 
@@ -117,7 +126,7 @@ function exigirGestor(bd: Bd, utilizador: UtilizadorAutenticado, projetoId: numb
 
 // ---------------------------------------------------------------- Operações
 
-/** Lista de tarefas, com filtros que se combinam (RF-15, RF-34, CA-23.2). Qualquer membro. */
+/** Lista de tarefas, com filtros que se combinam (RF-15, RF-34, CA-23.2, CA-23.5). Qualquer membro. */
 export function listar(bd: Bd, hoje: Hoje, utilizador: UtilizadorAutenticado, projetoId: number, query: unknown): Tarefa[] {
   projetoDoMembro(bd, utilizador, projetoId);
   const f = validarFormato(filtros, query); // EC-48: valor inexistente dá 400

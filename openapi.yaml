@@ -964,8 +964,9 @@ paths:
       description: |
         US-17, US-23, RF-15, RF-34. Qualquer membro. Ordem de Q-12: por estado (TODO, IN_PROGRESS, DONE)
         e, dentro de cada estado, por data limite crescente, sem data no fim; empates por ordem alfabética do
-        título (P18). Os filtros combinam-se (CA-23.2). Um valor de filtro inexistente ou um parâmetro desconhecido
-        responde 400 (EC-48).
+        título (P18). Os filtros combinam-se (CA-23.2, CA-23.5). Um valor de filtro inexistente ou um parâmetro
+        desconhecido responde 400 (EC-48). Um responsavelId que não é responsável de nenhuma tarefa do projeto,
+        incluindo quem não é membro, dá uma lista vazia (Q-24).
       parameters:
         - name: estado
           in: query
@@ -977,6 +978,13 @@ paths:
           required: false
           schema:
             $ref: '#/components/schemas/Prioridade'
+        - name: responsavelId
+          in: query
+          required: false
+          description: Só as tarefas que têm este utilizador como responsável (Q-24, CA-23.5).
+          schema:
+            type: integer
+            minimum: 1
       responses:
         '200':
           description: Tarefas. Lista vazia quando nenhuma cumpre os filtros (EC-48).

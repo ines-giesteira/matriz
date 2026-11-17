@@ -24,7 +24,7 @@ export type NovaTarefa = {
 };
 
 export type AlteracaoTarefa = Partial<Omit<NovaTarefa, 'responsavelIds'>>;
-export type Filtros = { estado?: Estado; prioridade?: Prioridade };
+export type Filtros = { estado?: Estado; prioridade?: Prioridade; responsavelId?: number };
 
 const json = (metodo: string, corpo: unknown): RequestInit => ({ method: metodo, body: JSON.stringify(corpo) });
 const base = (projetoId: number) => `/projetos/${projetoId}/tarefas`;
@@ -33,6 +33,7 @@ export function listarTarefas(projetoId: number, filtros: Filtros = {}) {
   const parametros = new URLSearchParams();
   if (filtros.estado) parametros.set('estado', filtros.estado);
   if (filtros.prioridade) parametros.set('prioridade', filtros.prioridade);
+  if (filtros.responsavelId) parametros.set('responsavelId', String(filtros.responsavelId));
   const consulta = parametros.toString();
   return pedido<Tarefa[]>(consulta ? `${base(projetoId)}?${consulta}` : base(projetoId));
 }

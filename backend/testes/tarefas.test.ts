@@ -141,6 +141,34 @@ describe('GET /projetos/{id}/tarefas', () => {
     expect((await marta.get(`${url(SITE())}?ordem=titulo`)).status).toBe(400);
   });
 
+  it('CA-23.5: filtrar por responsável, sozinho ou com os outros filtros, mantém a ordem de Q-12', async () => {
+    type Linha = { titulo: string; estado: string; responsaveis: { id: number }[] };
+    const marta = await como('marta');
+    const todas = (await marta.get(url(SITE()))).body as Linha[];
+    const daAna = todas.filter((t) => t.responsaveis.some((r) => r.id === id('ana')));
+    expect(daAna.length).toBeGreaterThan(0);
+    expect(daAna.length).toBeLessThan(todas.length);
+
+    const resposta = await marta.get(`${url(SITE())}?responsavelId=${id('ana')}`);
+    expect(resposta.status).toBe(200);
+    expect(titulos(resposta.body)).toEqual(titulos(daAna));
+    // Cada tarefa continua a trazer todos os responsáveis, e não só o filtrado.
+    expect(resposta.body.find((t: Linha) => t.titulo === 'Rever orçamento')?.responsaveis).toHaveLength(2);
+
+    const combinada = await marta.get(`${url(SITE())}?responsavelId=${id('ana')}&estado=IN_PROGRESS`);
+    expect(titulos(combinada.body)).toEqual(titulos(daAna.filter((t) => t.estado === 'IN_PROGRESS')));
+  });
+
+  it('EC-48: responsável com formato inválido dá 400; quem não é membro dá lista vazia (Q-24)', async () => {
+    const marta = await como('marta');
+    for (const valor of ['ana', '0', '-1', '1.5', '']) {
+      expect((await marta.get(`${url(SITE())}?responsavelId=${valor}`)).status).toBe(400);
+    }
+    const naoMembro = await marta.get(`${url(SITE())}?responsavelId=${id('paulo')}`);
+    expect(naoMembro.status).toBe(200);
+    expect(naoMembro.body).toEqual([]);
+  });
+
   it('EC-18: quem não é membro recebe 404 na lista e na consulta', async () => {
     const paulo = await como('paulo');
     expect((await paulo.get(url(SITE()))).status).toBe(404);

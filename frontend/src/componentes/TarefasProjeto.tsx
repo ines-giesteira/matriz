@@ -1,5 +1,5 @@
 // Progresso e tarefas no detalhe do projeto (wireframe, elementos 5 a 9, 11 e 14; secção 7):
-// progresso do projeto, filtros por estado e prioridade, lista pela ordem de Q-12 e criação (só o Gestor).
+// progresso do projeto, filtros por estado, prioridade e responsável (Q-24), lista pela ordem de Q-12 e criação (só o Gestor).
 // O progresso vem de /progresso e refere-se sempre a todas as tarefas, mesmo com filtros (RF-34, CA-23.3).
 import { useState } from 'react';
 import { Link } from 'react-router';
@@ -34,11 +34,16 @@ export function TarefasProjeto({ projeto, versao = 0 }: { projeto: Projeto; vers
   const utilizadorId = sessao.tipo === 'autenticado' ? sessao.utilizador.id : 0;
   const [filtros, setFiltros] = useState<Filtros>({});
   const progresso = usarPedido(() => obterProgresso(projeto.id), [projeto.id, versao]);
-  const filtradas = usarPedido(() => listarTarefas(projeto.id, filtros), [projeto.id, filtros.estado, filtros.prioridade, versao]);
+  const filtradas = usarPedido(
+    () => listarTarefas(projeto.id, filtros),
+    [projeto.id, filtros.estado, filtros.prioridade, filtros.responsavelId, versao],
+  );
   const [aCriar, setACriar] = useState(false);
   const [sucesso, setSucesso] = useState<string | null>(null);
   const podeCriar = projeto.souGestor && !projeto.arquivado;
-  const membros = usarPedido(() => (aCriar ? listarMembros(projeto.id) : Promise.resolve([])), [projeto.id, aCriar]);
+  // Os membros servem o filtro por responsável (Q-24) e a escolha de responsáveis na criação.
+  const membros = usarPedido(() => listarMembros(projeto.id), [projeto.id, versao]);
+  const listaMembros = membros.estado.tipo === 'ok' ? membros.estado.dados : [];
 
   /** Depois de qualquer alteração, lista, filtros e progresso atualizam-se sem recarregar a página (CA-13.5, CA-23.4). */
   function atualizar() {
@@ -46,7 +51,7 @@ export function TarefasProjeto({ projeto, versao = 0 }: { projeto: Projeto; vers
     filtradas.recarregar();
   }
 
-  const comFiltros = Boolean(filtros.estado || filtros.prioridade);
+  const comFiltros = Boolean(filtros.estado || filtros.prioridade || filtros.responsavelId);
   const total = progresso.estado.tipo === 'ok' ? progresso.estado.dados.total : null;
 
   return (
@@ -74,7 +79,7 @@ export function TarefasProjeto({ projeto, versao = 0 }: { projeto: Projeto; vers
             <FormularioTarefa
               modo="criar"
               inicial={valoresVazios}
-              membrosAtivos={membros.estado.tipo === 'ok' ? membros.estado.dados.filter((m) => m.contaAtiva) : []}
+              membrosAtivos={listaMembros.filter((m) => m.contaAtiva)}
               textoSubmeter="Criar tarefa"
               aoCancelar={() => setACriar(false)}
               aoSubmeter={async (v) => {
@@ -122,6 +127,24 @@ export function TarefasProjeto({ projeto, versao = 0 }: { projeto: Projeto; vers
               {PRIORIDADES.map((p) => (
                 <option key={p} value={p}>
                   {NOME_PRIORIDADE[p]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="filtro-responsavel">Responsável</label>
+            <select
+              id="filtro-responsavel"
+              value={filtros.responsavelId ?? ''}
+              onChange={(e) =>
+                setFiltros((f) => ({ ...f, responsavelId: e.target.value ? Number(e.target.value) : undefined }))
+              }
+            >
+              <option value="">Todos</option>
+              {listaMembros.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.nome}
+                  {!m.contaAtiva && ' (conta desativada)'}
                 </option>
               ))}
             </select>
