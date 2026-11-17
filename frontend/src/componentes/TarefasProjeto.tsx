@@ -30,11 +30,35 @@ export function NomesResponsaveis({ tarefa }: { tarefa: Tarefa }) {
   );
 }
 
+/** Ordem da lista: a de omissão vem da API (Q-12); as outras são por data limite, só na interface (Q-25). */
+type Ordem = 'omissao' | 'asc' | 'desc';
+const PROXIMA_ORDEM: Record<Ordem, Ordem> = { omissao: 'asc', asc: 'desc', desc: 'omissao' };
+const ARIA_SORT: Record<Ordem, 'none' | 'ascending' | 'descending'> = {
+  omissao: 'none',
+  asc: 'ascending',
+  desc: 'descending',
+};
+
+/** Ordena por data limite, sem agrupar por estado; sem data sempre no fim; empates pelo título (Q-25, P18). */
+export function ordenarPorData(tarefas: Tarefa[], ordem: Ordem): Tarefa[] {
+  if (ordem === 'omissao') return tarefas;
+  const sentido = ordem === 'asc' ? 1 : -1;
+  return [...tarefas].sort((a, b) => {
+    if (a.dataLimite !== b.dataLimite) {
+      if (a.dataLimite === null) return 1;
+      if (b.dataLimite === null) return -1;
+      return (a.dataLimite < b.dataLimite ? -1 : 1) * sentido;
+    }
+    return a.titulo.localeCompare(b.titulo, 'pt');
+  });
+}
+
 /** `versao` muda quando algo fora desta secção altera as tarefas (por exemplo, remover um membro, EC-19). */
 export function TarefasProjeto({ projeto, versao = 0 }: { projeto: Projeto; versao?: number }) {
   const { estado: sessao } = useSessao();
   const utilizadorId = sessao.tipo === 'autenticado' ? sessao.utilizador.id : 0;
   const [filtros, setFiltros] = useState<Filtros>({});
+  const [ordem, setOrdem] = useState<Ordem>('omissao');
   const progresso = usarPedido(() => obterProgresso(projeto.id), [projeto.id, versao]);
   const filtradas = usarPedido(
     () => listarTarefas(projeto.id, filtros),
@@ -189,7 +213,23 @@ export function TarefasProjeto({ projeto, versao = 0 }: { projeto: Projeto; vers
                 <th scope="col">Tarefa</th>
                 <th scope="col">Responsáveis</th>
                 <th scope="col">Prioridade</th>
-                <th scope="col">Data limite</th>
+                <th scope="col" aria-sort={ARIA_SORT[ordem]}>
+                  <button
+                    type="button"
+                    className="cabecalho-ordenavel"
+                    data-ordem={ordem}
+                    onClick={() => setOrdem((o) => PROXIMA_ORDEM[o])}
+                  >
+                    Data limite
+                    <span className="so-leitor">
+                      {ordem === 'omissao'
+                        ? ', ordem habitual; ordenar por data crescente'
+                        : ordem === 'asc'
+                          ? ', ordenada por data crescente; ordenar por data decrescente'
+                          : ', ordenada por data decrescente; voltar à ordem habitual'}
+                    </span>
+                  </button>
+                </th>
                 <th scope="col">Estado</th>
                 {podeGerir && (
                   <th scope="col">
@@ -199,7 +239,7 @@ export function TarefasProjeto({ projeto, versao = 0 }: { projeto: Projeto; vers
               </tr>
             </thead>
             <tbody>
-              {filtradas.estado.dados.map((t) => (
+              {ordenarPorData(filtradas.estado.dados, ordem).map((t) => (
                 <tr key={t.id}>
                   <td data-rotulo="Tarefa">
                     <Link to={`/projetos/${projeto.id}/tarefas/${t.id}`}>{t.titulo}</Link>

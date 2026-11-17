@@ -460,6 +460,44 @@ button:disabled {
   border-color: var(--erro-escuro);
 }
 
+/* Cabeçalho "Data limite" que ordena a lista (Q-25): parece um título de coluna, com uma seta do sentido */
+.cabecalho-ordenavel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.cabecalho-ordenavel:hover {
+  color: var(--texto);
+}
+
+.cabecalho-ordenavel::after {
+  content: '↕';
+  font-size: 0.9em;
+  opacity: 0.45;
+}
+
+.cabecalho-ordenavel[data-ordem='asc']::after {
+  content: '↑';
+  opacity: 1;
+  color: var(--principal);
+}
+
+.cabecalho-ordenavel[data-ordem='desc']::after {
+  content: '↓';
+  opacity: 1;
+  color: var(--principal);
+}
+
 /* Botão discreto dentro de uma linha da tabela: contorno vermelho, preenchido ao passar o rato */
 .botao-pequeno {
   padding: 4px 10px;
