@@ -4,8 +4,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { listarMembros, obterProgresso, type Projeto } from '../api/projetos';
-import { criarTarefa, listarTarefas, podeMudarEstado, type Filtros, type Tarefa } from '../api/tarefas';
+import { criarTarefa, eliminarTarefa, listarTarefas, podeMudarEstado, type Filtros, type Tarefa } from '../api/tarefas';
+import { usarAcao } from '../api/usarAcao';
 import { usarPedido } from '../api/usarPedido';
+import { Confirmacao } from './Confirmacao';
 import { useSessao } from '../sessao/ContextoSessao';
 import { ESTADOS, formatarData, NOME_ESTADO, NOME_PRIORIDADE, PRIORIDADES, type Estado, type Prioridade } from '../textos';
 import { FormularioTarefa, valoresVazios } from './FormularioTarefa';
@@ -44,6 +46,19 @@ export function TarefasProjeto({ projeto, versao = 0 }: { projeto: Projeto; vers
   // Os membros servem o filtro por responsável (Q-24) e a escolha de responsáveis na criação.
   const membros = usarPedido(() => listarMembros(projeto.id), [projeto.id, versao]);
   const listaMembros = membros.estado.tipo === 'ok' ? membros.estado.dados : [];
+  // Eliminar a partir da lista: só o Gestor, só tarefas "Por fazer", nunca num projeto arquivado (RF-22, A-11, D-09).
+  const podeGerir = projeto.souGestor && !projeto.arquivado;
+  const [aEliminar, setAEliminar] = useState<Tarefa | null>(null);
+  const eliminacao = usarAcao();
+
+  function eliminar(tarefa: Tarefa) {
+    void eliminacao.executar(async () => {
+      await eliminarTarefa(projeto.id, tarefa.id);
+      setAEliminar(null);
+      setSucesso(`Tarefa "${tarefa.titulo}" eliminada.`);
+      atualizar();
+    });
+  }
 
   /** Depois de qualquer alteração, lista, filtros e progresso atualizam-se sem recarregar a página (CA-13.5, CA-23.4). */
   function atualizar() {
@@ -176,6 +191,11 @@ export function TarefasProjeto({ projeto, versao = 0 }: { projeto: Projeto; vers
                 <th scope="col">Prioridade</th>
                 <th scope="col">Data limite</th>
                 <th scope="col">Estado</th>
+                {podeGerir && (
+                  <th scope="col">
+                    <span className="so-leitor">Ações</span>
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -203,12 +223,38 @@ export function TarefasProjeto({ projeto, versao = 0 }: { projeto: Projeto; vers
                       NOME_ESTADO[t.estado]
                     )}
                   </td>
+                  {podeGerir && (
+                    <td className="celula-acoes">
+                      {t.estado === 'TODO' && (
+                        <button
+                          type="button"
+                          className="botao-perigo botao-pequeno"
+                          aria-label={`Eliminar ${t.titulo}`}
+                          onClick={() => (setAEliminar(t), setSucesso(null), eliminacao.setErro(null))}
+                        >
+                          Eliminar
+                        </button>
+                      )}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </section>
+
+      {aEliminar && (
+        <Confirmacao
+          titulo="Eliminar tarefa"
+          mensagem={`Eliminar "${aEliminar.titulo}"? Esta ação é definitiva e apaga também os responsáveis e os comentários da tarefa.`}
+          textoConfirmar="Eliminar"
+          aConfirmar={eliminacao.emCurso}
+          erro={eliminacao.erro}
+          aoConfirmar={() => eliminar(aEliminar)}
+          aoCancelar={() => setAEliminar(null)}
+        />
+      )}
     </>
   );
 }
