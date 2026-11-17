@@ -126,6 +126,7 @@ Versão 1.7 · 8 de novembro de 2026 · a 1.3 acrescentou CA-07.3, CA-17.3 e CA-
 - **CA-17.1** — **Dado** um projeto com tarefas, **quando** um membro do projeto abre a lista de tarefas, **então** vê, para cada tarefa, o título, os responsáveis (ou a indicação de que não tem), a prioridade, a data limite (se tiver) e o estado.
 - **CA-17.2** — **Dado** um membro do projeto e uma tarefa de que não é responsável, **quando** abre essa tarefa, **então** consegue ler a descrição, mas não a consegue editar (RV-17).
 - **CA-17.3** — **Dado** um projeto com tarefas nos três estados, com e sem data limite, **quando** um membro do projeto abre a lista de tarefas, **então** vê primeiro as "Por fazer", depois as "Em curso" e por fim as "Concluída"; dentro de cada estado, as tarefas aparecem por data limite crescente e as que não têm data limite ficam no fim (Q-12).
+- **CA-17.4** — **Dada** a lista de tarefas, **quando** um membro clica no cabeçalho "Data limite", **então** a lista passa a estar ordenada só por data limite crescente; num segundo clique, decrescente; num terceiro, volta à ordem de Q-12. Nas ordens por data, as tarefas sem data limite ficam sempre no fim (Q-25).
 
 ### US-18: Contagens e percentagem concluída
 - **CA-18.1** — **Dado** um projeto com 10 tarefas (5 "Por fazer", 2 "Em curso", 3 "Concluída"), **quando** um membro do projeto abre o progresso, **então** vê as contagens 5, 2 e 3 e a percentagem concluída de 30,0%.

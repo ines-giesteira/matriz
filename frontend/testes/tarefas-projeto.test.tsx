@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// Testes de componentes da lista de tarefas (CR-01, P41): EC-51, EC-50, CR-03, CA-23.5 e RF-22.
+// Testes de componentes da lista de tarefas (CR-01, P41): EC-51, EC-50, CR-03, CA-23.5, RF-22 e CA-17.4.
 // A API é simulada com um `fetch` falso; o componente e os módulos da interface são os reais.
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
@@ -153,6 +153,37 @@ describe('CR-03, P39: tarefa eliminada noutro pedido', () => {
     expect(await screen.findByText('Este projeto ainda não tem tarefas.')).toBeTruthy();
     expect(screen.queryByText('Rever orçamento')).toBeNull();
     expect(pedidos.filter((p) => p === 'GET /projetos/1/tarefas')).toHaveLength(2);
+  });
+});
+
+describe('CA-17.4, Q-25: ordenar por data limite', () => {
+  it('o cabeçalho alterna entre crescente, decrescente e a ordem de Q-12; sem data fica sempre no fim', async () => {
+    // A API devolve a ordem de Q-12: por estado e, dentro de cada estado, por data crescente.
+    tarefas = [
+      { ...tarefa(1, 'A por fazer'), dataLimite: '2026-11-20' },
+      { ...tarefa(2, 'B sem data'), dataLimite: null },
+      { ...tarefa(3, 'C em curso'), estado: 'IN_PROGRESS', dataLimite: '2026-11-10' },
+      { ...tarefa(4, 'D em curso'), estado: 'IN_PROGRESS', dataLimite: '2026-12-01' },
+    ];
+    simularApi(rotasBase());
+    mostrar();
+    await screen.findByText('A por fazer');
+    const ordemAtual = () => screen.getAllByRole('link').map((l) => l.textContent);
+    const cabecalho = () => screen.getByRole('columnheader', { name: /Data limite/ });
+
+    expect(ordemAtual()).toEqual(['A por fazer', 'B sem data', 'C em curso', 'D em curso']);
+    expect(cabecalho().getAttribute('aria-sort')).toBe('none');
+
+    fireEvent.click(screen.getByRole('button', { name: /Data limite/ }));
+    expect(ordemAtual()).toEqual(['C em curso', 'A por fazer', 'D em curso', 'B sem data']);
+    expect(cabecalho().getAttribute('aria-sort')).toBe('ascending');
+
+    fireEvent.click(screen.getByRole('button', { name: /Data limite/ }));
+    expect(ordemAtual()).toEqual(['D em curso', 'A por fazer', 'C em curso', 'B sem data']);
+    expect(cabecalho().getAttribute('aria-sort')).toBe('descending');
+
+    fireEvent.click(screen.getByRole('button', { name: /Data limite/ }));
+    expect(ordemAtual()).toEqual(['A por fazer', 'B sem data', 'C em curso', 'D em curso']);
   });
 });
 

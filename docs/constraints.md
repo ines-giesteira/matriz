@@ -157,6 +157,7 @@ Levantadas depois da conciliação com a Ficha 3 e decididas pela dona do produt
 | ID | Questão | Decisão | Onde se aplica | Estado |
 |---|---|---|---|---|
 | Q-24 | O filtro de tarefas por responsável (parte do RF-21) entra no MVP? | Decisão da dona do produto (17/11/2026): sim. Na lista de tarefas, qualquer membro filtra também por responsável, ao lado dos filtros por estado e prioridade, e os três combinam-se (RF-34, CA-23.5). A escolha mostra os membros do projeto. Um responsável que não é membro do projeto dá uma lista vazia; um valor com formato inválido é recusado (EC-48). O filtro por data limite e a escolha da ordenação continuam fora do MVP (RF-21). Altera a parte de Q-16 sobre os outros filtros. | RF-21, RF-34, US-23, CA-23.5, EC-48, openapi.yaml, wireframe.md (secção 7) | Decidido (implementado) |
+| Q-25 | A lista de tarefas pode ser ordenada por data limite, crescente e decrescente (parte do RF-21)? | Decisão da dona do produto (17/11/2026): sim, só na interface. Clicar no cabeçalho "Data limite" alterna entre a ordem de omissão (Q-12), data limite crescente e data limite decrescente. Nas duas ordens por data, as tarefas deixam de estar agrupadas por estado e as que não têm data limite ficam sempre no fim; empates pelo título (P18). A API não muda: devolve sempre a ordem de Q-12. O filtro por data limite continua fora do MVP (RF-21). | RF-15, RF-21, US-17, CA-17.4, wireframe.md (secção 7) | Decidido (implementado) |
 
 ### Decisões da revisão crítica
 

@@ -90,6 +90,7 @@ O wireframe foi desenhado antes das decisões Q-15 a Q-22 e não foi redesenhado
 
 - **Responsáveis (Q-20):** a coluna mostra zero, um ou vários nomes. A escolha passa para o detalhe da tarefa, com "Adicionar responsável", "Juntar-me" e "Sair".
 - **Filtros (Q-16, Q-24):** por cima da lista de tarefas, filtros por estado, por prioridade e por responsável. O progresso continua a referir-se a todas as tarefas.
+- **Ordenar por data limite (Q-25):** o cabeçalho "Data limite" é um botão que alterna entre a ordem de omissão (Q-12), crescente e decrescente, com uma seta a indicar o sentido.
 - **Eliminar tarefa (RF-22):** além do detalhe da tarefa, o Gestor também elimina a partir da lista: cada tarefa "Por fazer" tem um botão "Eliminar" na última coluna, com a mesma confirmação. A coluna não aparece a quem não é Gestor nem num projeto arquivado.
 - **Comentários (Q-15):** no detalhe da tarefa, aberto pelo título (marcador 14).
 - **Painel inicial (Q-17):** é o primeiro ecrã depois de entrar; a entrada "Projetos" da navegação abre a lista com pesquisa (Q-16).
