@@ -41,7 +41,7 @@ O detalhe, as regras de negócio e a matriz de permissões estão em [docs/requi
 | Frontend | React 19, React Router e Vite |
 | Testes | Vitest e Supertest (backend), Testing Library e jsdom (componentes), Playwright (End-to-End) |
 | Contentores | Docker e Docker Compose; nginx a servir a interface (P42 a P45) |
-| Integração contínua | GitHub Actions (P46), com `npm audit` (P47) |
+| Integração contínua | GitHub Actions (P46), com `npm audit` (P47, P50) |
 | Publicação das imagens | GitHub Actions e GitHub Container Registry (P49) |
 | Publicação de demonstração | Render, região de Frankfurt, com o Blueprint `render.yaml` (RV-42) |
 
@@ -280,7 +280,7 @@ O `frontend/nginx.conf` é um template: a porta (`PORT`) e o endereço do backen
 
 O workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (GitHub Actions, P46) corre em cada push e em cada pull request para o `main`. Tem três jobs, e cada um só corre se os anteriores passarem:
 
-1. **Typecheck, testes e build:** `npm ci`, `npm audit --audit-level=high` (P47), `npm run typecheck -w backend`, `npm test` e `npm run build`.
+1. **Typecheck, testes e build:** `npm ci`, `npm audit --omit=dev --audit-level=high` (P47, P50; a análise de todas as dependências corre a seguir, sem bloquear), `npm run typecheck -w backend`, `npm test` e `npm run build`.
 2. **Teste End-to-End:** `npm run test:e2e`, com o Microsoft Edge do runner. Se falhar, o trace e o screenshot ficam nos artefactos da execução durante 7 dias.
 3. **Imagens Docker:** `docker compose config -q`, `build` e `up -d --wait`, um pedido a `/api/saude` através do nginx e `down -v`.
 

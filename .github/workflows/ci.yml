@@ -31,8 +31,13 @@ jobs:
           node-version: 26
           cache: npm
       - run: npm ci
-      # Desafio A (P47): falha se alguma dependência tiver uma vulnerabilidade alta ou crítica conhecida.
-      - name: Análise de dependências (npm audit)
+      # P47 e P50: falha se alguma dependência de produção tiver uma vulnerabilidade alta ou crítica conhecida.
+      - name: Análise de dependências de produção (npm audit)
+        run: npm audit --omit=dev --audit-level=high
+      # P50: as ferramentas de desenvolvimento (build e testes) são analisadas sem bloquear, para os alertas
+      # continuarem visíveis quando ainda não há versão corrigida.
+      - name: Análise de todas as dependências (npm audit, sem bloquear)
+        continue-on-error: true
         run: npm audit --audit-level=high
       - name: Typecheck do backend
         run: npm run typecheck -w backend

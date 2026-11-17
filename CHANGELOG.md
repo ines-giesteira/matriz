@@ -12,6 +12,7 @@ Alterações de cada versão da Matriz. O formato segue o [Keep a Changelog](htt
 ### Segurança
 
 - A pipeline analisa as dependências com `npm audit --audit-level=high` e falha com vulnerabilidades altas ou críticas (P47, Desafio A da Ficha 5).
+- Só as dependências de produção bloqueiam a pipeline (`npm audit --omit=dev`); a análise de todas as dependências continua visível, sem bloquear, enquanto o alerta GHSA-fc5q-39xc-vjpf do `picomatch` (só no Vite e no Vitest) não tiver versão corrigida (P50).
 
 ## [1.0.0-rc.1] — 2026-11-14
 
