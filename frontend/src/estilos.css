@@ -460,6 +460,30 @@ button:disabled {
   border-color: var(--erro-escuro);
 }
 
+/* Botão discreto dentro de uma linha da tabela: contorno vermelho, preenchido ao passar o rato */
+.botao-pequeno {
+  padding: 4px 10px;
+  font-size: 0.8rem;
+}
+
+.botao-perigo.botao-pequeno {
+  color: var(--erro);
+  background: transparent;
+  box-shadow: none;
+}
+
+.botao-perigo.botao-pequeno:hover:not(:disabled) {
+  color: #fff;
+  background: var(--erro);
+  border-color: var(--erro);
+}
+
+.celula-acoes {
+  width: 1%;
+  text-align: right;
+  white-space: nowrap;
+}
+
 /* ==========================================================================
    Navegação
    ========================================================================== */
@@ -1023,6 +1047,11 @@ button:disabled {
     display: block;
     border: none;
     padding: 4px 0;
+  }
+
+  .tabela td.celula-acoes {
+    width: auto;
+    text-align: left;
   }
 
   .tabela td[data-rotulo]::before {
