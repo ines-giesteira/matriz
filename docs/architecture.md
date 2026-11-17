@@ -1,6 +1,6 @@
 # Matriz — Arquitetura
 
-Versão 0.11 · 16 de novembro de 2026 · Ficha Prática 02, Exercício 1 · a 0.3 retirou o acesso direto do Progresso à base de dados (RV-24); a 0.4 regista a stack (Q-14) e a autenticação (Q-22) e ajusta os componentes às decisões da Ficha 3 (Q-15 a Q-20); a 0.5 retira dos pendentes as regras das palavras-passe e a duração da sessão, aprovadas em P2 e P3; a 0.6 (8 de novembro de 2026) regista a aprovação da arquitetura (RV-41); a 0.7 (14 de novembro de 2026) acrescenta a execução em containers e a integração contínua da Ficha 5 (secção 3.1 e secção 7); a 0.8 (15 de novembro de 2026) acrescenta a análise de dependências à pipeline (P47, secção 7.2); a 0.9 (15 de novembro de 2026) acrescenta o registo estruturado e `GET /api/saude/vivo` (P48, secção 7.1); a 0.10 (15 de novembro de 2026) acrescenta a publicação das imagens (P49, secção 7.3); a 0.11 (16 de novembro de 2026) acrescenta a publicação de demonstração no Render (RV-42, secção 7.4).
+Versão 0.12 · 17 de novembro de 2026 · Ficha Prática 02, Exercício 1 · a 0.3 retirou o acesso direto do Progresso à base de dados (RV-24); a 0.4 regista a stack (Q-14) e a autenticação (Q-22) e ajusta os componentes às decisões da Ficha 3 (Q-15 a Q-20); a 0.5 retira dos pendentes as regras das palavras-passe e a duração da sessão, aprovadas em P2 e P3; a 0.6 (8 de novembro de 2026) regista a aprovação da arquitetura (RV-41); a 0.7 (14 de novembro de 2026) acrescenta a execução em containers e a integração contínua da Ficha 5 (secção 3.1 e secção 7); a 0.8 (15 de novembro de 2026) acrescenta a análise de dependências à pipeline (P47, secção 7.2); a 0.9 (15 de novembro de 2026) acrescenta o registo estruturado e `GET /api/saude/vivo` (P48, secção 7.1); a 0.10 (15 de novembro de 2026) acrescenta a publicação das imagens (P49, secção 7.3); a 0.11 (16 de novembro de 2026) acrescenta a publicação de demonstração no Render (RV-42, secção 7.4); a 0.12 (17 de novembro de 2026) acrescenta a publicação temporária com Cloudflare Tunnel (RV-43, secção 7.5).
 
 > **Estado: aprovado pela dona do produto a 8 de novembro de 2026 (RV-41).** Este documento decide o estilo de arquitetura, os componentes do MVP e a stack (secção 3.1). O alojamento continua pendente ([constraints.md](constraints.md#4-decisões-técnicas-pendentes)). Os pressupostos novos estão na secção 6, separados dos requisitos confirmados, e continuam por aprovar.
 
@@ -182,3 +182,17 @@ Acrescentada com RV-42. A versão de demonstração do curso usa as mesmas duas 
 | Disco `matriz-dados` | Disco persistente de 1 GB montado em `/app/dados`, o mesmo caminho do volume do Compose. Um serviço com disco não escala para várias instâncias, o que está de acordo com uma só base SQLite. |
 
 O cookie continua `Secure` (P37), e agora funciona porque o acesso é feito por HTTPS. Os cabeçalhos de segurança da interface (SEG-02) continuam por definir.
+
+### 7.5 Publicação temporária (Cloudflare Tunnel)
+
+Acrescentada com RV-43, para demonstrações pontuais. A Matriz corre no computador de quem apresenta, com o Docker Compose (P45), e o `cloudflared` abre um Quick Tunnel até à interface:
+
+```mermaid
+flowchart LR
+    N["Navegador"] -- "HTTPS<br/>*.trycloudflare.com" --> CF["Cloudflare"]
+    CF -- "túnel de saída<br/>(cloudflared)" --> F["frontend (nginx)<br/>127.0.0.1:8080"]
+    F -- "/api" --> B["backend<br/>rede interna"]
+    B --> D[("volume matriz-dados")]
+```
+
+O `cloudflared` liga-se à Cloudflare por uma ligação de saída: não se abrem portas no router nem se muda a publicação do `compose.yaml`, que continua só em `127.0.0.1`. A Cloudflare termina o HTTPS, por isso o cookie `Secure` (P37) funciona. A interface e a API continuam na mesma origem. O endereço é aleatório, muda em cada arranque e só funciona enquanto o computador, os containers e o túnel estiverem ligados; o túnel fecha-se no fim de cada demonstração.
