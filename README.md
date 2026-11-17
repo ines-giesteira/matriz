@@ -43,7 +43,7 @@ O detalhe, as regras de negócio e a matriz de permissões estão em [docs/requi
 | Contentores | Docker e Docker Compose; nginx a servir a interface (P42 a P45) |
 | Integração contínua | GitHub Actions (P46), com `npm audit` (P47, P50) |
 | Publicação das imagens | GitHub Actions e GitHub Container Registry (P49) |
-| Publicação de demonstração | Render, região de Frankfurt, com o Blueprint `render.yaml` (RV-42) |
+| Publicação de demonstração | Render, região de Frankfurt, com o Blueprint `render.yaml` (RV-42); Cloudflare Tunnel temporário a partir do computador de quem apresenta (RV-43) |
 
 A arquitetura (monólito modular) está em [docs/architecture.md](docs/architecture.md).
 
@@ -276,6 +276,23 @@ Passos, feitos por quem gere a conta no Render:
 
 O `frontend/nginx.conf` é um template: a porta (`PORT`) e o endereço do backend (`BACKEND_ENDERECO`) vêm de variáveis de ambiente, com `80` e `backend:3000` por omissão. Por isso, o Docker Compose funciona sem alterações. O plano gratuito adormece o frontend quando não tem uso, e o primeiro acesso demora alguns segundos. O alojamento do piloto real continua por decidir ([constraints.md](docs/constraints.md#4-decisões-técnicas-pendentes)).
 
+### Publicação temporária com Cloudflare Tunnel (demonstração)
+
+Para uma demonstração pontual, a Matriz pode ficar acessível por HTTPS a partir do computador de quem apresenta, com um [Quick Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/do-more-with-tunnels/trycloudflare/) da Cloudflare (RV-43). Não é preciso conta na Cloudflare nem alterações ao código ou ao `compose.yaml`.
+
+1. Instalar o [`cloudflared`](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) (no Windows: `winget install --id Cloudflare.cloudflared`).
+2. Arrancar a Matriz com o Docker Compose (secção [Com Docker](#com-docker)) e confirmar que `http://localhost:8080/api/saude` responde.
+3. Abrir o túnel:
+
+   ```bash
+   cloudflared tunnel --url http://localhost:8080
+   ```
+
+4. Usar o endereço `https://<nome-aleatório>.trycloudflare.com` que o comando mostra, e confirmar que `/api/saude` responde nesse endereço.
+5. No fim da demonstração, fechar o túnel com **Ctrl+C**.
+
+O endereço muda em cada arranque e só funciona enquanto o computador, os containers e o túnel estiverem ligados. É público: usar só dados fictícios e palavras-passe fortes, e não deixar o túnel aberto sem necessidade.
+
 ### Integração contínua
 
 O workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (GitHub Actions, P46) corre em cada push e em cada pull request para o `main`. Tem três jobs, e cada um só corre se os anteriores passarem:
@@ -300,5 +317,5 @@ O workflow [`.github/workflows/release.yml`](.github/workflows/release.yml) (P49
 - **Stack:** Node.js 26 e TypeScript, Express, React com Vite, SQLite através de `node:sqlite` (Q-14).
 - **Código:** incrementos I0 (estrutura, configuração, esquema, migrations, seed e testes), I1 (sessão e autorização base), I2 (projetos e administração de projetos), I3 (contas e perfis, com a anonimização de RV-33), I4 (membros), I5 (tarefas, estado e filtros), I6 (responsáveis e comentários), I7 (progresso e painel inicial), I8 (consolidação do frontend, com o percurso manual em [docs/verification.md](docs/verification.md)), I9 (verificação do MVP: cenários 01 a 09 da Ficha 3 e correção do problema P1) e I10 (revisão e entrega: revisão do código, refatoração, contrato atualizado, execução a partir de uma cópia limpa e exemplos de uso da IA) concluídos, com as regras de RV-31 e RV-32 aplicadas. O estado de cada incremento está em [docs/implementation-plan.md](docs/implementation-plan.md#8-estado-do-plano).
 - **Versões entregues:** Ficha 3, tag `entrega-ficha3`; Ficha 4, tag `entrega-ficha4`. Versão candidata: 1.0.0-rc.1 (Ficha 5), tag `entrega-ficha5`.
-- **Publicação de demonstração:** Render, região de Frankfurt (RV-42), com o Blueprint `render.yaml`; ver [Publicação no Render](#publicação-no-render-demonstração).
+- **Publicação de demonstração:** Render, região de Frankfurt (RV-42), com o Blueprint `render.yaml`; ver [Publicação no Render](#publicação-no-render-demonstração). Para demonstrações pontuais, Cloudflare Tunnel temporário (RV-43); ver [Publicação temporária com Cloudflare Tunnel](#publicação-temporária-com-cloudflare-tunnel-demonstração).
 - **Pendente:** decisões técnicas e requisitos de segurança por definir, em [docs/constraints.md](docs/constraints.md#4-decisões-técnicas-pendentes). As verificações por fazer estão em [docs/quality-security-review.md](docs/quality-security-review.md#8-estado-final).
