@@ -49,13 +49,26 @@ function Indicadores({ progresso }: { progresso: Progresso }) {
       </div>
 
       <div className="indicador indicador-atraso">
-        <strong>Em atraso: {tarefasEmAtraso.quantidade}</strong>
+        <strong className="atraso-cabecalho">
+          Em atraso<span className="so-leitor">: </span>
+          <span className="atraso-contagem">{tarefasEmAtraso.quantidade}</span>
+        </strong>
         {tarefasEmAtraso.quantidade > 0 && (
-          <ul>
+          <ul className="atraso-lista">
             {tarefasEmAtraso.tarefas.map((t) => (
-              <li key={t.id}>
-                <Link to={`/projetos/${progresso.projetoId}/tarefas/${t.id}`}>{t.titulo}</Link> — limite{' '}
-                {formatarData(t.dataLimite)} — {NOME_ESTADO[t.estado]}
+              <li key={t.id} className="atraso-item">
+                <Link className="atraso-link" to={`/projetos/${progresso.projetoId}/tarefas/${t.id}`}>
+                  {t.titulo}
+                </Link>
+                <span className="atraso-meta">
+                  <span className="atraso-data">
+                    <span className="so-leitor">— </span>limite {formatarData(t.dataLimite)}
+                  </span>
+                  <span className="atraso-estado" data-estado={t.estado}>
+                    <span className="so-leitor">— </span>
+                    {NOME_ESTADO[t.estado]}
+                  </span>
+                </span>
               </li>
             ))}
           </ul>

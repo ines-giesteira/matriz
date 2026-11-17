@@ -152,6 +152,12 @@ Levantadas depois da conciliação com a Ficha 3 e decididas pela dona do produt
 |---|---|---|---|---|
 | Q-23 | Uma conta anonimizada perde os perfis (P27), incluindo o perfil Gestor, mas continua membro dos seus projetos (RV-34). Se era membro de mais de um projeto ativo, fica fora da regra de RV-31 (um só projeto ativo para quem não tem o perfil Gestor), e desarquivar um desses projetos era recusado (409 `MEMBRO_NOUTRO_PROJETO`, EC-53) até o Gestor remover a "Conta removida". O que deve acontecer? Levantada na segunda revisão de segurança (SEG-05, [quality-security-review.md](quality-security-review.md), secção 7.5). | Decisão da dona do produto (08/11/2026): uma conta anonimizada não conta para a regra de RV-31. Continua membro dos seus projetos, para o histórico (RV-34), mas não impede desarquivar um projeto (EC-59). Uma conta só desativada continua a contar, porque pode ser reativada: assim, ao ser reativada, nunca fica em mais de um projeto ativo sem o perfil Gestor. Uma conta anonimizada continua sem poder ser reativada (RV-34); se a pessoa voltar, o Administrador cria-lhe uma conta nova. | RV-31, RV-34, RF-03, RF-06, EC-53, EC-56, EC-59, database.md (regras 19 e 21) | Decidido (implementado) |
 
+### Questões levantadas depois da Ficha 5
+
+| ID | Questão | Decisão | Onde se aplica | Estado |
+|---|---|---|---|---|
+| Q-24 | O filtro de tarefas por responsável (parte do RF-21) entra no MVP? | Decisão da dona do produto (17/11/2026): sim. Na lista de tarefas, qualquer membro filtra também por responsável, ao lado dos filtros por estado e prioridade, e os três combinam-se (RF-34, CA-23.5). A escolha mostra os membros do projeto. Um responsável que não é membro do projeto dá uma lista vazia; um valor com formato inválido é recusado (EC-48). O filtro por data limite e a escolha da ordenação continuam fora do MVP (RF-21). Altera a parte de Q-16 sobre os outros filtros. | RF-21, RF-34, US-23, CA-23.5, EC-48, openapi.yaml, wireframe.md (secção 7) | Decidido (implementado) |
+
 ### Decisões da revisão crítica
 
 Resultado da revisão independente da documentação (Exercício 6). A dona do produto decidiu cada ponto; nem todas as correções propostas foram aceites.

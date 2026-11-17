@@ -41,7 +41,7 @@ Versão 1.7 · 8 de novembro de 2026 · a 1.3 acrescentou CA-07.3, CA-17.3 e CA-
 | US-20 | Como **membro do projeto**, quero juntar-me a uma tarefa sem responsáveis e sair dela se for preciso, para assumir trabalho sem depender do Gestor. | Must | RF-10 | 2 |
 | US-21 | Como **Administrador**, quero eliminar um projeto sem tarefas criado por engano, para que não fique na lista de projetos. | Must | RF-32 | 3 |
 | US-22 | Como **utilizador**, quero pesquisar projetos pelo nome, para encontrar rapidamente o projeto que procuro. | Must | RF-33 | 2 |
-| US-23 | Como **membro do projeto**, quero filtrar as tarefas por estado e por prioridade, para me concentrar no trabalho relevante. | Must | RF-34 | 2 |
+| US-23 | Como **membro do projeto**, quero filtrar as tarefas por estado, por prioridade e por responsável, para me concentrar no trabalho relevante. | Must | RF-34 | 2 |
 | US-24 | Como **membro do projeto**, quero adicionar e ler comentários numa tarefa, para combinar o trabalho com a equipa sem recorrer ao email. | Must | RF-24 | 2 |
 | US-25 | Como **utilizador**, quero ver ao entrar um painel com os meus projetos e as contagens de tarefas por estado, para ter logo o ponto de situação. | Must | RF-35 | 1 |
 
@@ -159,6 +159,7 @@ Versão 1.7 · 8 de novembro de 2026 · a 1.3 acrescentou CA-07.3, CA-17.3 e CA-
 - **CA-23.2** — **Dado** um membro a filtrar por "Por fazer" e "Alta", **quando** aplica os dois filtros, **então** vê só as tarefas que cumprem ambos.
 - **CA-23.3** — **Dada** uma lista filtrada, **quando** o membro consulta o progresso do projeto, **então** as contagens, a percentagem e os atrasos referem-se a todas as tarefas do projeto, e não só às filtradas (RF-34).
 - **CA-23.4** — **Dada** uma lista filtrada por "Em curso", **quando** um responsável muda uma das tarefas para "Concluída", **então** essa tarefa sai da lista filtrada e as contagens são atualizadas, sem recarregar a página.
+- **CA-23.5** — **Dado** um membro a filtrar por um responsável, **quando** aplica o filtro, sozinho ou com os de estado e prioridade, **então** vê só as tarefas que têm esse responsável e cumprem os outros filtros, pela ordem de Q-12 (Q-24).
 
 ### US-24: Comentários
 - **CA-24.1** — **Dado** um membro do projeto e uma tarefa de um projeto não arquivado, **quando** adiciona um comentário, **então** o comentário aparece na tarefa com o seu nome como autor e a data e hora em que foi criado (Q-15).
@@ -234,7 +235,7 @@ Versão 1.7 · 8 de novembro de 2026 · a 1.3 acrescentou CA-07.3, CA-17.3 e CA-
 - **EC-45 · Autor e data enviados pelo cliente (US-24)** — **Dado** um pedido para adicionar um comentário que inclui um autor ou uma data, **quando** é recebido, **então** o pedido é recusado por ter campos não permitidos e nenhum comentário é guardado; o autor e a data só vêm da sessão e do servidor (Q-15, Q-22).
 - **EC-46 · Comentar sem pertencer ao projeto (US-24)** — **Dado** um utilizador que não é membro do projeto, **quando** tenta ler ou adicionar comentários numa tarefa desse projeto, mesmo alterando os identificadores no pedido, **então** o acesso é recusado (D-10, EC-18).
 - **EC-47 · Pesquisa sem resultados (US-22)** — **Dado** um utilizador, **quando** pesquisa um texto que não existe no nome de nenhum dos seus projetos, **então** vê uma lista vazia com a indicação de que não há resultados.
-- **EC-48 · Filtro sem resultados ou inválido (US-23)** — **Dado** um membro a filtrar tarefas, **quando** nenhuma tarefa cumpre os filtros, **então** vê uma lista vazia com essa indicação; **quando** o pedido à API traz um valor de estado ou prioridade que não existe, **então** o pedido é recusado.
+- **EC-48 · Filtro sem resultados ou inválido (US-23)** — **Dado** um membro a filtrar tarefas, **quando** nenhuma tarefa cumpre os filtros, **então** vê uma lista vazia com essa indicação; **quando** o pedido à API traz um valor de estado ou prioridade que não existe, **então** o pedido é recusado; o mesmo acontece quando o responsável não é um número inteiro positivo (Q-24).
 - **EC-49 · Palavra-passe guardada só como hash (US-02)** — **Dada** uma conta criada, **quando** se consultam os dados guardados ou devolvidos pela API, **então** a palavra-passe não aparece em claro em nenhum deles (Q-22).
 - **EC-50 · Erro ao guardar não perde os dados (US-05, US-06, US-11, US-15, US-24)** — **Dado** um utilizador a preencher um formulário, **quando** a API recusa o pedido ou falha, **então** a interface mostra o erro, não mostra mensagem de sucesso e mantém os dados introduzidos.
 - **EC-51 · Submissão repetida (US-05, US-11, US-24)** — **Dado** um utilizador a criar um projeto, uma tarefa ou um comentário, **quando** carrega várias vezes em guardar enquanto o pedido está em curso, **então** é criado um só registo.

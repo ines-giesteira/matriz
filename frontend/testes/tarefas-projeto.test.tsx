@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// Testes de componentes da lista de tarefas (CR-01, P41): EC-51, EC-50 e CR-03.
+// Testes de componentes da lista de tarefas (CR-01, P41): EC-51, EC-50, CR-03 e CA-23.5.
 // A API é simulada com um `fetch` falso; o componente e os módulos da interface são os reais.
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
@@ -153,5 +153,30 @@ describe('CR-03, P39: tarefa eliminada noutro pedido', () => {
     expect(await screen.findByText('Este projeto ainda não tem tarefas.')).toBeTruthy();
     expect(screen.queryByText('Rever orçamento')).toBeNull();
     expect(pedidos.filter((p) => p === 'GET /projetos/1/tarefas')).toHaveLength(2);
+  });
+});
+
+describe('CA-23.5, Q-24: filtro por responsável', () => {
+  it('escolher um responsável pede só as suas tarefas, e "Limpar filtros" volta a mostrar todas', async () => {
+    const daAna = { ...tarefa(6, 'Escolher fotografias'), responsaveis: [{ id: 2, nome: 'Ana Silva', contaAtiva: true }] };
+    tarefas = [...tarefas, daAna];
+    const pedidos = simularApi({
+      ...rotasBase(),
+      'GET /projetos/1/tarefas?responsavelId=2': () => ({ estado: 200, corpo: [daAna] }),
+    });
+    mostrar();
+    expect(await screen.findByText('Rever orçamento')).toBeTruthy();
+
+    const filtro = screen.getByLabelText('Responsável');
+    await screen.findByRole('option', { name: 'Ana Silva' });
+    fireEvent.change(filtro, { target: { value: '2' } });
+
+    await waitFor(() => expect(screen.queryByText('Rever orçamento')).toBeNull());
+    expect(screen.getByText('Escolher fotografias')).toBeTruthy();
+    expect(pedidos).toContain('GET /projetos/1/tarefas?responsavelId=2');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Limpar filtros' }));
+    expect(await screen.findByText('Rever orçamento')).toBeTruthy();
+    expect((screen.getByLabelText('Responsável') as HTMLSelectElement).value).toBe('');
   });
 });

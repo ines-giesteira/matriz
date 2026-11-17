@@ -760,39 +760,146 @@ button:disabled {
   border-radius: 999px;
 }
 
-.indicador-atraso > strong {
-  display: inline-flex;
+.indicador-atraso {
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+  padding-top: 20px;
+  border-color: color-mix(in srgb, var(--erro) 30%, var(--borda));
+  background: color-mix(in srgb, var(--erro-suave) 45%, var(--fundo));
+}
+
+/* Faixa superior, como nos indicadores de estado */
+.indicador-atraso::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: var(--erro);
+}
+
+.atraso-cabecalho {
+  display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  width: 100%;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   color: var(--erro);
 }
 
-.indicador-atraso > strong::before {
+.atraso-cabecalho::before {
   content: '!';
   display: inline-grid;
   place-items: center;
-  width: 20px;
-  height: 20px;
+  flex: none;
+  width: 22px;
+  height: 22px;
   font-size: 0.8rem;
   font-weight: 800;
   color: #fff;
   background: var(--erro);
   border-radius: 50%;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--erro) 18%, transparent);
 }
 
-.indicador-atraso li {
-  margin: 4px 0;
+.atraso-contagem {
+  margin-left: auto;
+  min-width: 26px;
+  padding: 2px 9px;
+  font-size: 0.85rem;
+  font-weight: 750;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--erro);
+  background: color-mix(in srgb, var(--erro) 16%, transparent);
+  border-radius: 999px;
 }
 
-.indicador-atraso {
-  border-color: color-mix(in srgb, var(--erro) 35%, var(--borda));
-  background: color-mix(in srgb, var(--erro-suave) 55%, var(--fundo));
-}
-
-.indicador-atraso ul {
+.atraso-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
   margin: 0;
-  padding-left: 20px;
+  padding: 0;
+  list-style: none;
+}
+
+.atraso-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--fundo);
+  border: 1px solid var(--borda);
+  border-left: 3px solid var(--erro);
+  border-radius: var(--raio-pequeno);
+  transition: border-color var(--transicao), box-shadow var(--transicao), transform var(--transicao);
+}
+
+.atraso-item:hover {
+  border-color: color-mix(in srgb, var(--erro) 45%, var(--borda));
+  border-left-color: var(--erro);
+  box-shadow: var(--sombra);
+  transform: translateX(2px);
+}
+
+.atraso-link {
+  font-weight: 600;
+  line-height: 1.3;
   color: var(--texto);
+  text-decoration: none;
+}
+
+.atraso-link:hover,
+.atraso-link:focus-visible {
+  color: var(--principal);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.atraso-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+}
+
+.atraso-data,
+.atraso-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.atraso-data {
+  color: var(--erro);
+  background: color-mix(in srgb, var(--erro) 12%, transparent);
+  font-variant-numeric: tabular-nums;
+}
+
+.atraso-estado {
+  --cor-estado: var(--estado-por-fazer);
+  color: var(--texto-suave);
+  background: var(--fundo-suave);
+}
+
+.atraso-estado[data-estado='IN_PROGRESS'] {
+  --cor-estado: var(--estado-em-curso);
+}
+
+.atraso-estado::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cor-estado);
 }
 
 @media (max-width: 800px) {

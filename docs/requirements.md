@@ -73,7 +73,7 @@ Resume as permissões de cada perfil. É verificada pelos critérios de aceitaç
 | Ação | Administrador | Gestor | Membro | Requisito |
 |---|---|---|---|---|
 | Ver a lista de tarefas e o progresso do projeto | ❌ | ✅ | ✅ | RF-15 a RF-18 |
-| Filtrar tarefas por estado e prioridade | ❌ | ✅ | ✅ | RF-34 |
+| Filtrar tarefas por estado, prioridade e responsável | ❌ | ✅ | ✅ | RF-34 |
 | Ler a descrição de qualquer tarefa do projeto | ❌ | ✅ | ✅ | RF-15 |
 | Criar tarefa | ❌ | ✅ | ❌ | RF-09 |
 | Adicionar e remover responsáveis | ❌ | ✅ | ❌ | RF-10 |
@@ -213,8 +213,8 @@ Os estados e as prioridades aparecem na interface em português. Na API e na bas
 - Qualquer membro do projeto pode ler a descrição de todas as tarefas do projeto, incluindo as que não são suas (RV-17).
 - Ordem da lista: por estado (Por fazer, Em curso, Concluída) e, dentro de cada estado, por data limite crescente; as tarefas sem data limite ficam no fim do seu estado (Q-12).
 
-**RF-34 — Filtrar tarefas.** Na lista de tarefas de um projeto, qualquer membro filtra por estado e por prioridade (Q-16).
-- Os dois filtros podem combinar-se; sem filtros, aparecem todas as tarefas.
+**RF-34 — Filtrar tarefas.** Na lista de tarefas de um projeto, qualquer membro filtra por estado, por prioridade (Q-16) e por responsável (Q-24).
+- Os filtros podem combinar-se; sem filtros, aparecem todas as tarefas.
 - A ordem de Q-12 mantém-se dentro do resultado filtrado.
 - Os filtros não alteram o progresso do projeto: as contagens, a percentagem e os atrasos referem-se sempre a todas as tarefas (RF-16 a RF-18).
 
@@ -297,7 +297,7 @@ A coluna **Justificação** é uma proposta, por aprovar pela dona do produto: l
 |---|---|---|---|
 | RF-19 | Vista "As minhas tarefas", com as tarefas do utilizador em todos os projetos | Should | Útil a quem está em vários projetos, ou seja, a quem tem o perfil Gestor (R-07, RV-31); no MVP, cada membro já vê as suas tarefas projeto a projeto (RF-15). |
 | RF-20 | Visão geral do Gestor, com todos os indicadores dos seus projetos (percentagem e atrasos incluídos) | Should | Apoia o objetivo de acabar com os pedidos de ponto de situação (R-02); no MVP, o painel inicial já mostra as contagens por estado (RF-35) e o resto vê-se projeto a projeto (RF-16 a RF-18). |
-| RF-21 | Filtrar tarefas por responsável e data limite, e escolher a ordenação | Should | Ganha valor quando há muitas tarefas; o volume do piloto está por definir (RNF-06). Os filtros por estado e prioridade passaram para o MVP (RF-34, Q-16). |
+| RF-21 | Filtrar tarefas por data limite e escolher a ordenação | Should | Ganha valor quando há muitas tarefas; o volume do piloto está por definir (RNF-06). Os filtros por estado e prioridade (Q-16) e por responsável (Q-24) passaram para o MVP (RF-34). |
 | RF-23 | Histórico de alterações de cada tarefa | Could | Não é pedido por R-03; relaciona-se com o registo de auditoria, ainda por decidir (constraints.md, secção 3). |
 | RF-25 | Notificações (tarefa atribuída, prazo a aproximar-se) | Could | Não é pedido por R-03; no MVP, os atrasos já ficam visíveis no progresso (RF-18). |
 | RF-26 | Importação de tarefas a partir de folhas de cálculo | Could | Facilitaria sair do Excel (R-01), mas o piloto começa sem importação (constraints.md, secção 5). |
