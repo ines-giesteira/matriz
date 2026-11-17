@@ -1,27 +1,179 @@
+/* ==========================================================================
+   Tokens: cores, raios, sombras e transições
+   ========================================================================== */
 :root {
-  --texto: #222;
-  --texto-suave: #666;
-  --fundo: #fff;
-  --fundo-suave: #f4f5f7;
-  --borda: #c8ccd2;
-  --principal: #1f5fa8;
-  --principal-escuro: #174a84;
-  --erro: #a40000;
-  --aviso-fundo: #fff4d6;
-  --aviso-borda: #e0b84a;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  --texto: #1b2230;
+  --texto-suave: #5f6b7d;
+  --fundo: #ffffff;
+  --fundo-pagina: #f5f7fb;
+  --fundo-suave: #eef1f6;
+  --borda: #d9dee7;
+  --borda-forte: #b9c1ce;
+  --principal: #2f6fe4;
+  --principal-escuro: #2259c0;
+  --principal-suave: #e8f0fe;
+  --principal-texto: #ffffff;
+  --erro: #c62828;
+  --erro-escuro: #a11f1f;
+  --erro-suave: #fdecec;
+  --aviso-fundo: #fff7e0;
+  --aviso-borda: #f0c75e;
+  --sucesso-fundo: #e7f6ec;
+  --sucesso-borda: #7cc795;
+  --anel-foco: 0 0 0 3px rgb(47 111 228 / 35%);
+  --acento: #7b5ce6;
+  --gradiente-marca: linear-gradient(135deg, var(--principal), var(--acento));
+
+  /* Cores por estado da tarefa: Por fazer, Em curso, Concluída */
+  --estado-por-fazer: #64748b;
+  --estado-em-curso: #d97706;
+  --estado-concluida: #16a34a;
+
+  --raio-pequeno: 6px;
+  --raio: 10px;
+  --raio-grande: 14px;
+  --sombra-pequena: 0 1px 2px rgb(16 24 40 / 6%);
+  --sombra: 0 1px 3px rgb(16 24 40 / 8%), 0 1px 2px rgb(16 24 40 / 4%);
+  --sombra-elevada: 0 10px 24px rgb(16 24 40 / 10%), 0 2px 6px rgb(16 24 40 / 6%);
+  --sombra-dialogo: 0 24px 48px rgb(16 24 40 / 22%);
+  --transicao: 150ms ease;
+
+  font-family: 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
   color: var(--texto);
-  background: var(--fundo);
+  background: var(--fundo-pagina);
+  color-scheme: light;
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --texto: #e6e9ef;
+    --texto-suave: #9aa4b5;
+    --fundo: #1a1f29;
+    --fundo-pagina: #12161e;
+    --fundo-suave: #232a36;
+    --borda: #303949;
+    --borda-forte: #465166;
+    --principal: #5b8ff0;
+    --principal-escuro: #7aa5f5;
+    --principal-suave: #1f2c46;
+    --principal-texto: #0d1420;
+    --erro: #ef6b6b;
+    --erro-escuro: #f38a8a;
+    --erro-suave: #3a1f23;
+    --aviso-fundo: #3a3020;
+    --aviso-borda: #8a6d2b;
+    --sucesso-fundo: #1c3326;
+    --sucesso-borda: #3f8a5a;
+    --anel-foco: 0 0 0 3px rgb(91 143 240 / 45%);
+    --acento: #9a82f0;
+    --estado-por-fazer: #94a3b8;
+    --estado-em-curso: #f59e0b;
+    --estado-concluida: #34c272;
+    --sombra-pequena: 0 1px 2px rgb(0 0 0 / 30%);
+    --sombra: 0 1px 3px rgb(0 0 0 / 35%);
+    --sombra-elevada: 0 10px 24px rgb(0 0 0 / 40%);
+    --sombra-dialogo: 0 24px 48px rgb(0 0 0 / 55%);
+    color-scheme: dark;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 420px at 15% -120px, color-mix(in srgb, var(--principal) 9%, transparent), transparent),
+    radial-gradient(900px 380px at 95% -80px, color-mix(in srgb, var(--acento) 8%, transparent), transparent),
+    var(--fundo-pagina);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--principal) 25%, transparent);
+}
+
+@keyframes surgir {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+main.pagina {
+  animation: surgir 260ms ease-out;
+}
+
+/* Ligação de regresso no topo das páginas de detalhe ("← Projetos", "← Voltar ao projeto") */
+main.pagina > p:first-child > a:only-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px 4px 8px;
+  margin-left: -8px;
+  font-size: 0.9rem;
+  font-weight: 550;
+  color: var(--texto-suave);
+  text-decoration: none;
+  border-radius: 999px;
+  transition:
+    background-color var(--transicao),
+    color var(--transicao);
+}
+
+main.pagina > p:first-child > a:only-child:hover {
+  color: var(--principal);
+  background: var(--principal-suave);
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 8px 0 4px;
+}
+
+h2 {
+  font-size: 1.25rem;
+  font-weight: 650;
+}
+
+h3 {
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+
+a {
+  color: var(--principal);
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  color: var(--principal-escuro);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--anel-foco);
+  border-radius: var(--raio-pequeno);
 }
 
 .pagina {
-  max-width: 960px;
+  max-width: 1040px;
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: 32px 20px 48px;
 }
 
 .erro {
@@ -32,41 +184,120 @@ body {
   color: var(--texto-suave);
 }
 
-/* Cabeçalho das páginas com sessão */
+/* ==========================================================================
+   Cabeçalho das páginas com sessão
+   ========================================================================== */
 .cabecalho {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 8px 16px;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 10px max(20px, calc((100% - 1040px) / 2 + 20px));
+  background: color-mix(in srgb, var(--fundo) 88%, transparent);
+  backdrop-filter: saturate(180%) blur(10px);
   border-bottom: 1px solid var(--borda);
-  background: var(--fundo-suave);
+  box-shadow: var(--sombra-pequena);
 }
 
 .marca {
-  font-weight: 600;
-  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 750;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+
+.navegacao a.marca {
+  color: var(--texto);
+  padding: 4px 8px 4px 0;
+  margin-right: 8px;
+}
+
+.marca::before {
+  content: '';
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background:
+    linear-gradient(var(--principal-texto), var(--principal-texto)) 5px 5px / 5px 5px no-repeat,
+    linear-gradient(var(--principal-texto), var(--principal-texto)) 12px 5px / 5px 5px no-repeat,
+    linear-gradient(var(--principal-texto), var(--principal-texto)) 5px 12px / 5px 5px no-repeat,
+    var(--gradiente-marca);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--principal) 35%, transparent);
+}
+
+.pagina-entrada > h1 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.pagina-entrada > h1::before {
+  content: '';
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background:
+    linear-gradient(#fff, #fff) 7px 7px / 7px 7px no-repeat,
+    linear-gradient(#fff, #fff) 18px 7px / 7px 7px no-repeat,
+    linear-gradient(#fff, #fff) 7px 18px / 7px 7px no-repeat,
+    var(--gradiente-marca);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--principal) 40%, transparent);
+}
+
+/* Página de entrada: fundo decorativo */
+body:has(.pagina-entrada) {
+  background:
+    radial-gradient(600px 400px at 20% 20%, color-mix(in srgb, var(--principal) 16%, transparent), transparent),
+    radial-gradient(600px 420px at 85% 85%, color-mix(in srgb, var(--acento) 16%, transparent), transparent),
+    var(--fundo-pagina);
+}
+
+.pagina-entrada .formulario h2 {
+  font-size: 1.35rem;
 }
 
 .cabecalho-utilizador {
   display: flex;
   align-items: center;
   gap: 12px;
+  font-weight: 550;
+  color: var(--texto-suave);
 }
 
-/* Formulários e botões, reutilizados nos próximos ecrãs */
+/* ==========================================================================
+   Formulários e botões
+   ========================================================================== */
 .pagina-entrada {
-  max-width: 400px;
+  max-width: 420px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .formulario {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 20px;
+  padding: 24px;
+  background: var(--fundo);
   border: 1px solid var(--borda);
-  border-radius: 6px;
+  border-radius: var(--raio-grande);
+  box-shadow: var(--sombra);
+}
+
+.pagina-entrada .formulario {
+  padding: 28px;
+  box-shadow: var(--sombra-elevada);
 }
 
 .formulario h2 {
@@ -75,86 +306,195 @@ body {
 
 .formulario label {
   margin-top: 8px;
+  font-size: 0.92rem;
   font-weight: 600;
 }
 
-.formulario input {
+.formulario input,
+.formulario textarea,
+.formulario select,
+.tabela select,
+.pesquisa input,
+.filtros select,
+.seletor-estado select,
+.adicionar-membro select {
   font: inherit;
-  padding: 8px;
-  border: 1px solid var(--borda);
-  border-radius: 4px;
+  color: var(--texto);
+  padding: 9px 12px;
+  background: var(--fundo);
+  border: 1px solid var(--borda-forte);
+  border-radius: var(--raio-pequeno);
+  transition:
+    border-color var(--transicao),
+    box-shadow var(--transicao);
 }
 
-.formulario input[aria-invalid='true'] {
+.formulario input:hover,
+.formulario textarea:hover,
+.formulario select:hover,
+.tabela select:hover,
+.pesquisa input:hover,
+.filtros select:hover,
+.seletor-estado select:hover,
+.adicionar-membro select:hover {
+  border-color: var(--texto-suave);
+}
+
+.formulario input:focus,
+.formulario textarea:focus,
+.formulario select:focus,
+.tabela select:focus,
+.pesquisa input:focus,
+.filtros select:focus,
+.seletor-estado select:focus,
+.adicionar-membro select:focus {
+  outline: none;
+  border-color: var(--principal);
+  box-shadow: var(--anel-foco);
+}
+
+.formulario input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  accent-color: var(--principal);
+}
+
+.formulario textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.formulario input[aria-invalid='true'],
+.formulario textarea[aria-invalid='true'] {
   border-color: var(--erro);
+}
+
+.formulario input[aria-invalid='true']:focus,
+.formulario textarea[aria-invalid='true']:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--erro) 25%, transparent);
 }
 
 .erro-campo {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
+}
+
+.aviso,
+.sucesso {
+  padding: 10px 14px;
+  border: 1px solid;
+  border-left-width: 4px;
+  border-radius: var(--raio-pequeno);
 }
 
 .aviso {
-  padding: 8px 12px;
   background: var(--aviso-fundo);
-  border: 1px solid var(--aviso-borda);
-  border-radius: 4px;
+  border-color: var(--aviso-borda);
+}
+
+.sucesso {
+  background: var(--sucesso-fundo);
+  border-color: var(--sucesso-borda);
 }
 
 button {
   font: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  line-height: 1.2;
   cursor: pointer;
-  border-radius: 4px;
-  padding: 8px 14px;
+  border-radius: var(--raio-pequeno);
+  padding: 9px 16px;
+  transition:
+    background-color var(--transicao),
+    border-color var(--transicao),
+    box-shadow var(--transicao),
+    transform var(--transicao);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 button:disabled {
   cursor: not-allowed;
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .botao-principal {
   margin-top: 16px;
-  color: #fff;
-  background: var(--principal);
-  border: 1px solid var(--principal);
+  color: var(--principal-texto);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--principal) 88%, #fff), var(--principal));
+  border: 1px solid var(--principal-escuro);
+  box-shadow:
+    0 1px 2px rgb(16 24 40 / 10%),
+    inset 0 1px 0 rgb(255 255 255 / 18%);
 }
 
 .botao-principal:hover:not(:disabled) {
   background: var(--principal-escuro);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--principal) 35%, transparent);
 }
 
 .botao-secundario {
   color: var(--texto);
   background: var(--fundo);
-  border: 1px solid var(--borda);
+  border: 1px solid var(--borda-forte);
+  box-shadow: var(--sombra-pequena);
+}
+
+.botao-secundario:hover:not(:disabled) {
+  background: var(--fundo-suave);
 }
 
 .botao-perigo {
   color: #fff;
   background: var(--erro);
   border: 1px solid var(--erro);
+  box-shadow: var(--sombra-pequena);
 }
 
-/* Navegação */
+.botao-perigo:hover:not(:disabled) {
+  background: var(--erro-escuro);
+  border-color: var(--erro-escuro);
+}
+
+/* ==========================================================================
+   Navegação
+   ========================================================================== */
 .navegacao {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
+  gap: 4px;
 }
 
 .navegacao a {
-  color: var(--texto);
+  color: var(--texto-suave);
+  font-weight: 550;
   text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  transition:
+    background-color var(--transicao),
+    color var(--transicao);
+}
+
+.navegacao a:not(.marca):hover {
+  color: var(--texto);
+  background: var(--fundo-suave);
 }
 
 .navegacao a.active:not(.marca) {
-  font-weight: 600;
-  text-decoration: underline;
+  font-weight: 650;
+  color: var(--principal);
+  background: var(--principal-suave);
 }
 
-/* Elementos partilhados pelas páginas */
+/* ==========================================================================
+   Elementos partilhados pelas páginas
+   ========================================================================== */
 .titulo-com-acoes {
   display: flex;
   flex-wrap: wrap;
@@ -178,20 +518,6 @@ button:disabled {
   margin-top: 0;
 }
 
-.formulario textarea,
-.formulario select,
-.tabela select,
-.pesquisa input {
-  font: inherit;
-  padding: 8px;
-  border: 1px solid var(--borda);
-  border-radius: 4px;
-}
-
-.formulario textarea[aria-invalid='true'] {
-  border-color: var(--erro);
-}
-
 .linha-campos {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -208,58 +534,96 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-width: 360px;
-  margin: 16px 0;
+  max-width: 380px;
+  margin: 16px 0 20px;
+}
+
+.pesquisa label {
+  font-size: 0.92rem;
+  font-weight: 600;
 }
 
 .etiqueta {
   display: inline-block;
-  padding: 2px 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
   vertical-align: middle;
   color: var(--texto-suave);
   background: var(--fundo-suave);
   border: 1px solid var(--borda);
-  border-radius: 10px;
+  border-radius: 999px;
 }
 
 .vazio {
-  padding: 16px;
+  padding: 28px 20px;
+  text-align: center;
   color: var(--texto-suave);
-  background: var(--fundo-suave);
-  border-radius: 6px;
+  background: var(--fundo);
+  border: 1px dashed var(--borda-forte);
+  border-radius: var(--raio);
 }
 
-.sucesso {
-  padding: 8px 12px;
-  background: #e5f4e8;
-  border: 1px solid #7cb98a;
-  border-radius: 4px;
-}
-
-/* Lista de projetos */
+/* ==========================================================================
+   Lista de projetos
+   ========================================================================== */
 .lista-cartoes {
   list-style: none;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
 }
 
 .cartao {
-  padding: 16px;
+  position: relative;
+  padding: 18px 20px;
+  background: var(--fundo);
   border: 1px solid var(--borda);
-  border-radius: 6px;
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  transition:
+    box-shadow var(--transicao),
+    transform var(--transicao),
+    border-color var(--transicao);
+}
+
+.cartao::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  border-radius: var(--raio) 0 0 var(--raio);
+  background: var(--principal);
+}
+
+.cartao:hover {
+  transform: translateY(-2px);
+  border-color: var(--borda-forte);
+  box-shadow: var(--sombra-elevada);
 }
 
 .cartao.arquivado {
   background: var(--fundo-suave);
 }
 
+.cartao.arquivado::before {
+  background: var(--borda-forte);
+}
+
 .cartao-titulo {
-  font-weight: 600;
+  font-weight: 650;
+  font-size: 1.05rem;
   margin-right: 8px;
+}
+
+.cartao a {
+  text-decoration: none;
+}
+
+.cartao a:hover {
+  text-decoration: underline;
 }
 
 .cartao p {
@@ -269,14 +633,43 @@ button:disabled {
 .contagens {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  font-size: 0.9rem;
+  gap: 6px 14px;
+  margin-top: 14px !important;
+  padding-top: 12px;
+  border-top: 1px solid var(--borda);
+  font-size: 0.875rem;
+  color: var(--texto-suave);
 }
 
-/* Progresso do projeto (wireframe, elementos 5 a 7) */
+.contagens > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.contagens > span::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cor-estado, var(--estado-por-fazer));
+}
+
+.contagens > span:nth-child(2) {
+  --cor-estado: var(--estado-em-curso);
+}
+
+.contagens > span:nth-child(3) {
+  --cor-estado: var(--estado-concluida);
+}
+
+/* ==========================================================================
+   Progresso do projeto (wireframe, elementos 5 a 7)
+   ========================================================================== */
 .progresso-grelha {
   display: grid;
   grid-template-columns: repeat(3, minmax(90px, 1fr)) minmax(200px, 2fr) minmax(220px, 2.5fr);
+  align-items: start;
   gap: 12px;
 }
 
@@ -286,13 +679,54 @@ button:disabled {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 12px;
+  padding: 16px;
+  background: var(--fundo);
   border: 1px solid var(--borda);
-  border-radius: 6px;
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  color: var(--texto-suave);
+  font-size: 0.9rem;
 }
 
 .indicador-numero {
-  font-size: 1.6rem;
+  font-size: 2.1rem;
+  font-weight: 750;
+  line-height: 1.1;
+  color: var(--cor-estado, var(--texto));
+  font-variant-numeric: tabular-nums;
+}
+
+/* Os três primeiros indicadores são os estados, pela ordem Por fazer, Em curso, Concluída */
+.progresso-grelha > .indicador:nth-child(-n + 3) {
+  position: relative;
+  overflow: hidden;
+  padding-top: 20px;
+  --cor-estado: var(--estado-por-fazer);
+}
+
+.progresso-grelha > .indicador:nth-child(2) {
+  --cor-estado: var(--estado-em-curso);
+}
+
+.progresso-grelha > .indicador:nth-child(3) {
+  --cor-estado: var(--estado-concluida);
+}
+
+.progresso-grelha > .indicador:nth-child(-n + 3)::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: var(--cor-estado);
+}
+
+.indicador-percentagem {
+  gap: 10px;
+}
+
+.indicador-percentagem strong {
+  font-size: 1.5rem;
+  color: var(--texto);
 }
 
 .indicador-percentagem,
@@ -303,16 +737,62 @@ button:disabled {
 
 .indicador-percentagem progress {
   width: 100%;
-  height: 12px;
+  height: 10px;
+  appearance: none;
+  border: none;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--fundo-suave);
+}
+
+.indicador-percentagem progress::-webkit-progress-bar {
+  background: var(--fundo-suave);
+  border-radius: 999px;
+}
+
+.indicador-percentagem progress::-webkit-progress-value {
+  background: linear-gradient(90deg, var(--principal), var(--estado-concluida));
+  border-radius: 999px;
+}
+
+.indicador-percentagem progress::-moz-progress-bar {
+  background: linear-gradient(90deg, var(--principal), var(--estado-concluida));
+  border-radius: 999px;
+}
+
+.indicador-atraso > strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--erro);
+}
+
+.indicador-atraso > strong::before {
+  content: '!';
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--erro);
+  border-radius: 50%;
+}
+
+.indicador-atraso li {
+  margin: 4px 0;
 }
 
 .indicador-atraso {
-  border-style: dashed;
+  border-color: color-mix(in srgb, var(--erro) 35%, var(--borda));
+  background: color-mix(in srgb, var(--erro-suave) 55%, var(--fundo));
 }
 
 .indicador-atraso ul {
   margin: 0;
   padding-left: 20px;
+  color: var(--texto);
 }
 
 @media (max-width: 800px) {
@@ -326,15 +806,23 @@ button:disabled {
   }
 }
 
-/* Detalhe do projeto */
+/* ==========================================================================
+   Detalhe do projeto
+   ========================================================================== */
 .dados-projeto {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 8px 16px;
+  gap: 10px 20px;
+  padding: 18px 20px;
+  background: var(--fundo);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
 }
 
 .dados-projeto dt {
   font-weight: 600;
+  color: var(--texto-suave);
 }
 
 .dados-projeto dd {
@@ -345,21 +833,70 @@ button:disabled {
   white-space: pre-wrap;
 }
 
-/* Tabela da administração; em ecrãs estreitos, cada linha passa a cartão */
+/* ==========================================================================
+   Tabela da administração; em ecrãs estreitos, cada linha passa a cartão
+   ========================================================================== */
 .tabela {
   width: 100%;
-  border-collapse: collapse;
+  margin-top: 16px;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--fundo);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  overflow: hidden;
 }
 
 .tabela th,
 .tabela td {
-  padding: 8px;
+  padding: 12px 14px;
   text-align: left;
   border-bottom: 1px solid var(--borda);
-  vertical-align: top;
+  vertical-align: middle;
+}
+
+.tabela td a {
+  font-weight: 550;
+  text-decoration: none;
+}
+
+.tabela td a:hover {
+  text-decoration: underline;
+}
+
+.tabela select {
+  padding: 6px 10px;
+}
+
+.tabela th {
+  font-size: 0.8rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--texto-suave);
+  background: var(--fundo-suave);
+}
+
+.tabela tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabela tbody tr {
+  transition: background-color var(--transicao);
+}
+
+.tabela tbody tr:hover {
+  background: color-mix(in srgb, var(--principal-suave) 45%, transparent);
 }
 
 @media (max-width: 640px) {
+  .tabela {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+
   .tabela thead {
     position: absolute;
     left: -9999px;
@@ -367,8 +904,12 @@ button:disabled {
 
   .tabela tr {
     display: block;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--borda);
+    margin-bottom: 12px;
+    padding: 12px 14px;
+    background: var(--fundo);
+    border: 1px solid var(--borda);
+    border-radius: var(--raio);
+    box-shadow: var(--sombra);
   }
 
   .tabela td {
@@ -380,29 +921,60 @@ button:disabled {
   .tabela td[data-rotulo]::before {
     content: attr(data-rotulo) ': ';
     font-weight: 600;
+    color: var(--texto-suave);
   }
 }
 
-/* Diálogo de confirmação */
+/* ==========================================================================
+   Diálogo de confirmação
+   ========================================================================== */
+@keyframes aparecer-fundo {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes aparecer-dialogo {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
 .fundo-dialogo {
   position: fixed;
   inset: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 16px;
-  background: rgb(0 0 0 / 40%);
+  background: rgb(10 15 25 / 50%);
+  backdrop-filter: blur(2px);
+  animation: aparecer-fundo 150ms ease-out;
 }
 
 .dialogo {
-  max-width: 420px;
-  padding: 20px;
+  max-width: 440px;
+  padding: 24px;
   background: var(--fundo);
-  border-radius: 6px;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio-grande);
+  box-shadow: var(--sombra-dialogo);
+  animation: aparecer-dialogo 180ms ease-out;
 }
 
 .dialogo h2 {
   margin-top: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 .so-leitor {
@@ -419,18 +991,45 @@ button:disabled {
   background: var(--fundo-suave);
 }
 
-/* Secções do detalhe do projeto e membros */
+/* ==========================================================================
+   Secções do detalhe do projeto e membros
+   ========================================================================== */
 .seccao {
-  margin-top: 32px;
-  padding-top: 16px;
-  border-top: 1px solid var(--borda);
+  margin-top: 40px;
+}
+
+.seccao h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.seccao h2::before {
+  content: '';
+  flex: none;
+  width: 4px;
+  height: 1.1em;
+  border-radius: 2px;
+  background: var(--gradiente-marca);
+}
+
+.titulo-com-acoes h2 {
+  margin: 0;
 }
 
 .lista-membros {
   list-style: none;
-  padding: 0;
+  padding: 4px 16px;
   margin: 0 0 16px;
-  max-width: 520px;
+  max-width: 560px;
+  background: var(--fundo);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+}
+
+.lista-membros:empty {
+  display: none;
 }
 
 .lista-membros li {
@@ -439,15 +1038,19 @@ button:disabled {
   gap: 8px;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 0;
-  border-bottom: 1px solid var(--fundo-suave);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--borda);
+}
+
+.lista-membros li:last-child {
+  border-bottom: none;
 }
 
 .adicionar-membro {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-width: 520px;
+  max-width: 560px;
 }
 
 .adicionar-membro label {
@@ -455,15 +1058,17 @@ button:disabled {
 }
 
 .adicionar-membro select {
-  font: inherit;
-  padding: 8px;
-  border: 1px solid var(--borda);
-  border-radius: 4px;
   flex: 1 1 220px;
   min-width: 0;
 }
 
-/* Tarefas */
+.adicionar-membro .botao-principal {
+  margin-top: 0;
+}
+
+/* ==========================================================================
+   Tarefas
+   ========================================================================== */
 .caixa {
   margin: 16px 0;
 }
@@ -478,6 +1083,10 @@ button:disabled {
   align-items: flex-end;
   gap: 12px;
   margin: 16px 0;
+  padding: 14px 16px;
+  background: var(--fundo);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
 }
 
 .filtros > div {
@@ -487,16 +1096,14 @@ button:disabled {
 }
 
 .filtros label {
+  font-size: 0.85rem;
   font-weight: 600;
+  color: var(--texto-suave);
 }
 
 .filtros select,
-.seletor-estado select,
-.formulario select {
-  font: inherit;
-  padding: 6px 8px;
-  border: 1px solid var(--borda);
-  border-radius: 4px;
+.seletor-estado select {
+  padding: 7px 10px;
 }
 
 .seletor-estado {
@@ -506,19 +1113,21 @@ button:disabled {
 }
 
 .etiqueta-atraso {
+  margin-left: 6px;
   color: var(--erro);
-  border-color: var(--erro);
-  background: #fdeaea;
+  border-color: color-mix(in srgb, var(--erro) 45%, transparent);
+  background: var(--erro-suave);
 }
 
 .escolha-responsaveis {
   margin: 12px 0 0;
-  padding: 8px 12px;
+  padding: 10px 14px;
   border: 1px solid var(--borda);
-  border-radius: 4px;
+  border-radius: var(--raio-pequeno);
 }
 
 .escolha-responsaveis legend {
+  padding: 0 4px;
   font-weight: 600;
 }
 
@@ -530,17 +1139,26 @@ button:disabled {
   font-weight: normal;
 }
 
-/* Comentários */
+/* ==========================================================================
+   Comentários
+   ========================================================================== */
 .lista-comentarios {
   list-style: none;
   padding: 0;
   margin: 0 0 16px;
   max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .lista-comentarios li {
-  padding: 10px 0;
-  border-bottom: 1px solid var(--fundo-suave);
+  padding: 12px 16px;
+  background: var(--fundo);
+  border: 1px solid var(--borda);
+  border-left: 3px solid color-mix(in srgb, var(--principal) 55%, var(--borda));
+  border-radius: var(--raio);
+  box-shadow: var(--sombra-pequena);
 }
 
 .lista-comentarios p {
@@ -549,6 +1167,7 @@ button:disabled {
 
 .comentario-cabecalho {
   margin-bottom: 4px !important;
+  font-size: 0.875rem;
 }
 
 .formulario-comentario {
